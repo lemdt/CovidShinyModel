@@ -17,6 +17,29 @@ shinyServer(function(input, output) {
     ##  Selection of R0 or Doubling Time 
     ##  ............................................................................
     
+    output$prediction_fld = renderUI({
+        
+        if (input$predict_metric == 'Hospitalization'){
+            numericInput(inputId = 'num_hospitalized', 
+                         label = 'Number Currently Hospitalized from COVID-19', 
+                         value = 2)
+        }
+        else if (input$predict_metric == 'ICU Patients'){
+            numericInput(inputId = 'num_icu', 
+                         label = 'Number Currently in ICU for COVID-19', 
+                         value = 2)
+        }
+        else{
+            numericInput(inputId = 'num_hospitalized', 
+                         label = 'Number Currently Hospitalized from COVID-19', 
+                         value = 2)
+        }
+    })
+
+    ##  ............................................................................
+    ##  Selection of R0 or Doubling Time 
+    ##  ............................................................................
+    
     output$prior_val <- renderUI({
         if (input$usedouble == TRUE){
             sliderInput(inputId = 'doubling_time', 
@@ -64,13 +87,15 @@ shinyServer(function(input, output) {
         illness.length = 14,
         gamma = 1/14,
         hosp.delay.time = 10, 
-        hosp.rate = 0.05, 
+        hosp.rate = 0.15, 
+        death.rate = 0.01,
         hosp.los = 7,
         icu.delay.time = 13, 
-        icu.rate = 0.02, 
+        death.delay.time = 20,
+        icu.rate = 0.05, 
         icu.los = 9, 
         vent.delay.time = 13, 
-        vent.rate = 0.01, 
+        vent.rate = 0.02, 
         vent.los = 10
     )
     
@@ -89,6 +114,9 @@ shinyServer(function(input, output) {
                 
                 sliderInput('vent.rate', 'Ventilation Rate', min = 0, max = 1, step = 0.01, 
                             value = params$vent.rate, width = '100%'),
+
+                sliderInput('death.rate', 'Death Rate', min = 0, max = 1, step = 0.01, 
+                            value = params$death.rate, width = '100%'),
                 
                 sliderInput('hosp.after.inf', 'Infection to hospitalization (days)', min = 5, max = 15, step = 1, 
                             value = params$hosp.delay.time, width = '100%'),
@@ -98,7 +126,10 @@ shinyServer(function(input, output) {
                 
                 sliderInput('vent.after.inf', 'Infection to Ventilation (days)', min = 5, max = 15, step = 1, 
                             value = params$vent.delay.time, width = '100%'),
-                
+
+                sliderInput('death.after.inf', 'Infection to Death (days)', min = 10, max = 20, step = 1, 
+                            value = params$death.delay.time, width = '100%'),
+
                 sliderInput('hosp.los', 'Hospital Length of Stay (days)', min = 5, max = 15, step = 1, 
                             value = params$hosp.los, width = '100%'),
                 
@@ -126,6 +157,8 @@ shinyServer(function(input, output) {
         params$vent.delay.time = input$vent.after.inf
         params$vent.rate = input$vent.rate
         params$vent.los = input$vent.los
+        params$death.rate = input$death.rate
+        params$death.delay.time = input$death.delay.time
         removeModal()
     })
     

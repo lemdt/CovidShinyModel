@@ -13,10 +13,14 @@ shinyUI(fluidPage(
                    label = 'Number of People in Area', 
                    value = 100000),
       
-      numericInput(inputId = 'num_hospitalized', 
-                   label = 'Number Currently Hospitalized from COVID-19', 
-                   value = 2),
+      radioGroupButtons(inputId = 'predict_metric', 
+                        label = '', 
+                        choices = c('Hospitalization', 'ICU Patients', 'Deaths'),
+                        justified = TRUE, 
+                        status = "primary"),
       
+      uiOutput(outputId = 'prediction_fld'),
+
       uiOutput(outputId = 'prior_val'),
       
       hr(),
