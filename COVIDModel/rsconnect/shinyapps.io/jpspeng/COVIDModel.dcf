@@ -1,0 +1,12 @@
+name: COVIDModel
+title: COVIDModel
+username:
+account: jpspeng
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1964955
+bundleId: 2898741
+url: https://jpspeng.shinyapps.io/COVIDModel/
+when: 1584637806.80322
+asMultiple: FALSE
+asStatic: FALSE
