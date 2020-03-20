@@ -24,7 +24,7 @@ shinyServer(function(input, output) {
         
         numericInput(inputId = 'num_hospitalized', 
                      label = 'Estimate of current inpatients with COVID19 (diagnosed or not) on Day 0', 
-                     value = 10)
+                     value = 50)
     })
     
     ##  ............................................................................
@@ -78,13 +78,13 @@ shinyServer(function(input, output) {
         illness.length = 14,
         gamma = 1/14,
         hosp.delay.time = 10, 
-        hosp.rate = 0.15, 
-        hosp.los = 7,
-        icu.delay.time = 2, 
-        icu.rate = 0.5, 
-        icu.los = 9, 
+        hosp.rate = 0.06, 
+        hosp.los = 11,
+        icu.delay.time = 5, 
+        icu.rate = 0.3, 
+        icu.los = 8, 
         vent.delay.time = 1, 
-        vent.rate = 0.5, 
+        vent.rate = 0.64, 
         vent.los = 10
     )
     

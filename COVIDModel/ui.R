@@ -16,7 +16,7 @@ shinyUI(fluidPage(
       
       numericInput(inputId = 'num_people', 
                    label = 'Number of People in Area', 
-                   value = 100000),
+                   value = 883305),
       
       # TODO: add in prediction fields for ICU patients, deaths and ventilators
       uiOutput(outputId = 'prediction_fld'),
@@ -25,7 +25,7 @@ shinyUI(fluidPage(
       
       hr(),
       
-      HTML('<h4><b>Efficacy of Intervention</b></h4>'),
+      HTML('<h4><b>Efficacy of Interventions</b></h4>'),
 
       uiOutput(outputId = 'int_val'),
       
