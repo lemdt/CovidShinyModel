@@ -107,6 +107,8 @@ find.curr.estimates = function(S0, beta.vector, gamma, num.days, num_actual,
                vent.delay.time, vent.rate, vent.los)
   
   # finds the minimum difference between projection and current
+  # NOTE: right now, only uses hospitalization numbers to predict so else statement is never used right now
+
   if (metric == 'Hospitalization'){
     
     # find the difference between hospitalized column and the currently hospitalized number
@@ -126,7 +128,7 @@ find.curr.estimates = function(S0, beta.vector, gamma, num.days, num_actual,
   }
   else{
     
-    # find the difference between hospitalized column and the currently hospitalized number
+    # find the difference between ICU column and the current ICU number
     SIR.df$diff_proj <- abs(SIR.df$icu - num_actual)
     
     icu.numbers <- SIR.df$icu
