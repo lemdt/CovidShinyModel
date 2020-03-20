@@ -1,7 +1,12 @@
 library(shiny)
 library(shinyWidgets)
+library(DT)
 
 shinyUI(fluidPage(
+  
+  tags$head(
+    tags$style(HTML("hr {border-top: 1px solid #000000;}"))
+  ),
   
   titlePanel("COVID-19 Epidemic Modeling"),
   
@@ -20,7 +25,7 @@ shinyUI(fluidPage(
       
       hr(),
       
-      HTML('<h4><b>Efficacy of Interventions</b></h4>'),
+      HTML('<h4><b>Efficacy of Intervention</b></h4>'),
 
       uiOutput(outputId = 'int_val'),
       
@@ -30,13 +35,18 @@ shinyUI(fluidPage(
                   max = 365, 
                   step = 1, 
                   value = 1), 
+    
+      actionButton(inputId = 'add_intervention', 
+                 label = 'Save Intervention'),
+      
+      dataTableOutput(outputId = 'int_table'),
       
       hr(),
       
       HTML('<h4><b>Settings</b></h4>'),
       
       dateInput(inputId = 'curr_date', 
-                label = 'Set Current Date',
+                label = 'Set Day 0 Date',
               ),
       
       sliderInput(inputId = 'proj_num_days', 
@@ -54,7 +64,12 @@ shinyUI(fluidPage(
                    label = 'Customize Other Parameters'), 
       
       HTML('<br><br><b>Notes</b>: This app is a modified version of the <a href="http://penn-chime.phl.io/">Penn Chime app</a>.
-                 This is a beta version - the projections may or may not be accurate.')
+                 This is a beta version - the projections may or may not be accurate.'),
+      
+      tags$script("$(document).on('click', '#int_table button', function () {
+                  Shiny.onInputChange('lastClickId',this.id);
+                                             Shiny.onInputChange('lastClick', Math.random())
+                                             });")
     ),
     
     mainPanel(
