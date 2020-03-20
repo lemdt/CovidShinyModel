@@ -19,21 +19,9 @@ shinyServer(function(input, output) {
     
     output$prediction_fld = renderUI({
         
-        if (input$predict_metric == 'Hospitalization'){
-            numericInput(inputId = 'num_hospitalized', 
-                         label = 'Number Hospitalized from COVID-19 at Day 0', 
-                         value = 10)
-        }
-        else if (input$predict_metric == 'ICU Patients'){
-            numericInput(inputId = 'num_icu', 
-                         label = 'Number in ICU for COVID-19 at Day 0', 
-                         value = 2)
-        }
-        else{
-            numericInput(inputId = 'num_hospitalized', 
-                         label = 'Number Currently Hospitalized from COVID-19', 
-                         value = 2)
-        }
+        numericInput(inputId = 'num_hospitalized', 
+                     label = 'Estimate of current inpatients with COVID19 (diagnosed or not) on Day 0', 
+                     value = 10)
     })
 
     ##  ............................................................................
@@ -177,19 +165,16 @@ shinyServer(function(input, output) {
     
     
     curr.day.list <- reactive({
-        if (input$predict_metric == 'Hospitalization'){
-            num.actual = input$num_hospitalized
-        }
-        else if (input$predict_metric == 'ICU Patients'){
-            num.actual = input$num_icu
-        }
         
+        predict.metric = 'Hospitalization'
+        num.actual = input$num_hospitalized
+
         find.curr.estimates(S0 = input$num_people,
                             beta.vector = initial_beta_vector(), 
                             gamma = params$gamma, 
                             num.days = input$proj_num_days, 
                             num_actual = num.actual,
-                            metric = input$predict_metric,
+                            metric = predict.metric,
                             start.inf = start.inf,
                             hosp.delay.time = params$hosp.delay.time, 
                             hosp.rate = params$hosp.rate, 
@@ -272,6 +257,8 @@ shinyServer(function(input, output) {
         # shift the number of days to account for day 0 in the model 
         SIR.df$days.shift <- SIR.df$day - curr.day
         
+        SIR.df$date <- SIR.df$days.shift + as.Date(input$curr_date)
+        
         SIR.df
     })
     
@@ -346,15 +333,15 @@ shinyServer(function(input, output) {
         df_temp$Active <- df_temp$I 
         df_temp$Resolved <- df_temp$R
         
-        df_temp <- df_temp[,c('days.shift', 'Cases', 'Active', 'Resolved')]
-        colnames(df_temp) <- c('days', 'Cases', 'Active', 'Resolved')
+        df_temp <- df_temp[,c('date', 'Cases', 'Active', 'Resolved')]
+        colnames(df_temp) <- c('date', 'Cases', 'Active', 'Resolved')
         df_temp
     })
     
     hospitalization.df <- reactive({
         df_temp <- sir.output.df()
-        df_temp <- df_temp[,c('days.shift', 'hosp', 'icu', 'vent')]
-        colnames(df_temp) <- c('days', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- df_temp[,c('date', 'hosp', 'icu', 'vent')]
+        colnames(df_temp) <- c('date', 'Hospital', 'ICU', 'Ventilator')
         df_temp
     })
     
@@ -365,8 +352,8 @@ shinyServer(function(input, output) {
         df_temp$icu <- input$icu_cap - df_temp$icu
         df_temp$vent <- input$vent_cap - df_temp$vent
         
-        df_temp <- df_temp[,c('days.shift', 'hosp', 'icu', 'vent')]
-        colnames(df_temp) <- c('days', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- df_temp[,c('date', 'hosp', 'icu', 'vent')]
+        colnames(df_temp) <- c('date', 'Hospital', 'ICU', 'Ventilator')
         df_temp
     })
     
@@ -377,22 +364,22 @@ shinyServer(function(input, output) {
     plot_day <- reactiveVal(0)
     
     observeEvent(input$plot_click, {
-        plot_day(round(input$plot_click$x))
+        plot_day(as.Date(round(input$plot_click$x), origin = "1970-01-01"))
     })
     
     output$hospitalization.plot <- renderPlot({
         df.to.plot <- hospitalization.df()
         
         if (length(input$selected_hosp) != 0){
-            cols <- c('days', input$selected_hosp)
+            cols <- c('date', input$selected_hosp)
             
             df.to.plot <- df.to.plot[,..cols]
             
-            df_melt <- melt(df.to.plot, 'days')
+            df_melt <- melt(df.to.plot, 'date')
             
-            ggplot(df_melt, aes(x = days, y = value, col = variable)) + geom_point() + geom_line(
-            ) +  geom_vline(xintercept=0) + theme(text = element_text(size=20)
-            ) +  geom_vline(xintercept=plot_day(), color = 'red')  + xlab('days')
+            ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() + geom_line(
+            ) +  geom_vline(xintercept=input$curr_date) + theme(text = element_text(size=20)
+            ) +  geom_vline(xintercept=plot_day(), color = 'red') 
         }
     })
     
@@ -401,14 +388,14 @@ shinyServer(function(input, output) {
         df.to.plot <- resource.df()
         
         if (length(input$selected_res) != 0){
-            cols <- c('days', input$selected_res)
+            cols <- c('date', input$selected_res)
             
             df.to.plot <- df.to.plot[,..cols]
-            df_melt <- melt(df.to.plot, 'days')
+            df_melt <- melt(df.to.plot, 'date')
             
-            ggplot(df_melt, aes(x = days, y = value, col = variable)) + geom_point() + geom_line(
-            ) +  geom_vline(xintercept=0) + theme(text = element_text(size=20)
-            ) +  geom_vline(xintercept=plot_day(), color = 'red')  + xlab('days') + geom_hline(yintercept = 0) 
+            ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() + geom_line(
+            ) +  geom_vline(xintercept=input$curr_date) + theme(text = element_text(size=20)
+            ) +  geom_vline(xintercept=plot_day(), color = 'red') + geom_hline(yintercept = 0) 
         }
     })
     
@@ -416,13 +403,13 @@ shinyServer(function(input, output) {
         df.to.plot <- cases.df()
         
         if (length(input$selected_cases) != 0){
-            cols <- c('days', input$selected_cases)
+            cols <- c('date', input$selected_cases)
             df.to.plot <- df.to.plot[,..cols]
-            df_melt <- melt(df.to.plot, 'days')
+            df_melt <- melt(df.to.plot, 'date')
             
-            ggplot(df_melt, aes(x = days, y = value, col = variable)) + geom_point(
-            ) + geom_line() +  geom_vline(xintercept=0) + theme(text = element_text(size=20)
-            ) +  geom_vline(xintercept=plot_day(), color = 'red') + xlab('days')
+            ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point(
+            ) + geom_line() +  geom_vline(xintercept=input$curr_date) + theme(text = element_text(size=20)
+            ) +  geom_vline(xintercept=plot_day(), color = 'red')
         }
     })
     
@@ -435,29 +422,27 @@ shinyServer(function(input, output) {
     output$infected_ct <- renderUI({
         infected <- curr.day.list()['infection.estimate']
         
-        HTML(sprintf('<h3><b>Estimated Current Number of Active Infections</b>: %s</h3>', infected))
+        curr_date <- format(input$curr_date, format="%B %d, %Y")
+        
+        HTML(sprintf('<h3><b>Estimated Number of Active Infections on %s</b>: %s</h3>', curr_date, infected))
     })
     
     # Word description 
     output$description <- renderUI({
         
         df_temp <- sir.output.df()
-        select.row <- df_temp[df_temp$days.shift == plot_day(),]
+        select.row <- df_temp[df_temp$date == plot_day(),]
+        select.date <- format(select.row$date, format="%B %d, %Y")
+        select.day <- select.row$days.shift
         
         if (input$selected_graph == 'Cases'){
             cases <- round(select.row$I + select.row$R)
             active <- floor(select.row$I)
+
+            HTML(sprintf('<h4>On %s (in <b>%s</b> days), there will be <b>%s COVID-19 cases</b> in the region, 
+                             with <b>%s actively infected</b>.</h4>', 
+                         select.date, select.day, cases, active))
             
-            if (plot_day() == 0){
-                HTML(sprintf('<h4>There are currently <b>%s COVID-19 cases</b> in the region, 
-                             with <b>%s actively infected</b>.</h4>', 
-                             cases, active))
-            }
-            else{
-                HTML(sprintf('<h4>In <b>%s</b> days, there will be <b>%s COVID-19 cases</b> in the region, 
-                             with <b>%s actively infected</b>.</h4>', 
-                             plot_day(), cases, active))
-            }
             
         }
         else if (input$selected_graph == 'Hospitalization'){
@@ -465,16 +450,10 @@ shinyServer(function(input, output) {
             icu <- round(select.row$icu)
             vent <- round(select.row$vent)
             
-            if (plot_day() == 0){
-                HTML(sprintf('<h4>There are currently <b>%s hospitalized from COVID-19</b> in the region, 
+            HTML(sprintf('<h4>On %s (in <b>%s</b> days), there will be <b>%s hospitalized from COVID-19</b> in the region, 
                              with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
-                             hosp, icu, vent))
-            }
-            else{
-                HTML(sprintf('<h4>In <b>%s</b> days, there will be <b>%s hospitalized from COVID-19</b> in the region, 
-                             with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
-                             plot_day(), hosp, icu, vent))
-            }
+                         select.date, select.day, hosp, icu, vent))
+            
             
         }
         else{
@@ -482,16 +461,10 @@ shinyServer(function(input, output) {
             icu_res <- input$icu_cap - round(select.row$icu)
             vent_res <- input$vent_cap - round(select.row$vent)
             
-            if (plot_day() == 0){
-                HTML(sprintf('<h4>There are currently <b>%s hospital beds available</b> in the region, with 
-                             <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
-                             hosp_res, icu_res, vent_res))
-            }
-            else{
-                HTML(sprintf('<h4>In <b>%s</b> days, there will be <b>%s hospital beds available</b> in the region, 
+            HTML(sprintf('<h4>On %s (in <b>%s</b> days), there will be <b>%s hospital beds available</b> in the region, 
                              with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
-                             plot_day(), hosp_res, icu_res, vent_res))
-            }
+                         select.date, select.day, hosp_res, icu_res, vent_res))
+            
             
         }
     })
