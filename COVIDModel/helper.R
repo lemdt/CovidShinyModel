@@ -8,16 +8,15 @@ library(data.table)
 # icu numbers, and ventilator numbers 
 SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
                 hosp.delay.time = 10, hosp.rate = 0.05, hosp.los = 7,
-                icu.delay.time = 13, icu.rate = 0.02, icu.los = 9,
-                vent.delay.time = 13, vent.rate = 0.01, vent.los = 10) {
+                icu.delay.time = 2, icu.rate = 0.5, icu.los = 9,
+                vent.delay.time = 1, vent.rate = 0.5, vent.los = 10) {
   
   # initialize S, I, R 
   S <- I <- R <- rep(NA_real_, num.days)
   S[1] <- S0
   I[1] <- I0
   R[1] <- R0
-  N <- S[1] + I[1] + R[0]
-  
+
   # run SIR model 
   for (tt in 1:(num.days - 1)) {
     beta <- beta.vector[tt]
@@ -25,8 +24,7 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
     I[tt + 1] <-   beta * S[tt] * I[tt] - gamma * I[tt]  + I[tt]
     R[tt + 1] <-                          gamma * I[tt]  + R[tt]
   }
-  stopifnot(all(S + I + R == N))
-  
+
   # create datatable of S, I, R
   dt <- data.table(days = 1:num.days, S, I, R)
   
@@ -46,8 +44,12 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
   # on hospital delay time and hospitalization rates
   for (tt in 1:num.days) {
     admit.hosp[tt + hosp.delay.time] <- new.infections[tt] * hosp.rate
-    admit.icu[tt + icu.delay.time] <- new.infections[tt] * icu.rate
-    admit.vent[tt + vent.delay.time] <- new.infections[tt] * vent.rate
+    
+    admit.icu[tt + hosp.delay.time + icu.delay.time
+              ] <- new.infections[tt] * hosp.rate * icu.rate
+    
+    admit.vent[tt + hosp.delay.time + icu.delay.time + vent.delay.time
+               ] <- new.infections[tt] * hosp.rate * icu.rate * vent.rate
   }
   
   # iteratively creates hospitalization/icu/ventilation discharge numbers based on 
@@ -89,7 +91,8 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
 
 # finds current estimates of the number of active infections, 
 # number recovered, and number 
-find.curr.estimates = function(S0, beta.vector, gamma, num.days, hospitalized, start.inf = 3, 
+find.curr.estimates = function(S0, beta.vector, gamma, num.days, num_actual, 
+                               metric, start.inf = 3, 
                                hosp.delay.time = 10, hosp.rate = 0.05, hosp.los = 7,
                                icu.delay.time = 13, icu.rate = 0.02, icu.los = 9,
                                vent.delay.time = 13, vent.rate = 0.01, vent.los = 10){
@@ -103,23 +106,37 @@ find.curr.estimates = function(S0, beta.vector, gamma, num.days, hospitalized, s
                icu.delay.time, icu.rate, icu.los,
                vent.delay.time, vent.rate, vent.los)
   
-  # find the difference between hospitalized column and the currently hospitalized number
-  SIR.df$diff_proj <- abs(SIR.df$hosp - hospitalized)
-  
-  # hacky 
-  # the # hospitalized will be achieved twice according to model 
-  # first as the hospitalizations go up, and second as the hospitalizations go down 
-  # we want to find the day
-  hosp.numbers <- SIR.df$hosp
-  hosp.change <- hosp.numbers[2:length(hosp.numbers)] - hosp.numbers[1:length(hosp.numbers) - 1]
-  hosp.change <- c(0, hosp.change)
-  SIR.df$hosp.change <- hosp.change
-  # only looks at when hospitalizations go up
-  
-  curr.day.df <- SIR.df[SIR.df$hosp.change > 0,]
-  
-  # finds the minimum difference between projected and current hospitalizations
-  curr.day.df <- curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj),] 
+  # finds the minimum difference between projection and current
+  if (metric == 'Hospitalization'){
+    
+    # find the difference between hospitalized column and the currently hospitalized number
+    SIR.df$diff_proj <- abs(SIR.df$hosp - num_actual)
+    
+    # hacky 
+    # the # hospitalized will be achieved twice according to model 
+    # first as the hospitalizations go up, and second as the hospitalizations go down 
+    # we want to find the day
+    hosp.numbers <- SIR.df$hosp
+    hosp.change <- hosp.numbers[2:length(hosp.numbers)] - hosp.numbers[1:length(hosp.numbers) - 1]
+    hosp.change <- c(0, hosp.change)
+    SIR.df$hosp.change <- hosp.change
+
+    curr.day.df <- SIR.df[SIR.df$hosp.change > 0,]
+    curr.day.df <- curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj, na.rm = TRUE),] 
+  }
+  else{
+    
+    # find the difference between hospitalized column and the currently hospitalized number
+    SIR.df$diff_proj <- abs(SIR.df$icu - num_actual)
+    
+    icu.numbers <- SIR.df$icu
+    icu.change <- icu.numbers[2:length(icu.numbers)] - icu.numbers[1:length(icu.numbers) - 1]
+    icu.change <- c(0, icu.change)
+    SIR.df$icu.change <- icu.change
+    
+    curr.day.df <- SIR.df[SIR.df$icu.change > 0,]
+    curr.day.df <- curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj, na.rm = TRUE),] 
+  }
   
   curr.day <- as.integer(curr.day.df$day)
   infection.estimate <- as.integer(curr.day.df$I)

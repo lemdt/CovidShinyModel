@@ -14,8 +14,8 @@ shinyUI(fluidPage(
                    value = 100000),
       
       radioGroupButtons(inputId = 'predict_metric', 
-                        label = '', 
-                        choices = c('Hospitalization', 'ICU Patients', 'Deaths'),
+                        label = 'Prediction Metric:', 
+                        choices = c('Hospitalization', 'ICU Patients'),
                         justified = TRUE, 
                         status = "primary"),
       

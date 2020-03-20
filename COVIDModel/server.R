@@ -21,12 +21,12 @@ shinyServer(function(input, output) {
         
         if (input$predict_metric == 'Hospitalization'){
             numericInput(inputId = 'num_hospitalized', 
-                         label = 'Number Currently Hospitalized from COVID-19', 
-                         value = 2)
+                         label = 'Number Hospitalized from COVID-19 at Day 0', 
+                         value = 10)
         }
         else if (input$predict_metric == 'ICU Patients'){
             numericInput(inputId = 'num_icu', 
-                         label = 'Number Currently in ICU for COVID-19', 
+                         label = 'Number in ICU for COVID-19 at Day 0', 
                          value = 2)
         }
         else{
@@ -88,14 +88,12 @@ shinyServer(function(input, output) {
         gamma = 1/14,
         hosp.delay.time = 10, 
         hosp.rate = 0.15, 
-        death.rate = 0.01,
         hosp.los = 7,
-        icu.delay.time = 13, 
-        death.delay.time = 20,
-        icu.rate = 0.05, 
+        icu.delay.time = 2, 
+        icu.rate = 0.5, 
         icu.los = 9, 
-        vent.delay.time = 13, 
-        vent.rate = 0.02, 
+        vent.delay.time = 1, 
+        vent.rate = 0.5, 
         vent.los = 10
     )
     
@@ -103,32 +101,26 @@ shinyServer(function(input, output) {
     observeEvent(input$parameters_modal,{
         showModal(modalDialog(
             fluidPage(
-                sliderInput('illness.length', 'Average Length of Illness', min = 10, max = 20, step = 1, 
+                sliderInput('illness.length', 'Average Length of Illness', min = 0, max = 20, step = 1, 
                             value = params$illness.length, width = '100%'),
                 
-                sliderInput('hosp.rate', 'Hospitalization Rate', min = 0, max = 1, step = 0.01, 
+                sliderInput('hosp.rate', 'Percent Hospitalized Among Infections', min = 0, max = 1, step = 0.01, 
                             value = params$hosp.rate, width = '100%'),
                 
-                sliderInput('icu.rate', 'ICU Rate', min = 0, max = 1, step = 0.01, 
+                sliderInput('icu.rate', 'Percent ICU Admitted Among Hospitalized', min = 0, max = 1, step = 0.01, 
                             value = params$icu.rate, width = '100%'),
                 
-                sliderInput('vent.rate', 'Ventilation Rate', min = 0, max = 1, step = 0.01, 
+                sliderInput('vent.rate', 'Percent Ventilated Among ICU Admissions', min = 0, max = 1, step = 0.01, 
                             value = params$vent.rate, width = '100%'),
 
-                sliderInput('death.rate', 'Death Rate', min = 0, max = 1, step = 0.01, 
-                            value = params$death.rate, width = '100%'),
-                
-                sliderInput('hosp.after.inf', 'Infection to hospitalization (days)', min = 5, max = 15, step = 1, 
+                sliderInput('hosp.after.inf', 'Infection to hospitalization (days)', min = 0, max = 30, step = 1, 
                             value = params$hosp.delay.time, width = '100%'),
                 
-                sliderInput('icu.after.inf', 'Infection to ICU (days)', min = 5, max = 15, step = 1, 
+                sliderInput('icu.after.hosp', 'Hospitalization to ICU Admission (days)', min = 0, max = 30, step = 1, 
                             value = params$icu.delay.time, width = '100%'),
                 
-                sliderInput('vent.after.inf', 'Infection to Ventilation (days)', min = 5, max = 15, step = 1, 
+                sliderInput('vent.after.icu', 'ICU Admission to Ventilation (days)', min = 0, max = 30, step = 1, 
                             value = params$vent.delay.time, width = '100%'),
-
-                sliderInput('death.after.inf', 'Infection to Death (days)', min = 10, max = 20, step = 1, 
-                            value = params$death.delay.time, width = '100%'),
 
                 sliderInput('hosp.los', 'Hospital Length of Stay (days)', min = 5, max = 15, step = 1, 
                             value = params$hosp.los, width = '100%'),
@@ -151,14 +143,12 @@ shinyServer(function(input, output) {
         params$hosp.delay.time = input$hosp.after.inf
         params$hosp.rate = input$hosp.rate
         params$hosp.los = input$hosp.los
-        params$icu.delay.time = input$icu.after.inf
+        params$icu.delay.time = input$icu.after.hosp
         params$icu.rate = input$icu.rate
         params$icu.los = input$icu.los
-        params$vent.delay.time = input$vent.after.inf
+        params$vent.delay.time = input$vent.after.icu
         params$vent.rate = input$vent.rate
         params$vent.los = input$vent.los
-        params$death.rate = input$death.rate
-        params$death.delay.time = input$death.delay.time
         removeModal()
     })
     
@@ -187,11 +177,19 @@ shinyServer(function(input, output) {
     
     
     curr.day.list <- reactive({
+        if (input$predict_metric == 'Hospitalization'){
+            num.actual = input$num_hospitalized
+        }
+        else if (input$predict_metric == 'ICU Patients'){
+            num.actual = input$num_icu
+        }
+        
         find.curr.estimates(S0 = input$num_people,
                             beta.vector = initial_beta_vector(), 
                             gamma = params$gamma, 
                             num.days = input$proj_num_days, 
-                            hospitalized = input$num_hospitalized, 
+                            num_actual = num.actual,
+                            metric = input$predict_metric,
                             start.inf = start.inf,
                             hosp.delay.time = params$hosp.delay.time, 
                             hosp.rate = params$hosp.rate, 
@@ -216,6 +214,13 @@ shinyServer(function(input, output) {
         
         # in the new projection, we want to project to a new number of days
         new.num.days <- input$proj_num_days + curr.day
+        
+        if (is.na(curr.day)){
+            
+            # TODO: hacky fix to bug
+            curr.day = 365
+            new.num.days = 1000
+        }
         
         # setting doubling time
         if (input$usedouble == FALSE){
