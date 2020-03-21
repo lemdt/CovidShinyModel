@@ -555,9 +555,16 @@ shinyServer(function(input, output) {
             cases <- round(select.row$I + select.row$R)
             active <- floor(select.row$I)
             
-            HTML(sprintf('<h4>On %s (in <b>%s</b> days), there will be <b>%s COVID-19 cases</b> in the region, 
-                             with <b>%s actively infected</b>.</h4>', 
-                         select.date, select.day, cases, active))
+            if (select.day == 0){
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s COVID-19 cases</b> in the region, 
+                                 with <b>%s actively infected</b>.</h4>', 
+                             select.date, select.day, cases, active))
+            }
+            else{
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s COVID-19 cases</b> in the region, 
+                                 with <b>%s actively infected</b>.</h4>', 
+                             select.date, select.day, cases, active))
+            }
             
             
         }
@@ -566,9 +573,16 @@ shinyServer(function(input, output) {
             icu <- round(select.row$icu)
             vent <- round(select.row$vent)
             
-            HTML(sprintf('<h4>On %s (in <b>%s</b> days), there will be <b>%s hospitalized from COVID-19</b> in the region, 
-                             with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
-                         select.date, select.day, hosp, icu, vent))
+            if (select.day == 0){
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s hospitalized from COVID-19</b> in the region, 
+                                 with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
+                             select.date, select.day, hosp, icu, vent))
+            }
+            else{
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s hospitalized from COVID-19</b> in the region, 
+                                 with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
+                             select.date, select.day, hosp, icu, vent))
+            }
             
             
         }
@@ -577,9 +591,16 @@ shinyServer(function(input, output) {
             icu_res <- input$icu_cap - round(select.row$icu)
             vent_res <- input$vent_cap - round(select.row$vent)
             
-            HTML(sprintf('<h4>On %s (in <b>%s</b> days), there will be <b>%s hospital beds available</b> in the region, 
-                             with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
-                         select.date, select.day, hosp_res, icu_res, vent_res))
+            if (select.day == 0){
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s hospital beds available</b> in the region, 
+                                 with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
+                             select.date, select.day, hosp_res, icu_res, vent_res))
+            }
+            else{
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s hospital beds available</b> in the region, 
+                                 with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
+                             select.date, select.day, hosp_res, icu_res, vent_res))
+            }
             
             
         }
