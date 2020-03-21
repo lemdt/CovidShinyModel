@@ -12,7 +12,11 @@ shinyUI(fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      HTML('<h4><b>Location Information</b></h4>'),
+      HTML('<h4><b>Setting</b></h4>'),
+      
+      dateInput(inputId = 'curr_date', 
+                label = 'Set Day 0 Date',
+      ),
       
       numericInput(inputId = 'num_people', 
                    label = 'Number of People in Area', 
@@ -45,10 +49,6 @@ shinyUI(fluidPage(
       
       HTML('<h4><b>Settings</b></h4>'),
       
-      dateInput(inputId = 'curr_date', 
-                label = 'Set Day 0 Date',
-              ),
-      
       sliderInput(inputId = 'proj_num_days', 
                   label = 'Number of Days to Project', 
                   min = 10, 
@@ -57,7 +57,7 @@ shinyUI(fluidPage(
                   value = 365),
       
       materialSwitch(inputId = "usedouble", 
-                     label = 'Use doubling time instead of R0', 
+                     label = 'Use doubling time instead of Re', 
                      status = 'primary'),
       
       actionButton(inputId = 'parameters_modal',

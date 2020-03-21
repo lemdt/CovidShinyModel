@@ -42,7 +42,7 @@ shinyServer(function(input, output) {
         }
         else{
             sliderInput(inputId = 'r0_prior', 
-                        label = 'R0 Before Day 0', 
+                        label = 'Re Before Day 0', 
                         min = 0.1, 
                         max = 6, 
                         step = 0.1, 
@@ -61,7 +61,7 @@ shinyServer(function(input, output) {
         }
         else{
             sliderInput(inputId = 'r0_new', 
-                        label = 'New R0 After Intervention', 
+                        label = 'New Re After Intervention', 
                         min = 0.1, 
                         max = 6, 
                         step = 0.1,
