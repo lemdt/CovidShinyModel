@@ -92,7 +92,7 @@ shinyServer(function(input, output) {
     observeEvent(input$parameters_modal,{
         showModal(modalDialog(
             fluidPage(
-                sliderInput('illness.length', 'Average Length of Illness', min = 0, max = 20, step = 1, 
+                sliderInput('illness.length', 'Average Length of Illness (Assumed Same as Time of Infectiousness)', min = 0, max = 20, step = 1, 
                             value = params$illness.length, width = '100%'),
                 
                 sliderInput('hosp.rate', 'Percent Hospitalized Among Infections', min = 0, max = 1, step = 0.01, 
