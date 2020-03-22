@@ -253,7 +253,7 @@ shinyServer(function(input, output) {
         
         datatable(int.df,
                    escape=F, selection = 'none',
-                   options = list(pageLength = 5, language = list(
+                   options = list(pageLength = 10, language = list(
                        zeroRecords = "No interventions added.",
                        search = 'Find in table:'), dom = 't'), rownames = FALSE)
         
@@ -510,7 +510,9 @@ shinyServer(function(input, output) {
         
         datatable(data=df.render, 
                   escape=F, selection = 'single',
-                  options = list(pageLength = 10), rownames = FALSE)
+                  options = list(pageLength = 10, 
+                                 lengthChange = FALSE,
+                                 searching = FALSE), rownames = FALSE)
         
     })
     
@@ -668,15 +670,17 @@ shinyServer(function(input, output) {
             cases <- round(select.row$I + select.row$R)
             active <- floor(select.row$I)
             
-            if (select.day == 0){
-                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s COVID-19 cases</b> in the region, 
-                                 with <b>%s actively infected</b>.</h4>', 
-                             select.date, select.day, cases, active))
-            }
-            else{
-                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s COVID-19 cases</b> in the region, 
-                                 with <b>%s actively infected</b>.</h4>', 
-                             select.date, select.day, cases, active))
+            if (length(select.day) != 0){
+                if (select.day == 0){
+                    HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s COVID-19 cases</b> in the region, 
+                                     with <b>%s actively infected</b>.</h4>', 
+                                 select.date, select.day, cases, active))
+                }
+                else{
+                    HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s COVID-19 cases</b> in the region, 
+                                     with <b>%s actively infected</b>.</h4>', 
+                                 select.date, select.day, cases, active))
+                }
             }
             
             
