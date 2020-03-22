@@ -654,8 +654,8 @@ shinyServer(function(input, output) {
         
         curr_date <- format(input$curr_date, format="%B %d, %Y")
         
-        HTML(sprintf('<h3>On %s (Day 0), we estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
-                     <u>%s people currently actively infected</u>.</h3>', curr_date, cases, infected))
+        HTML(sprintf('<h4>On %s (Day 0), we estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
+                     <u>%s people actively infected</u>.</h4>', curr_date, cases, infected))
     })
     
     # Word description 
