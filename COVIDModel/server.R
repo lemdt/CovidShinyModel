@@ -85,7 +85,7 @@ shinyServer(function(input, output) {
                      different timepoints, which will change the projections in the graphs.
                      ")
                 
-                ),
+            ),
             size = 'l'
         )
         )
@@ -300,9 +300,9 @@ shinyServer(function(input, output) {
         }
         else{
             intervention.table(rbind(intervention.table(),
-                                         list('Day' = input$int_day, 
-                                              'New.R0' = input$r0_new
-                                         )))
+                                     list('Day' = input$int_day, 
+                                          'New.R0' = input$r0_new
+                                     )))
         }
         intervention.table(arrange(intervention.table(), Day))
         removeModal()
@@ -327,10 +327,10 @@ shinyServer(function(input, output) {
         }
         
         datatable(int.df,
-                   escape=F, selection = 'none',
-                   options = list(pageLength = 10, language = list(
-                       zeroRecords = "No interventions added.",
-                       search = 'Find in table:'), dom = 't'), rownames = FALSE)
+                  escape=F, selection = 'none',
+                  options = list(pageLength = 10, language = list(
+                      zeroRecords = "No interventions added.",
+                      search = 'Find in table:'), dom = 't'), rownames = FALSE)
         
     })
     
@@ -347,7 +347,7 @@ shinyServer(function(input, output) {
     beta.vector <- reactive({
         
         int.table.temp <- intervention.table()
-
+        
         # determines what 'day' we are on using the initialization
         curr.day  <- as.numeric(curr.day.list()['curr.day'])
         
@@ -397,7 +397,7 @@ shinyServer(function(input, output) {
         day.vec <- int.table.temp$Day
         rep.vec <- day.vec[2:length(day.vec)] - day.vec[1:length(day.vec) - 1]
         betas <- int.table.temp$beta[1:length(day.vec) - 1]
-
+        
         beta.vec <- c()
         for (i in 1:length(rep.vec)){
             beta <- betas[i]

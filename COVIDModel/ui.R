@@ -4,7 +4,7 @@ library(DT)
 
 shinyUI(
   tagList(
-
+    
     tags$style(".container{
                     width: 100%;
                     margin: 0 auto;
@@ -85,7 +85,9 @@ shinyUI(
                                 label = 'Customize Other Parameters'), 
                    
                    HTML('<br><br><b>Notes</b>: This app is a modified version of the <a href="http://penn-chime.phl.io/">Penn Chime app</a>.
-                 This is a beta version - the projections may or may not be accurate.'),
+                 This is a beta version - the projections may or may not be accurate.
+                        
+                        <br><br> The code for this tool is on <a href="https://github.com/jpspeng/CovidShinyModel">Github</a>.'),
                    
                    tags$script("$(document).on('click', '#int_table button', function () {
                   Shiny.onInputChange('lastClickId',this.id);
