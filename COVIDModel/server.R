@@ -23,7 +23,7 @@ shinyServer(function(input, output) {
     output$prediction_fld <- renderUI({
         
         numericInput(inputId = 'num_hospitalized', 
-                     label = 'Estimate of current inpatients with COVID19 (diagnosed or not) on Day 0', 
+                     label = 'Estimate of current inpatients with COVID-19 (diagnosed or not) on Day 0', 
                      value = 50)
     })
     
@@ -439,34 +439,97 @@ shinyServer(function(input, output) {
     ##  Dataframes for Visualization and Downloading  
     ##  ............................................................................
     
+    roundNonDateCols <- function(df){
+        
+        df.new <- data.frame(df)
+        
+        for (col in colnames(df.new)){
+            if (col != 'date'){
+                df.new[,col] <- round(df.new[,col])
+            }
+        }
+        return(df.new)
+    }
+    
     cases.df <- reactive({
         df_temp <- sir.output.df()
+        df_temp <- df_temp[df_temp$days.shift >= 0,]
+        
         df_temp$Cases <- df_temp$I + df_temp$R
         df_temp$Active <- df_temp$I 
         df_temp$Resolved <- df_temp$R
         
-        df_temp <- df_temp[,c('date', 'Cases', 'Active', 'Resolved')]
-        colnames(df_temp) <- c('date', 'Cases', 'Active', 'Resolved')
+        df_temp <- df_temp[,c('date', 'days.shift', 'Cases', 'Active', 'Resolved')]
+        colnames(df_temp) <- c('date', 'day', 'Cases', 'Active', 'Resolved')
+        df_temp <- roundNonDateCols(df_temp)
         df_temp
     })
     
     hospitalization.df <- reactive({
         df_temp <- sir.output.df()
-        df_temp <- df_temp[,c('date', 'hosp', 'icu', 'vent')]
-        colnames(df_temp) <- c('date', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- df_temp[df_temp$days.shift >= 0,]
+        
+        df_temp <- df_temp[,c('date', 'days.shift', 'hosp', 'icu', 'vent')]
+        colnames(df_temp) <- c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- roundNonDateCols(df_temp)
         df_temp
     })
     
-    resource.df = reactive({
+    resource.df <- reactive({
         df_temp <- sir.output.df()
+        df_temp <- df_temp[df_temp$days.shift >= 0,]
         
-        df_temp$hosp <- input$hosp_cap - df_temp$hosp
-        df_temp$icu <- input$icu_cap - df_temp$icu
-        df_temp$vent <- input$vent_cap - df_temp$vent
+        if (!is.null(input$hosp_cap)){
+            df_temp$hosp <- input$hosp_cap - df_temp$hosp
+            df_temp$icu <- input$icu_cap - df_temp$icu
+            df_temp$vent <- input$vent_cap - df_temp$vent
+        }
         
-        df_temp <- df_temp[,c('date', 'hosp', 'icu', 'vent')]
-        colnames(df_temp) <- c('date', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- df_temp[,c('date', 'days.shift', 'hosp', 'icu', 'vent')]
+        colnames(df_temp) <- c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- roundNonDateCols(df_temp)
         df_temp
+    })
+    
+    ##  ............................................................................
+    ##  Table output   
+    ##  ............................................................................
+    
+    output$rendered.table <- renderDataTable({
+        if (input$selected_graph == 'Cases'){
+            df.render <- cases.df()
+        }
+        else if (input$selected_graph == 'Hospitalization'){
+            df.render <- hospitalization.df()
+        }
+        else{
+            df.render <- resource.df()
+        }
+        
+        df.render$date <- format(df.render$date, format="%B %d, %Y")
+        
+        datatable(data=df.render, 
+                  escape=F, selection = 'single',
+                  options = list(pageLength = 10), rownames = FALSE)
+        
+    })
+    
+    observeEvent(input$rendered.table_row_last_clicked,{
+        row.id <- input$rendered.table_row_last_clicked
+        
+        if (input$selected_graph == 'Cases'){
+            df.table = cases.df()
+        }
+        else if (input$selected_graph == 'Hospitalization'){
+            df.table = hospitalization.df()
+        }
+        else{
+            df.table = resource.df()
+        }
+        
+        select.date <- df.table[row.id,'date']
+        plot_day(select.date)
+        
     })
     
     ##  ............................................................................
@@ -481,15 +544,60 @@ shinyServer(function(input, output) {
     
     observeEvent(input$plot_click, {
         plot_day(as.Date(round(input$plot_click$x), origin = "1970-01-01"))
+        
+        proxy <- dataTableProxy(
+            'rendered.table',
+            session = shiny::getDefaultReactiveDomain(),
+            deferUntilFlush = TRUE
+        )
+        
+        selectRows(proxy, plot_day() - input$curr_date + 1)
+        selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
+        
     })
+    
+    observeEvent(input$goright, {
+        if (plot_day() != input$curr_date + input$proj_num_days){
+            plot_day(plot_day() + 1)
+            
+            proxy <- dataTableProxy(
+                'rendered.table',
+                session = shiny::getDefaultReactiveDomain(),
+                deferUntilFlush = TRUE
+            )
+            
+            selectRows(proxy, plot_day() - input$curr_date + 1)
+            selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
+        }
+        
+    })
+    
+    observeEvent(input$goleft, {
+        if (plot_day() != input$curr_date){
+            plot_day(plot_day() - 1)
+            
+            proxy <- dataTableProxy(
+                'rendered.table',
+                session = shiny::getDefaultReactiveDomain(),
+                deferUntilFlush = TRUE
+            )
+            
+            selectRows(proxy, plot_day() - input$curr_date + 1)
+            selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
+        }
+        
+    })
+    
     
     output$hospitalization.plot <- renderPlot({
         df.to.plot <- hospitalization.df()
         
+        df.to.plot$day <- NULL
+        
         if (length(input$selected_hosp) != 0){
             cols <- c('date', input$selected_hosp)
             
-            df.to.plot <- df.to.plot[,..cols]
+            df.to.plot <- df.to.plot[,cols]
             
             df_melt <- melt(df.to.plot, 'date')
             
@@ -502,11 +610,12 @@ shinyServer(function(input, output) {
     
     output$resource.plot <- renderPlot({
         df.to.plot <- resource.df()
+        df.to.plot$day <- NULL
         
         if (length(input$selected_res) != 0){
             cols <- c('date', input$selected_res)
             
-            df.to.plot <- df.to.plot[,..cols]
+            df.to.plot <- df.to.plot[,cols]
             df_melt <- melt(df.to.plot, 'date')
             
             ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() + geom_line(
@@ -517,10 +626,11 @@ shinyServer(function(input, output) {
     
     output$cases.plot <- renderPlot({
         df.to.plot <- cases.df()
+        df.to.plot$day <- NULL
         
         if (length(input$selected_cases) != 0){
             cols <- c('date', input$selected_cases)
-            df.to.plot <- df.to.plot[,..cols]
+            df.to.plot <- df.to.plot[,cols]
             df_melt <- melt(df.to.plot, 'date')
             
             ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point(
@@ -537,10 +647,13 @@ shinyServer(function(input, output) {
     # Estimated number of infections
     output$infected_ct <- renderUI({
         infected <- curr.day.list()['infection.estimate']
+        cases <- as.numeric(curr.day.list()['infection.estimate']) + 
+            as.numeric(curr.day.list()['recovered.estimate'])
         
         curr_date <- format(input$curr_date, format="%B %d, %Y")
         
-        HTML(sprintf('<h3><b>Estimated <u>%s</u> Active Infections on %s</b></h3>', infected, curr_date))
+        HTML(sprintf('<h3>On %s (Day 0), we estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
+                     <u>%s people currently actively infected</u>.</h3>', curr_date, cases, infected))
     })
     
     # Word description 

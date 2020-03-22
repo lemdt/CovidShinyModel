@@ -12,7 +12,7 @@ shinyUI(fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      HTML('<h4><b>Setting</b></h4>'),
+      HTML('<h4><b>Location Information</b></h4>'),
       
       dateInput(inputId = 'curr_date', 
                 label = 'Set Day 0 Date',
@@ -24,13 +24,13 @@ shinyUI(fluidPage(
       
       # TODO: add in prediction fields for ICU patients, deaths and ventilators
       uiOutput(outputId = 'prediction_fld'),
-
+      
       uiOutput(outputId = 'prior_val'),
       
       hr(),
       
-      HTML('<h4><b>Efficacy of Interventions</b></h4>'),
-
+      HTML('<h4><b>Add Interventions</b></h4>'),
+      
       uiOutput(outputId = 'int_val'),
       
       sliderInput(inputId = 'int_day', 
@@ -39,9 +39,9 @@ shinyUI(fluidPage(
                   max = 365, 
                   step = 1, 
                   value = 1), 
-    
+      
       actionButton(inputId = 'add_intervention', 
-                 label = 'Save Intervention'),
+                   label = 'Save Intervention'),
       
       dataTableOutput(outputId = 'int_table'),
       
@@ -74,21 +74,47 @@ shinyUI(fluidPage(
     
     mainPanel(
       wellPanel(
+        HTML('<h2><b>Day 0 Estimates</b></h2>'),
         htmlOutput(outputId = 'infected_ct')
+      ),
+      
+      wellPanel(
+        style = "background: white",
+        HTML('<h2><b>Projections</b></h2>'),
+        
+        radioGroupButtons(inputId = 'selected_graph', 
+                          label = '', 
+                          choices = c('Cases', 'Hospitalization', 'Hospital Resources'),
+                          justified = TRUE, 
+                          status = "primary"),
+        
+        uiOutput(outputId = 'plot_output'),
+        
+        HTML('<br>'),
+        
+        fluidRow(
+          align = 'center',
+          column(width = 2),
+          column(width = 1, 
+                 HTML('<br>'),
+                 actionButton("goleft", "", icon = icon("arrow-left"), width = '100%')),
+          column(width = 6,  
+                 uiOutput(outputId = 'description')),
+          column(width = 1, 
+                 HTML('<br>'),
+                 actionButton("goright", "", icon = icon("arrow-right"), width = '100%')),
+          column(width = 2)
         ),
-      
-      radioGroupButtons(inputId = 'selected_graph', 
-                        label = '', 
-                        choices = c('Cases', 'Hospitalization', 'Hospital Resources'),
-                        justified = TRUE, 
-                        status = "primary"),
-      
-      uiOutput(outputId = 'plot_output'),
-      
-      downloadButton(outputId = 'downloadData', 
-                     label = "Download as CSV"),
-      
-      uiOutput(outputId = 'description')
+        
+        HTML('<br><br>'),
+        
+        div(
+          dataTableOutput(outputId = 'rendered.table'),
+          style = "font-size:110%"),
+        downloadButton(outputId = 'downloadData', 
+                       label = "Download as CSV"),
+        HTML('<br><br>')
+      )
     )
   )
 )
