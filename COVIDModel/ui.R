@@ -23,8 +23,13 @@ shinyUI(
                  tags$style(HTML("hr {border-top: 1px solid #000000;}"))
                ),
                
+               HTML('<br>'),
                
                titlePanel("COVID-19 Epidemic Modeling"),
+               
+               actionLink('howtouse', 'Learn more about this tool.'),
+               
+               HTML('<br><br>'),
                
                sidebarLayout(
                  sidebarPanel(
