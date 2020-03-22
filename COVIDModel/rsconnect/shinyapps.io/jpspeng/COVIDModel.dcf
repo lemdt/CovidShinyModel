@@ -5,8 +5,8 @@ account: jpspeng
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1964955
-bundleId: 2900614
+bundleId: 2902677
 url: https://jpspeng.shinyapps.io/COVIDModel/
-when: 1584675465.99211
+when: 1584724793.69356
 asMultiple: FALSE
 asStatic: FALSE

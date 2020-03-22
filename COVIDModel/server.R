@@ -23,8 +23,8 @@ shinyServer(function(input, output) {
     output$prediction_fld <- renderUI({
         
         numericInput(inputId = 'num_hospitalized', 
-                     label = 'Estimate of current inpatients with COVID19 (diagnosed or not) on Day 0', 
-                     value = 10)
+                     label = 'Estimate of current inpatients with COVID-19 (diagnosed or not) on Day 0', 
+                     value = 50)
     })
     
     ##  ............................................................................
@@ -42,7 +42,7 @@ shinyServer(function(input, output) {
         }
         else{
             sliderInput(inputId = 'r0_prior', 
-                        label = 'R0 Before Day 0', 
+                        label = 'Re Before Day 0', 
                         min = 0.1, 
                         max = 6, 
                         step = 0.1, 
@@ -61,7 +61,7 @@ shinyServer(function(input, output) {
         }
         else{
             sliderInput(inputId = 'r0_new', 
-                        label = 'New R0 After Intervention', 
+                        label = 'New Re After Intervention', 
                         min = 0.1, 
                         max = 6, 
                         step = 0.1,
@@ -78,13 +78,13 @@ shinyServer(function(input, output) {
         illness.length = 14,
         gamma = 1/14,
         hosp.delay.time = 10, 
-        hosp.rate = 0.15, 
-        hosp.los = 7,
-        icu.delay.time = 2, 
-        icu.rate = 0.5, 
-        icu.los = 9, 
+        hosp.rate = 0.06, 
+        hosp.los = 11,
+        icu.delay.time = 5, 
+        icu.rate = 0.3, 
+        icu.los = 8, 
         vent.delay.time = 1, 
-        vent.rate = 0.5, 
+        vent.rate = 0.64, 
         vent.los = 10
     )
     
@@ -92,7 +92,7 @@ shinyServer(function(input, output) {
     observeEvent(input$parameters_modal,{
         showModal(modalDialog(
             fluidPage(
-                sliderInput('illness.length', 'Average Length of Illness', min = 0, max = 20, step = 1, 
+                sliderInput('illness.length', 'Average Length of Illness (Assumed Same as Time of Infectiousness)', min = 0, max = 20, step = 1, 
                             value = params$illness.length, width = '100%'),
                 
                 sliderInput('hosp.rate', 'Percent Hospitalized Among Infections', min = 0, max = 1, step = 0.01, 
@@ -253,7 +253,7 @@ shinyServer(function(input, output) {
         
         datatable(int.df,
                    escape=F, selection = 'none',
-                   options = list(pageLength = 5, language = list(
+                   options = list(pageLength = 10, language = list(
                        zeroRecords = "No interventions added.",
                        search = 'Find in table:'), dom = 't'), rownames = FALSE)
         
@@ -439,34 +439,99 @@ shinyServer(function(input, output) {
     ##  Dataframes for Visualization and Downloading  
     ##  ............................................................................
     
+    roundNonDateCols <- function(df){
+        
+        df.new <- data.frame(df)
+        
+        for (col in colnames(df.new)){
+            if (col != 'date'){
+                df.new[,col] <- round(df.new[,col])
+            }
+        }
+        return(df.new)
+    }
+    
     cases.df <- reactive({
         df_temp <- sir.output.df()
+        df_temp <- df_temp[df_temp$days.shift >= 0,]
+        
         df_temp$Cases <- df_temp$I + df_temp$R
         df_temp$Active <- df_temp$I 
         df_temp$Resolved <- df_temp$R
         
-        df_temp <- df_temp[,c('date', 'Cases', 'Active', 'Resolved')]
-        colnames(df_temp) <- c('date', 'Cases', 'Active', 'Resolved')
+        df_temp <- df_temp[,c('date', 'days.shift', 'Cases', 'Active', 'Resolved')]
+        colnames(df_temp) <- c('date', 'day', 'Cases', 'Active', 'Resolved')
+        df_temp <- roundNonDateCols(df_temp)
         df_temp
     })
     
     hospitalization.df <- reactive({
         df_temp <- sir.output.df()
-        df_temp <- df_temp[,c('date', 'hosp', 'icu', 'vent')]
-        colnames(df_temp) <- c('date', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- df_temp[df_temp$days.shift >= 0,]
+        
+        df_temp <- df_temp[,c('date', 'days.shift', 'hosp', 'icu', 'vent')]
+        colnames(df_temp) <- c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- roundNonDateCols(df_temp)
         df_temp
     })
     
-    resource.df = reactive({
+    resource.df <- reactive({
         df_temp <- sir.output.df()
+        df_temp <- df_temp[df_temp$days.shift >= 0,]
         
-        df_temp$hosp <- input$hosp_cap - df_temp$hosp
-        df_temp$icu <- input$icu_cap - df_temp$icu
-        df_temp$vent <- input$vent_cap - df_temp$vent
+        if (!is.null(input$hosp_cap)){
+            df_temp$hosp <- input$hosp_cap - df_temp$hosp
+            df_temp$icu <- input$icu_cap - df_temp$icu
+            df_temp$vent <- input$vent_cap - df_temp$vent
+        }
         
-        df_temp <- df_temp[,c('date', 'hosp', 'icu', 'vent')]
-        colnames(df_temp) <- c('date', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- df_temp[,c('date', 'days.shift', 'hosp', 'icu', 'vent')]
+        colnames(df_temp) <- c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
+        df_temp <- roundNonDateCols(df_temp)
         df_temp
+    })
+    
+    ##  ............................................................................
+    ##  Table output   
+    ##  ............................................................................
+    
+    output$rendered.table <- renderDataTable({
+        if (input$selected_graph == 'Cases'){
+            df.render <- cases.df()
+        }
+        else if (input$selected_graph == 'Hospitalization'){
+            df.render <- hospitalization.df()
+        }
+        else{
+            df.render <- resource.df()
+        }
+        
+        df.render$date <- format(df.render$date, format="%B %d, %Y")
+        
+        datatable(data=df.render, 
+                  escape=F, selection = 'single',
+                  options = list(pageLength = 10, 
+                                 lengthChange = FALSE,
+                                 searching = FALSE), rownames = FALSE)
+        
+    })
+    
+    observeEvent(input$rendered.table_row_last_clicked,{
+        row.id <- input$rendered.table_row_last_clicked
+        
+        if (input$selected_graph == 'Cases'){
+            df.table = cases.df()
+        }
+        else if (input$selected_graph == 'Hospitalization'){
+            df.table = hospitalization.df()
+        }
+        else{
+            df.table = resource.df()
+        }
+        
+        select.date <- df.table[row.id,'date']
+        plot_day(select.date)
+        
     })
     
     ##  ............................................................................
@@ -481,15 +546,60 @@ shinyServer(function(input, output) {
     
     observeEvent(input$plot_click, {
         plot_day(as.Date(round(input$plot_click$x), origin = "1970-01-01"))
+        
+        proxy <- dataTableProxy(
+            'rendered.table',
+            session = shiny::getDefaultReactiveDomain(),
+            deferUntilFlush = TRUE
+        )
+        
+        selectRows(proxy, plot_day() - input$curr_date + 1)
+        selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
+        
     })
+    
+    observeEvent(input$goright, {
+        if (plot_day() != input$curr_date + input$proj_num_days){
+            plot_day(plot_day() + 1)
+            
+            proxy <- dataTableProxy(
+                'rendered.table',
+                session = shiny::getDefaultReactiveDomain(),
+                deferUntilFlush = TRUE
+            )
+            
+            selectRows(proxy, plot_day() - input$curr_date + 1)
+            selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
+        }
+        
+    })
+    
+    observeEvent(input$goleft, {
+        if (plot_day() != input$curr_date){
+            plot_day(plot_day() - 1)
+            
+            proxy <- dataTableProxy(
+                'rendered.table',
+                session = shiny::getDefaultReactiveDomain(),
+                deferUntilFlush = TRUE
+            )
+            
+            selectRows(proxy, plot_day() - input$curr_date + 1)
+            selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
+        }
+        
+    })
+    
     
     output$hospitalization.plot <- renderPlot({
         df.to.plot <- hospitalization.df()
         
+        df.to.plot$day <- NULL
+        
         if (length(input$selected_hosp) != 0){
             cols <- c('date', input$selected_hosp)
             
-            df.to.plot <- df.to.plot[,..cols]
+            df.to.plot <- df.to.plot[,cols]
             
             df_melt <- melt(df.to.plot, 'date')
             
@@ -502,11 +612,12 @@ shinyServer(function(input, output) {
     
     output$resource.plot <- renderPlot({
         df.to.plot <- resource.df()
+        df.to.plot$day <- NULL
         
         if (length(input$selected_res) != 0){
             cols <- c('date', input$selected_res)
             
-            df.to.plot <- df.to.plot[,..cols]
+            df.to.plot <- df.to.plot[,cols]
             df_melt <- melt(df.to.plot, 'date')
             
             ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() + geom_line(
@@ -517,10 +628,11 @@ shinyServer(function(input, output) {
     
     output$cases.plot <- renderPlot({
         df.to.plot <- cases.df()
+        df.to.plot$day <- NULL
         
         if (length(input$selected_cases) != 0){
             cols <- c('date', input$selected_cases)
-            df.to.plot <- df.to.plot[,..cols]
+            df.to.plot <- df.to.plot[,cols]
             df_melt <- melt(df.to.plot, 'date')
             
             ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point(
@@ -537,10 +649,13 @@ shinyServer(function(input, output) {
     # Estimated number of infections
     output$infected_ct <- renderUI({
         infected <- curr.day.list()['infection.estimate']
+        cases <- as.numeric(curr.day.list()['infection.estimate']) + 
+            as.numeric(curr.day.list()['recovered.estimate'])
         
         curr_date <- format(input$curr_date, format="%B %d, %Y")
         
-        HTML(sprintf('<h3><b>Estimated <u>%s</u> Active Infections on %s</b></h3>', infected, curr_date))
+        HTML(sprintf('<h3>On %s (Day 0), we estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
+                     <u>%s people currently actively infected</u>.</h3>', curr_date, cases, infected))
     })
     
     # Word description 
@@ -555,9 +670,18 @@ shinyServer(function(input, output) {
             cases <- round(select.row$I + select.row$R)
             active <- floor(select.row$I)
             
-            HTML(sprintf('<h4>On %s (in <b>%s</b> days), there will be <b>%s COVID-19 cases</b> in the region, 
-                             with <b>%s actively infected</b>.</h4>', 
-                         select.date, select.day, cases, active))
+            if (length(select.day) != 0){
+                if (select.day == 0){
+                    HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s COVID-19 cases</b> in the region, 
+                                     with <b>%s actively infected</b>.</h4>', 
+                                 select.date, select.day, cases, active))
+                }
+                else{
+                    HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s COVID-19 cases</b> in the region, 
+                                     with <b>%s actively infected</b>.</h4>', 
+                                 select.date, select.day, cases, active))
+                }
+            }
             
             
         }
@@ -566,9 +690,16 @@ shinyServer(function(input, output) {
             icu <- round(select.row$icu)
             vent <- round(select.row$vent)
             
-            HTML(sprintf('<h4>On %s (in <b>%s</b> days), there will be <b>%s hospitalized from COVID-19</b> in the region, 
-                             with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
-                         select.date, select.day, hosp, icu, vent))
+            if (select.day == 0){
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s hospitalized from COVID-19</b> in the region, 
+                                 with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
+                             select.date, select.day, hosp, icu, vent))
+            }
+            else{
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s hospitalized from COVID-19</b> in the region, 
+                                 with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
+                             select.date, select.day, hosp, icu, vent))
+            }
             
             
         }
@@ -577,9 +708,16 @@ shinyServer(function(input, output) {
             icu_res <- input$icu_cap - round(select.row$icu)
             vent_res <- input$vent_cap - round(select.row$vent)
             
-            HTML(sprintf('<h4>On %s (in <b>%s</b> days), there will be <b>%s hospital beds available</b> in the region, 
-                             with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
-                         select.date, select.day, hosp_res, icu_res, vent_res))
+            if (select.day == 0){
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s hospital beds available</b> in the region, 
+                                 with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
+                             select.date, select.day, hosp_res, icu_res, vent_res))
+            }
+            else{
+                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s hospital beds available</b> in the region, 
+                                 with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
+                             select.date, select.day, hosp_res, icu_res, vent_res))
+            }
             
             
         }
