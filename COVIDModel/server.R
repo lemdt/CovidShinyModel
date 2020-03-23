@@ -93,7 +93,7 @@ shinyServer(function(input, output, session) {
     })
     
     ##  ............................................................................
-    ##  Selection of R0 or Doubling Time 
+    ##  Prediction Field (Currently Only Hospitalizations) 
     ##  ............................................................................
     
     output$prediction_fld <- renderUI({
@@ -117,12 +117,18 @@ shinyServer(function(input, output, session) {
                         value = 6)
         }
         else{
-            sliderInput(inputId = 'r0_prior', 
-                        label = 'Re Before Day 0', 
-                        min = 0.1, 
-                        max = 6, 
-                        step = 0.1, 
-                        value = 2.8)
+            fluidPage(
+                fluidRow(
+                    sliderInput(inputId = 'r0_prior', 
+                            label = 'Re Before Day 0', 
+                            min = 0.1, 
+                            max = 6, 
+                            step = 0.1, 
+                            value = 2.8),
+                    actionLink('predict_re', 'Estimate Re based on past data.')
+                )
+            )
+            
         }
     })
     
@@ -143,6 +149,29 @@ shinyServer(function(input, output, session) {
                         step = 0.1,
                         value = 2.8)
         }
+    })
+    
+    ##  ............................................................................
+    ##  Estimation of Re 
+    ##  ............................................................................
+    
+    
+    observeEvent(input$predict_re, {
+        showModal(
+            modalDialog(
+                HTML('<h4> Estimate Re based on historical hospitalizations'),
+                dataTableOutput(
+                    outputId = 'input.hosp.dt'
+                    ), 
+                actionButton(
+                    inputId = 'run.fit', 
+                    label = 'Estimate Previous Re'),
+                uiOutput(
+                    outputId = 'fit.ui'
+                )
+        )
+        )
+        
     })
     
     ##  ............................................................................
