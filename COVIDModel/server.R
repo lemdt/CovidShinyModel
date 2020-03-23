@@ -12,9 +12,10 @@ library(dplyr)
 # are the results different? 
 start.inf <- 1
 r0.default <- 2.8
+est.days <- 365
 
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
     
     ##  ............................................................................
     ##  Helper Modal 
@@ -25,8 +26,8 @@ shinyServer(function(input, output) {
         showModal(modalDialog(
             fluidPage(
                 HTML("<h4><b>What does this tool do?</b></h4>
-                    The app projects numbers of <i>currently active cases, hospitalizations, ICU-use and 
-                    deaths</i> for COVID-19 based on local real-time epidemiologic data under serial 
+                    The app projects numbers of <i> active cases, hospitalizations, ICU-use and 
+                    deaths</i> for COVID-19 based on local epidemiologic data under serial 
                     public health interventions.
                     
                     It can be used for regional planning for predicting hospital needs as the COVID-19 
@@ -54,8 +55,8 @@ shinyServer(function(input, output) {
                     <h4><b>How does the app predict the number of Day 0 cases and infections?</b></h4>
                     
                     We use the percent of infections that result in hospitalization to make a prediction
-                    into the actual number of infections. When doing this, we account for the lag time between infection and hospitalization, during
-                    which more infections will have occurred. 
+                    into the actual number of infections. When doing this, we account for the lag time between infection 
+                    and hospitalization, during which more infections will have occurred. 
                     
                     <br> <br>
                     
@@ -236,7 +237,8 @@ shinyServer(function(input, output) {
         # calculates beta
         beta <- getBeta(doubling_time, params$gamma, input$num_people)
         
-        initial.beta.vector <- rep(beta, input$proj_num_days)
+        initial.beta.vector <- rep(beta, est.days)
+        
         
         initial.beta.vector
     })
@@ -250,7 +252,7 @@ shinyServer(function(input, output) {
         find.curr.estimates(S0 = input$num_people,
                             beta.vector = initial_beta_vector(), 
                             gamma = params$gamma, 
-                            num.days = input$proj_num_days, 
+                            num.days = est.days, 
                             num_actual = num.actual,
                             metric = predict.metric,
                             start.inf = start.inf,
@@ -288,6 +290,17 @@ shinyServer(function(input, output) {
                            'New R0' = numeric(0))
             )
         }
+    })
+    
+    observeEvent(input$matchint, {
+        if (input$usedouble == TRUE){
+            updateSliderInput(session, 'new_double', value = input$doubling_time)
+        }
+        else{
+            updateSliderInput(session, 'r0_new', value = input$r0_prior)
+            
+        }
+        
     })
     
     observeEvent(input$add_intervention,{
@@ -680,7 +693,7 @@ shinyServer(function(input, output) {
             
             ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() + geom_line(
             ) +  geom_vline(xintercept=input$curr_date) + theme(text = element_text(size=20)
-            ) +  geom_vline(xintercept=plot_day(), color = 'red') 
+            ) +  geom_vline(xintercept=plot_day(), color = 'red') + ylab('')
         }
     })
     
@@ -697,7 +710,7 @@ shinyServer(function(input, output) {
             
             ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() + geom_line(
             ) +  geom_vline(xintercept=input$curr_date) + theme(text = element_text(size=20)
-            ) +  geom_vline(xintercept=plot_day(), color = 'red') + geom_hline(yintercept = 0) 
+            ) +  geom_vline(xintercept=plot_day(), color = 'red') + geom_hline(yintercept = 0) + ylab('') 
         }
     })
     
@@ -712,7 +725,7 @@ shinyServer(function(input, output) {
             
             ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point(
             ) + geom_line() +  geom_vline(xintercept=input$curr_date) + theme(text = element_text(size=20)
-            ) +  geom_vline(xintercept=plot_day(), color = 'red')
+            ) +  geom_vline(xintercept=plot_day(), color = 'red') + ylab('')
         }
     })
     

@@ -52,6 +52,10 @@ shinyUI(
                    
                    HTML('<h4><b>Add Interventions</b></h4>'),
                    
+                   actionLink('matchint', 'Reset to match prior value'),
+                   
+                   HTML('<br><br>'),
+                   
                    uiOutput(outputId = 'int_val'),
                    
                    sliderInput(inputId = 'int_day', 
