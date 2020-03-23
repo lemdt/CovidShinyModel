@@ -164,7 +164,10 @@ shinyServer(function(input, output, session) {
         vent.los = 10,
         int.new.r0 = 2.8, 
         int.new.double = 6,
-        int.new.num.days = 0
+        int.new.num.days = 0, 
+        hosp.avail = 1000, 
+        icu.avail = 200, 
+        vent.avail = 100
     )
     
     # modal pop-up to update parameters
@@ -544,17 +547,17 @@ shinyServer(function(input, output, session) {
                         column(4,
                                numericInput(inputId = 'hosp_cap', 
                                             label = 'Hospital Bed Availability', 
-                                            value = 1000)),
+                                            value = params$hosp.avail)),
                         
                         column(4,
                                numericInput(inputId = 'icu_cap', 
                                             label = 'ICU Space Availability', 
-                                            value = 200)),
+                                            value = params$icu.avail)),
                         
                         column(4,
                                numericInput(inputId = 'vent_cap', 
                                             label = 'Ventilator Availability', 
-                                            value = 100)),
+                                            value = params$vent.avail)),
                         
                         fluidPage(checkboxGroupInput(inputId = 'selected_res', 
                                                      label = 'Selected', 
@@ -568,6 +571,18 @@ shinyServer(function(input, output, session) {
                 }
             }
         }
+    })
+    
+    observeEvent(input$hosp_cap, {
+        params$hosp.avail <- input$hosp_cap
+    })
+    
+    observeEvent(input$icu_cap, {
+        params$icu.avail <- input$icu_cap
+    })
+    
+    observeEvent(input$vent_cap, {
+        params$vent.avail <- input$vent_cap
     })
     
     
