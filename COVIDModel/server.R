@@ -161,7 +161,10 @@ shinyServer(function(input, output, session) {
         icu.los = 8, 
         vent.delay.time = 1, 
         vent.rate = 0.64, 
-        vent.los = 10
+        vent.los = 10,
+        int.new.r0 = 2.8, 
+        int.new.double = 6,
+        int.new.num.days = 0
     )
     
     # modal pop-up to update parameters
@@ -202,6 +205,21 @@ shinyServer(function(input, output, session) {
             )
         )
         )
+    })
+    
+    observeEvent(input$showint, {
+        
+        if (input$showint == FALSE){
+            params$int.new.double <- NULL
+            params$int.new.r0 <- NULL
+            params$int.new.num.days <- NULL
+        }
+        
+        else{
+            params$int.new.double <- input$new_double
+            params$int.new.r0 <- input$r0_new
+            params$int.new.num.days <- input$int_day
+        }
     })
     
     observeEvent(input$save, {
@@ -272,6 +290,47 @@ shinyServer(function(input, output, session) {
     ##  Interventions 
     ##  ............................................................................
     
+    
+    output$intervention_ui <- renderUI({ 
+        
+        if (input$showint){
+            fluidPage(
+                fluidRow(uiOutput(outputId = 'int_val'),
+                
+                sliderInput(inputId = 'int_day', 
+                            label = 'Day after Day 0 Intervention is Implemented',  
+                            min = 0, 
+                            max = 365, 
+                            step = 1, 
+                            value = 1), 
+                
+                actionButton(inputId = 'add_intervention', 
+                             label = 'Save Intervention'))
+            )
+        }
+        
+        })
+    
+    
+    observeEvent(input$new_double, {
+        
+        params$int.new.double <- input$new_double
+
+    })
+    
+    
+    observeEvent(input$r0_new, {
+        
+        params$int.new.r0 <- input$r0_new
+
+    })
+    
+    observeEvent(input$int_day, {
+
+        params$int.new.num.days <- input$int_day
+        
+    })
+    
     intervention.table <- reactiveVal(
         data.frame('Day' = numeric(0),
                    'New R0' = numeric(0))
@@ -292,29 +351,18 @@ shinyServer(function(input, output, session) {
         }
     })
     
-    observeEvent(input$matchint, {
-        if (input$usedouble == TRUE){
-            updateSliderInput(session, 'new_double', value = input$doubling_time)
-        }
-        else{
-            updateSliderInput(session, 'r0_new', value = input$r0_prior)
-            
-        }
-        
-    })
-    
     observeEvent(input$add_intervention,{
-        
+
         if (input$usedouble == TRUE){
             intervention.table(rbind(intervention.table(),
-                                     list('Day' = input$int_day, 
-                                          'New.Double.Time' = input$new_double
+                                     list('Day' = params$int.new.num.days , 
+                                          'New.Double.Time' = params$int.new.double 
                                      )))
         }
         else{
             intervention.table(rbind(intervention.table(),
-                                     list('Day' = input$int_day, 
-                                          'New.R0' = input$r0_new
+                                     list('Day' = params$int.new.num.days, 
+                                          'New.R0' = params$int.new.r0 
                                      )))
         }
         intervention.table(arrange(intervention.table(), Day))
@@ -373,10 +421,10 @@ shinyServer(function(input, output, session) {
         # setting doubling time
         if (input$usedouble == FALSE){
             
-            if (!is.null(input$r0_prior)){
+            if (!is.null(input$r0_prior) & !is.null(params$int.new.r0)){
                 int.table.temp <- rbind(int.table.temp, 
-                                        list(Day = c(-curr.day, input$proj_num_days, input$int_day),
-                                             New.R0 = c(input$r0_prior, NA, input$r0_new)))
+                                        list(Day = c(-curr.day, input$proj_num_days, params$int.new.num.days ),
+                                             New.R0 = c(input$r0_prior, NA, params$int.new.r0 )))
             }
             else{
                 int.table.temp <- rbind(int.table.temp, 
@@ -393,8 +441,8 @@ shinyServer(function(input, output, session) {
         }
         else{
             int.table.temp <- rbind(int.table.temp, 
-                                    list(Day = c(-curr.day, input$proj_num_days, input$int_day),
-                                         New.Double.Time = c(input$doubling_time, NA, input$new_double)))
+                                    list(Day = c(-curr.day, input$proj_num_days, params$int.new.num.days),
+                                         New.Double.Time = c(input$doubling_time, NA, params$int.new.double )))
         }
         
         applygetBeta <- function(x){

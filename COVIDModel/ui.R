@@ -52,21 +52,10 @@ shinyUI(
                    
                    HTML('<h4><b>Add Interventions</b></h4>'),
                    
-                   actionLink('matchint', 'Reset to match prior value'),
+                   checkboxInput(inputId = 'showint', 
+                                 label = 'Add Intervention'),
                    
-                   HTML('<br><br>'),
-                   
-                   uiOutput(outputId = 'int_val'),
-                   
-                   sliderInput(inputId = 'int_day', 
-                               label = 'Day after Day 0 Intervention is Implemented',  
-                               min = 0, 
-                               max = 365, 
-                               step = 1, 
-                               value = 1), 
-                   
-                   actionButton(inputId = 'add_intervention', 
-                                label = 'Save Intervention'),
+                   uiOutput(outputId = 'intervention_ui'),
                    
                    dataTableOutput(outputId = 'int_table'),
                    
