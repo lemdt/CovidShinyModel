@@ -157,23 +157,41 @@ shinyServer(function(input, output, session) {
     
     
     observeEvent(input$predict_re, {
+        
         showModal(
             modalDialog(
-                HTML('<h4> Estimate Re based on historical hospitalizations'),
+                HTML('<h4> Estimate Re based on historical hospitalizations</h4>'),
+                column(6, 
+                       dateInput(inputId = 'date.hist', 
+                          label = 'Date',
+                          max = input$curr_date)
+                       ),
+                column(6, 
+                       numericInput(inputId = 'num.hospitalized.hist', 
+                              label = 'Number Hospitalized', 
+                             value = NA)
+                       ),
+                column(12, actionButton('add.hist', 'Add Data')),
                 dataTableOutput(
                     outputId = 'input.hosp.dt'
                     ), 
+                HTML('<br>'),
                 actionButton(
                     inputId = 'run.fit', 
                     label = 'Estimate Previous Re'),
                 uiOutput(
                     outputId = 'fit.ui'
                 )
-        )
-        )
+                )
+            )
         
     })
     
+    output$input.hosp.dt <- renderDataTable({
+        
+    })
+    
+
     ##  ............................................................................
     ##  Parameter selection 
     ##  ............................................................................
