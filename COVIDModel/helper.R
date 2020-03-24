@@ -156,6 +156,64 @@ find.curr.estimates = function(S0, beta.vector, gamma, num.days, num_actual,
 }
 
 
+# function to get the best value of Re given historical data 
+findBestRe <- function(S0, gamma, num.days, day.vec, num_actual.vec, 
+                       start.inf = 3, hosp.delay.time = 10, 
+                       hosp.rate = 0.05, hosp.los = 7, icu.delay.time = 13, 
+                       icu.rate = 0.02, icu.los = 9,vent.delay.time = 13, 
+                       vent.rate = 0.01, vent.los = 10){
+  
+  # starting number of susceptible people
+  start.susc <- S0 - start.inf
+  start.res <- 0 
+  
+  # TODO: implement binary search
+  
+  min.sqrd.sum <- Inf
+  re_choice <- NA
+  vec.choice <- c()
+  
+  for (re in c(seq(1, 7, 0.1))){
+    dt <- doubleTime(re, gamma)
+    beta <- getBeta(dt, gamma, S0)
+    
+    SIR.df = SIR(start.susc, start.inf, start.res, rep(beta, num.days), gamma, num.days, 
+                 hosp.delay.time, hosp.rate, hosp.los,
+                 icu.delay.time, icu.rate, icu.los,
+                 vent.delay.time, vent.rate, vent.los)
+    
+    SIR.df$diff_proj <- abs(SIR.df$hosp - num_actual.vec[1])
+    hosp.numbers <- SIR.df$hosp
+    hosp.change <- hosp.numbers[2:length(hosp.numbers)] - hosp.numbers[1:length(hosp.numbers) - 1]
+    hosp.change <- c(0, hosp.change)
+    SIR.df$hosp.change <- hosp.change
+    
+    curr.day.df <- SIR.df[SIR.df$hosp.change > 0,]
+    curr.day <- curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj, na.rm = TRUE),]$day - day.vec[1]
+    
+    compare.idx <- curr.day + day.vec
+    
+    compare.vec <- rev(SIR.df[SIR.df$day %in% compare.idx,]$hosp)
+    
+    sqrd.sum <- sum((num_actual.vec - compare.vec) ** 2)
+    
+    if (sqrd.sum < min.sqrd.sum){
+      re_choice <- re
+      min.sqrd.sum <- sqrd.sum
+      vec.choice <- compare.vec
+    }
+    
+  }
+  
+  list.return <- list(
+    'best.re' = re_choice, 
+    'best.vals' = vec.choice
+  )
+  
+  return(list.return)
+}
+
+
 # gets doubling time based on R0 and gamma 
 doubleTime <- function(R0, gamma) {
   1 / log2(R0 * gamma - gamma + 1)

@@ -6,6 +6,7 @@ library(shinyWidgets)
 library(data.table)
 library(DT)
 library(dplyr)
+library(shinyjs)
 
 # start simulation from this number of infections
 # TODO: should do a test that this works...if we start with a different start.inf
@@ -120,12 +121,12 @@ shinyServer(function(input, output, session) {
             fluidPage(
                 fluidRow(
                     sliderInput(inputId = 'r0_prior', 
-                            label = 'Re Before Day 0', 
-                            min = 0.1, 
-                            max = 6, 
-                            step = 0.1, 
-                            value = 2.8),
-                    actionLink('predict_re', 'Estimate Re based on past data.')
+                                label = 'Re Before Day 0', 
+                                min = 0.1, 
+                                max = 7, 
+                                step = 0.1, 
+                                value = 2.8),
+                    actionLink('predict_re', 'Estimate Re prior to Day 0 based on data.')
                 )
             )
             
@@ -155,43 +156,175 @@ shinyServer(function(input, output, session) {
     ##  Estimation of Re 
     ##  ............................................................................
     
+    re.estimates <- reactiveValues(
+        graph = NULL,
+        best.estimate = NULL
+    )
     
     observeEvent(input$predict_re, {
         
         showModal(
             modalDialog(
-                HTML('<h4> Estimate Re based on historical hospitalizations</h4>'),
-                column(6, 
-                       dateInput(inputId = 'date.hist', 
-                          label = 'Date',
-                          max = input$curr_date)
-                       ),
-                column(6, 
-                       numericInput(inputId = 'num.hospitalized.hist', 
-                              label = 'Number Hospitalized', 
-                             value = NA)
-                       ),
-                column(12, actionButton('add.hist', 'Add Data')),
+                useShinyjs(),
+                HTML('<h4> Estimate Re based on historical hospitalizations</h4>
+                     
+                     Provide data from dates prior to Day 0 to estimate the Re value.<br><br>'),
+                splitLayout(
+                    dateInput(inputId = 'date.hist', 
+                              label = 'Date',
+                              value = input$curr_date,
+                              max = input$curr_date,
+                              min = input$curr_date - 14),
+                    numericInput(inputId = 'num.hospitalized.hist', 
+                                 label = 'Number Hospitalized', 
+                                 value = NA)
+                ),
+                actionButton('add.hist', 'Add Data'),
                 dataTableOutput(
-                    outputId = 'input.hosp.dt'
-                    ), 
+                    outputId = 'input_hosp_dt'
+                ), 
+                tags$script("$(document).on('click', '#input_hosp_dt button', function () {
+                  Shiny.onInputChange('lastClickId',this.id);
+                                             Shiny.onInputChange('lastClick', Math.random())
+                                             });"),
                 HTML('<br>'),
                 actionButton(
                     inputId = 'run.fit', 
-                    label = 'Estimate Previous Re'),
-                uiOutput(
-                    outputId = 'fit.ui'
-                )
-                )
+                    label = 'Estimate Re Prior to Day 0'),
+                div(id = "predict.ui.toggle",
+                    fluidPage(
+                        uiOutput('best.re'),
+                        plotOutput('fit.plot')
+                    )
+                ) %>% hidden()
             )
+        )
         
     })
     
-    output$input.hosp.dt <- renderDataTable({
-        
-    })
+    hist.data <- reactiveVal(
+        data.frame('Date' = character(0),
+                   'Hospitalizations' = numeric(0),
+                   'Day' = numeric(0))
+    )
     
 
+    observeEvent(input$add.hist,{
+        if (!as.character(input$date.hist) %in% as.character(hist.data()$Date) & 
+            !is.na(input$num.hospitalized.hist)){
+            new.hist <- rbind(hist.data(),
+                            list('Date' = as.character(input$date.hist), 
+                                 'Hospitalizations' = input$num.hospitalized.hist, 
+                                 'Day' = input$date.hist - input$curr_date
+                                 ))
+            
+            new.hist <- arrange(new.hist, Day)
+            new.hist$Date <- as.Date(as.character(new.hist$Date))
+            hist.data(new.hist)
+            updateDateInput(session, 
+                            inputId = 'date.hist', 
+                            value = input$date.hist - 1)
+        }
+        else if (as.character(input$date.hist) %in% as.character(hist.data()$Date))(
+            showNotification("This date has already been added.",
+                             type = "error")
+        )
+        else{
+            showNotification("Please enter the hospitalization number.",
+                             type = "error")
+        }
+    })
+    
+    output$input_hosp_dt <- renderDataTable({
+        
+        hist.dt <- hist.data()
+
+        if (nrow(hist.dt) > 0){
+            hist.dt[["Delete"]] <-
+                paste0('
+               <div class="btn-group" role="group" aria-label="Basic example">
+               <button type="button" class="btn btn-secondary delete" id=delhist', '_', hist.dt$Day, '>Delete</button>
+               </div>
+               ')
+            
+        }
+        hist.dt$Day <- NULL
+        
+        datatable(hist.dt,
+                  escape=F, selection = 'none',
+                  options = list(pageLength = 10, language = list(
+                      zeroRecords = "No historical data added.",
+                      search = 'Find in table:'), dom = 't'), rownames = FALSE)
+        
+    })
+    
+    observeEvent(input$lastClick, {
+        if (grepl('delhist', input$lastClickId)){
+            delete_day <- as.numeric(strsplit(input$lastClickId, '_')[[1]][2])
+            hist.data(hist.data()[hist.data()$Day != delete_day,])
+        }
+    })
+    
+    observeEvent(input$run.fit, {
+        
+        hist.temp <- hist.data()
+        hist.temp <- arrange(hist.temp, desc(Date))
+        
+        if (nrow(hist.temp) >= 2){
+            best.fit <- findBestRe(S0 = input$num_people, 
+                                   gamma = params$gamma, 
+                                   num.days = est.days, 
+                                   day.vec = hist.temp$Day, 
+                                   num_actual.vec = hist.temp$Hospitalizations,
+                                   start.inf = start.inf,
+                                   hosp.delay.time = params$hosp.delay.time, 
+                                   hosp.rate = params$hosp.rate, 
+                                   hosp.los = params$hosp.los,
+                                   icu.delay.time = params$icu.delay.time, 
+                                   icu.rate = params$icu.rate, 
+                                   icu.los = params$icu.los,
+                                   vent.delay.time = params$vent.delay.time, 
+                                   vent.rate = params$vent.rate, 
+                                   vent.los = params$vent.los)
+            
+            best.vals <- best.fit$best.vals
+            
+            df.graph <- data.frame(Date = hist.temp$Date, 
+                                   Predicted = best.vals,
+                                   Actual = hist.temp$Hospitalizations)
+            
+            df.melt <- melt(df.graph, id.vars = 'Date')
+            
+            re.estimates$graph <- ggplot(df.melt, aes(x = Date, y = value, col = variable)
+            ) + geom_point() + geom_line() + theme(text = element_text(size=20)) +
+                theme(legend.title=element_blank())
+            
+            re.estimates$best.estimate <- sprintf('<br><br><h4>The best estimate for Re prior to Day 0 is <b>%s</b>.', 
+                                                  best.fit$best.re)
+            
+            show("predict.ui.toggle")
+            
+        }
+        else{
+            showNotification("You need at least two timepoints of data to make a prediction.",
+                             type = "error")
+        }
+        
+    })
+    output$best.re <- renderUI({
+       HTML(re.estimates$best.estimate)
+    })
+    
+    output$fit.plot <- renderPlot({
+        re.estimates$graph
+    })
+    
+    observeEvent(input$curr_date, {
+        hist.data(data.frame('Date' = character(0),
+                   'Hospitalizations' = numeric(0),
+                   'Day' = numeric(0)))
+    })
+    
     ##  ............................................................................
     ##  Parameter selection 
     ##  ............................................................................
@@ -256,22 +389,7 @@ shinyServer(function(input, output, session) {
         )
         )
     })
-    
-    observeEvent(input$showint, {
-        
-        if (input$showint == FALSE){
-            params$int.new.double <- NULL
-            params$int.new.r0 <- NULL
-            params$int.new.num.days <- NULL
-        }
-        
-        else{
-            params$int.new.double <- input$new_double
-            params$int.new.r0 <- input$r0_new
-            params$int.new.num.days <- input$int_day
-        }
-    })
-    
+
     observeEvent(input$save, {
         params$illness.length = input$illness.length
         params$gamma = 1/input$illness.length
@@ -346,37 +464,60 @@ shinyServer(function(input, output, session) {
         if (input$showint){
             fluidPage(
                 fluidRow(uiOutput(outputId = 'int_val'),
-                
-                sliderInput(inputId = 'int_day', 
-                            label = 'Day after Day 0 Intervention is Implemented',  
-                            min = 0, 
-                            max = 365, 
-                            step = 1, 
-                            value = 1), 
-                
-                actionButton(inputId = 'add_intervention', 
-                             label = 'Save Intervention'))
+                         
+                         sliderInput(inputId = 'int_day', 
+                                     label = 'Day after Day 0 Intervention is Implemented',  
+                                     min = 0, 
+                                     max = 365, 
+                                     step = 1, 
+                                     value = 0), 
+                         
+                         actionButton(inputId = 'add_intervention', 
+                                      label = 'Save Intervention'))
             )
         }
         
-        })
+    })
     
+    
+    observeEvent(input$showint, {
+        
+        params$int.new.double <- input$doubling_time
+        params$int.new.r0 <- input$r0_prior
+        params$int.new.num.days <- 0
+        
+    })
+
+    
+    observeEvent(input$doubling_time,{
+        if(input$showint == FALSE){
+            params$int.new.double <- input$doubling_time
+        }
+    })
+
+    
+    observeEvent(input$r0_prior,{
+        if(input$showint == FALSE){
+            params$int.new.r0 <- input$r0_prior
+        }
+    })
+
     
     observeEvent(input$new_double, {
         
         params$int.new.double <- input$new_double
-
+        
     })
     
     
     observeEvent(input$r0_new, {
         
         params$int.new.r0 <- input$r0_new
-
+        
     })
     
     observeEvent(input$int_day, {
-
+        
         params$int.new.num.days <- input$int_day
         
     })
@@ -396,31 +537,33 @@ shinyServer(function(input, output, session) {
         else{
             intervention.table(
                 data.frame('Day' = numeric(0),
-                           'New R0' = numeric(0))
+                           'New Re' = numeric(0))
             )
         }
     })
     
     observeEvent(input$add_intervention,{
-
-        if (input$usedouble == TRUE){
-            intervention.table(rbind(intervention.table(),
-                                     list('Day' = params$int.new.num.days , 
-                                          'New.Double.Time' = params$int.new.double 
-                                     )))
-        }
-        else{
-            intervention.table(rbind(intervention.table(),
-                                     list('Day' = params$int.new.num.days, 
-                                          'New.R0' = params$int.new.r0 
-                                     )))
-        }
+        
+        if (!params$int.new.num.days %in% intervention.table()$Day){
+            if (input$usedouble == TRUE){
+                intervention.table(rbind(intervention.table(),
+                                         list('Day' = params$int.new.num.days , 
+                                              'New.Double.Time' = params$int.new.double 
+                                         )))
+            }
+            else{
+                intervention.table(rbind(intervention.table(),
+                                         list('Day' = params$int.new.num.days, 
+                                              'New.Re' = params$int.new.r0 
+                                         )))
+            }
+        
         intervention.table(arrange(intervention.table(), Day))
-        removeModal()
-    })
-    
-    observeEvent(input$cancel_int,{
-        removeModal()
+        }
+        
+        else{
+            showNotification('You have already added an intervention on this date', type = 'error')
+        }
     })
     
     output$int_table <- renderDataTable({
@@ -456,7 +599,7 @@ shinyServer(function(input, output, session) {
     ##  ............................................................................
     
     beta.vector <- reactive({
-        
+
         int.table.temp <- intervention.table()
         
         # determines what 'day' we are on using the initialization
@@ -474,16 +617,16 @@ shinyServer(function(input, output, session) {
             if (!is.null(input$r0_prior) & !is.null(params$int.new.r0)){
                 int.table.temp <- rbind(int.table.temp, 
                                         list(Day = c(-curr.day, input$proj_num_days, params$int.new.num.days ),
-                                             New.R0 = c(input$r0_prior, NA, params$int.new.r0 )))
+                                             New.Re = c(input$r0_prior, NA, params$int.new.r0 )))
             }
             else{
                 int.table.temp <- rbind(int.table.temp, 
                                         list(Day = c(-curr.day, input$proj_num_days),
-                                             New.R0 = c(r0.default, NA)))
+                                             New.Re = c(r0.default, NA)))
             }
             
             applyDoubleTime <- function(x){
-                return(doubleTime(as.numeric(x['New.R0']), 
+                return(doubleTime(as.numeric(x['New.Re']), 
                                   params$gamma))
             }
             
@@ -515,7 +658,6 @@ shinyServer(function(input, output, session) {
             reps <- rep.vec[i]
             beta.vec <- c(beta.vec, rep(beta, reps))
         }
-        
         beta.vec
     })
     
