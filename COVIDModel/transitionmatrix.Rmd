@@ -4,6 +4,10 @@ output: html_notebook
 ---
 
 ```{r}
+library(data.table)
+```
+
+```{r}
 evalFirstSystem <- function(m.g, 
                             m.icu, 
                             h.g_m, 
@@ -125,70 +129,73 @@ getTransition <- function(m.g,
 
 
 ```{r}
-test.seq <- seq(0, 1, 0.2)
+runMarkov <- function(new.hosp.vec, trans.mat){
+  
+  # h, icu, vent, d, m 
+  df.final <- data.frame()
+  
+  step.vec <- c(0, 0, 0, 0, 0)
 
-for (test.m in 1:20){
-  for (test.g in 1:20){
-    for(test.v in 1:20){
-      for (h.g_icu in test.seq){
-      for (h.icu_v in test.seq){
-      for (h.g_m in test.seq){
-      for (h.icu_m in test.seq){
-      for (h.v_m in test.seq){
-
-      tryCatch({
-        m.g <- test.m
-      m.icu <- test.g
-      m.v <- test.v
-      
-      test.matrix <- getTransition(m.g, 
-                      m.icu, 
-                      m.v, 
-                      h.g_m, 
-                      h.g_icu, 
-                      h.icu_m, 
-                      h.icu_v,
-                      h.v_m)
-      if(all(test.matrix >= 0)){
-        print(test.m)
-        print(test.g)
-        print(test.v)
-        print(h.g_icu)
-        print(h.icu_v)
-        print(h.g_m)
-        print(h.icu_m)
-        print(h.v_m)
-        stop()
-      }
-      },
-        error=function(cond) {
-        })
-    }
+  for (hosp.val in new.hosp.vec){
+    step.vec <- as.vector(step.vec %*% trans.mat)
+    step.vec[1] <- step.vec[1] + hosp.val 
+    df.final <- rbind(df.final, step.vec)
   }
-      }
-      }}}}}
+  
+  colnames(df.final) <- c('h', 'icu', 'vent', 'd', 'm')
+  return(df.final)
+}
 ```
+
+```{r}
+dum.mat <- matrix(rexp(25), 5)
+
+dum.mat <- dum.mat / rowSums(dum.mat)
+```
+
 
 
 ```{r}
-m.g <- 12
-m.icu <- 13
-m.v <- 7
-h.g_icu <- 0.3
-h.icu_v <- 0.64
-h.g_m <- 0.3
-h.icu_m <- 0.5
-h.v_m <- 0.8
+SIR <- function(S0, I0, R0, beta.vector, gamma_r, gamma_h, trans.mat, num.days) {
+  
+  # initialize S, I, R 
+  S <- I <- R <- H <- rep(NA_real_, num.days)
+  S[1] <- S0
+  I[1] <- I0
+  R[1] <- R0
+  H[1] <- 0
+  
+  gamma <- gamma_r + gamma_h
 
-test.matrix <- getTransition(m.g, 
-                             m.icu, 
-                             m.v, 
-                             h.g_m, 
-                             h.g_icu, 
-                             h.icu_m, 
-                             h.icu_v,
-                             h.v_m)
-
-test.matrix
+  # run SIR model 
+  for (tt in 1:(num.days - 1)) {
+    beta <- beta.vector[tt]
+    S[tt + 1] <-  -beta * S[tt] * I[tt]                  + S[tt]
+    I[tt + 1] <-   beta * S[tt] * I[tt] - gamma * I[tt]  + I[tt]
+    R[tt + 1] <-                          gamma_r * I[tt]  + R[tt]
+    H[tt + 1] <- gamma_h * I[tt]
+  }
+  
+  df.return <- data.frame(days = 1:num.days, S, I, R, H)
+  markov.df <- runMarkov(H, trans.mat)
+  markov.df$days <- 1:num.days 
+  
+  print(df.return)
+  print(markov.df)
+  
+  df.return <- merge(df.return, markov.df, by = 'days')
+  df.return$R <- df.return$R + df.return$d
+  df.return$d <- NULL
+  df.return$H <- NULL
+  
+  return(df.return)
+  
+}
 ```
+
+```{r}
+test <- SIR(800000, 1, 0, rep(2e-7, 100), 1/28, 1/27, dum.mat, 100)
+```
+
+
 
