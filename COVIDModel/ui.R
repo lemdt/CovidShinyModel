@@ -25,7 +25,7 @@ shinyUI(
                
                HTML('<br>'),
                
-               titlePanel("COVID-19 Epidemic Modeling"),
+               titlePanel("COVID-19 Epidemic Modeling (Bug Fix in V1)"),
                
                actionLink('howtouse', 'Learn more about this tool.'),
                
