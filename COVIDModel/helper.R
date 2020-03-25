@@ -16,12 +16,14 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
   S[1] <- S0
   I[1] <- I0
   R[1] <- R0
+  
+  N = S[1] + I[1] + R[1]
 
   # run SIR model 
   for (tt in 1:(num.days - 1)) {
     beta <- beta.vector[tt]
-    S[tt + 1] <-  -beta * S[tt] * I[tt]                  + S[tt]
-    I[tt + 1] <-   beta * S[tt] * I[tt] - gamma * I[tt]  + I[tt]
+    S[tt + 1] <-  -beta * S[tt] * I[tt] / N                  + S[tt]
+    I[tt + 1] <-   beta * S[tt] * I[tt] / N - gamma * I[tt]  + I[tt]
     R[tt + 1] <-                          gamma * I[tt]  + R[tt]
   }
 
@@ -30,7 +32,7 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
   
   # TODO: fix this upstream
   if (length(beta.vector) != 0){
-    new.infections <- beta.vector*S*I
+    new.infections <- beta.vector*S*I / N
   }
   else{
     new.infections <- beta*S*I
@@ -105,7 +107,7 @@ find.curr.estimates = function(S0, beta.vector, gamma, num.days, num_actual,
                hosp.delay.time, hosp.rate, hosp.los,
                icu.delay.time, icu.rate, icu.los,
                vent.delay.time, vent.rate, vent.los)
-  
+
   # finds the minimum difference between projection and current
   # NOTE: right now, only uses hospitalization numbers to predict so else statement is never used right now
 
@@ -174,8 +176,7 @@ findBestRe <- function(S0, gamma, num.days, day.vec, num_actual.vec,
   vec.choice <- c()
   
   for (re in c(seq(1, 7, 0.1))){
-    dt <- doubleTime(re, gamma)
-    beta <- getBeta(dt, gamma, S0)
+    beta <- getBetaFromRe(re, gamma)
     
     SIR.df = SIR(start.susc, start.inf, start.res, rep(beta, num.days), gamma, num.days, 
                  hosp.delay.time, hosp.rate, hosp.los,
@@ -214,15 +215,14 @@ findBestRe <- function(S0, gamma, num.days, day.vec, num_actual.vec,
 }
 
 
-# gets doubling time based on R0 and gamma 
-doubleTime <- function(R0, gamma) {
-  1 / log2(R0 * gamma - gamma + 1)
-}
-
-# gets beta based on doubling time, gamma, and S0
-getBeta <- function(doubling.time, gamma, S0) {
+# gets beta based on doubling time, gamma, and N
+getBetaFromDoubling <- function(doubling.time, gamma) {
   g <- 2^(1/doubling.time) - 1
-  beta <- (g + gamma) / S0
+  beta <- g + gamma
   return(beta)
 }
 
+getBetaFromRe <- function(Re, gamma) {
+  beta <- Re * gamma
+  return(beta)
+}

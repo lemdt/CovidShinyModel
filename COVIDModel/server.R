@@ -414,17 +414,13 @@ shinyServer(function(input, output, session) {
     initial_beta_vector <- reactive({
         
         if (input$usedouble == FALSE){
-            doubling_time <- doubleTime(input$r0_prior, params$gamma)
+            beta <- getBetaFromRe(input$r0_prior, params$gamma)
         }
         else{
-            doubling_time <- input$doubling_time
+            beta <- getBetaFromDoubling(input$doubling_time, params$gamma)
         }
-        
-        # calculates beta
-        beta <- getBeta(doubling_time, params$gamma, input$num_people)
-        
+
         initial.beta.vector <- rep(beta, est.days)
-        
         
         initial.beta.vector
     })
@@ -625,12 +621,6 @@ shinyServer(function(input, output, session) {
                                              New.Re = c(r0.default, NA)))
             }
             
-            applyDoubleTime <- function(x){
-                return(doubleTime(as.numeric(x['New.Re']), 
-                                  params$gamma))
-            }
-            
-            int.table.temp$New.Double.Time <- apply(int.table.temp, 1, applyDoubleTime)
         }
         else{
             int.table.temp <- rbind(int.table.temp, 
@@ -639,9 +629,14 @@ shinyServer(function(input, output, session) {
         }
         
         applygetBeta <- function(x){
-            return(getBeta(as.numeric(x['New.Double.Time']), 
-                           params$gamma, 
-                           input$num_people))
+            if (input$usedouble == FALSE){
+                return(getBetaFromRe(as.numeric(x['New.Re']), 
+                                     params$gamma))
+            }
+            else{
+                return(getBetaFromDoubling(as.numeric(x['New.Double.Time']), 
+                                           params$gamma))
+            }
         }
         
         int.table.temp$beta <- apply(int.table.temp, 1, applygetBeta)
