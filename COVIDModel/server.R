@@ -335,10 +335,10 @@ shinyServer(function(input, output, session) {
         gamma = 1/14,
         hosp.delay.time = 10, 
         hosp.rate = 0.06, 
-        hosp.los = 11,
+        hosp.los = 7,
         icu.delay.time = 5, 
         icu.rate = 0.3, 
-        icu.los = 8, 
+        icu.los = 1, 
         vent.delay.time = 1, 
         vent.rate = 0.64, 
         vent.los = 10,
@@ -375,13 +375,13 @@ shinyServer(function(input, output, session) {
                 sliderInput('vent.after.icu', 'ICU Admission to Ventilation (days)', min = 0, max = 30, step = 1, 
                             value = params$vent.delay.time, width = '100%'),
                 
-                sliderInput('hosp.los', 'Hospital Length of Stay (days)', min = 5, max = 15, step = 1, 
+                sliderInput('hosp.los', 'Hospital Length of Stay for Non-ICU Patients (days)', min = 1, max = 15, step = 1, 
                             value = params$hosp.los, width = '100%'),
                 
-                sliderInput('icu.los', 'ICU Length of Stay (days)', min = 5, max = 15, step = 1,
+                sliderInput('icu.los', 'ICU Length of Stay for Non-Ventilated Patients (days)', min = 1, max = 15, step = 1,
                             value = params$icu.los, width = '100%'),
                 
-                sliderInput('vent.los', 'Ventilation Course (days)', min = 5, max = 15, step = 1, 
+                sliderInput('vent.los', 'Average Ventilation Course (days)', min = 1, max = 15, step = 1, 
                             value = params$vent.los, width = '100%')),
             footer = tagList(
                 actionButton("save", "Save and Close")

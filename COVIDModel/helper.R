@@ -57,10 +57,23 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
   # iteratively creates hospitalization/icu/ventilation discharge numbers based on 
   # admission numbers and length of stays
   for (tt in 1:num.days) {
-    discharge.hosp[tt + hosp.los] <- admit.hosp[tt] 
-    discharge.icu[tt + icu.los] <- admit.icu[tt]
+    # discharged from ventilator 
     discharge.vent[tt + vent.los] <- admit.vent[tt]
   } 
+
+  for (tt in 1:num.days) {
+    # the number of people discharged from icu includes:
+    # 1) Non-Ventilated: all the non-ventilated ICU people admitted at icu.los days earlier 
+    # 2) Ventilated: all the people who were discharged from the ventilator on that day
+    discharge.icu[tt + icu.los] <- (admit.icu[tt] * (1 - vent.rate)) + discharge.vent[tt + icu.los]
+  }
+
+  for (tt in 1:num.days) {
+    # the number of people discharged from the hospital includes: 
+    # 1) Non-ICU: all the non-ICU people admitted to the hospital at hosp.los days earlier
+    # 2) ICU: all the people discharged from the ICU that day 
+    discharge.hosp[tt + hosp.los] <- (admit.hosp[tt] * (1 - icu.rate)) + discharge.icu[tt + hosp.los]
+  }
   
   # iteratively creates hospitalization/icu/ventilation numbers based 
   # previous day numbers plus admits minus discharges 
