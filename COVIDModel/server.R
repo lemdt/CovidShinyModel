@@ -1076,7 +1076,13 @@ shinyServer(function(input, output, session) {
             else{
                 data <- resource.df()
             }
-            write.csv(data.frame(data), file, row.names = FALSE)
+            # write.csv(data.frame(data), file, row.names = FALSE)
+            df.output <- sir.output.df()[,c('day', 'days.shift', 'date',
+                                            'S', 'I', 'R', 'new.infections',
+                                            'admit.hosp', 'discharge.hosp', 'hosp', 
+                                            'admit.icu', 'discharge.icu', 'icu',
+                                            'admit.vent', 'discharge.vent')]
+            write.csv(data.frame(df.output), file, row.names = FALSE)
         }
     )
 }
