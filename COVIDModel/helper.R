@@ -26,14 +26,13 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
   }
 
   # create datatable of S, I, R
-  dt <- data.table(days = 1:num.days, S, I, R)
+  dt <- data.table(days = 0:(num.days-1), S, I, R)
   
-  # TODO: fix this upstream
-  if (length(beta.vector) != 0){
+  if (length(beta.vector) == num.days){
     new.infections <- beta.vector*S*I / N
   }
   else{
-    new.infections <- beta*S*I
+    new.infections <- beta*S*I / N
   }
   
   # initialize vectors 
@@ -95,7 +94,7 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
   discharge.vent <- discharge.vent[1:num.days]
   
   # create final data table with all numbers 
-  dt2 <- data.table(day = 1:num.days, hosp, admit.hosp, discharge.hosp, 
+  dt2 <- data.table(day = 0:(num.days-1), hosp, admit.hosp, discharge.hosp, 
                     icu, admit.icu, discharge.icu, 
                     vent, admit.vent, discharge.vent, 
                     S, I, R, new.infections)

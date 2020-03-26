@@ -44,6 +44,13 @@ shinyUI(
                                 value = 883305),
                    
                    # TODO: add in prediction fields for ICU patients, deaths and ventilators
+                   
+                   radioGroupButtons(inputId = 'input.metric', 
+                                     label = 'Input Metric:', 
+                                     choices = c('Hospitalizations', 'Cases'),
+                                     justified = TRUE, 
+                                     status = "primary"),
+                   
                    uiOutput(outputId = 'prediction_fld'),
                    
                    uiOutput(outputId = 'prior_val'),

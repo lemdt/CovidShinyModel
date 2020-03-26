@@ -99,9 +99,16 @@ shinyServer(function(input, output, session) {
     
     output$prediction_fld <- renderUI({
         
-        numericInput(inputId = 'num_hospitalized', 
-                     label = 'Estimate of current inpatients with COVID-19 (diagnosed or not) on Day 0', 
-                     value = 50)
+        if (input$input.metric == 'Hospitalizations'){
+            numericInput(inputId = 'num_hospitalized', 
+                         label = 'Estimate of current inpatients with COVID-19 (diagnosed or not) on Day 0', 
+                         value = 50)
+        }
+        else{
+            numericInput(inputId = 'num_cases', 
+                         label = 'Estimate of number of cases on Day 0', 
+                         value = 50)
+        }
     })
     
     ##  ............................................................................
@@ -428,25 +435,37 @@ shinyServer(function(input, output, session) {
     
     curr.day.list <- reactive({
         
-        predict.metric <- 'Hospitalization'
-        num.actual <- input$num_hospitalized
-        
-        find.curr.estimates(S0 = input$num_people,
-                            beta.vector = initial_beta_vector(), 
-                            gamma = params$gamma, 
-                            num.days = est.days, 
-                            num_actual = num.actual,
-                            metric = predict.metric,
-                            start.inf = start.inf,
-                            hosp.delay.time = params$hosp.delay.time, 
-                            hosp.rate = params$hosp.rate, 
-                            hosp.los = params$hosp.los,
-                            icu.delay.time = params$icu.delay.time, 
-                            icu.rate = params$icu.rate, 
-                            icu.los = params$icu.los,
-                            vent.delay.time = params$vent.delay.time, 
-                            vent.rate = params$vent.rate, 
-                            vent.los = params$vent.los)
+        if (input$input.metric == 'Hospitalizations'){
+            predict.metric <- 'Hospitalization'
+            num.actual <- input$num_hospitalized
+            
+            find.curr.estimates(S0 = input$num_people,
+                                beta.vector = initial_beta_vector(), 
+                                gamma = params$gamma, 
+                                num.days = est.days, 
+                                num_actual = num.actual,
+                                metric = predict.metric,
+                                start.inf = start.inf,
+                                hosp.delay.time = params$hosp.delay.time, 
+                                hosp.rate = params$hosp.rate, 
+                                hosp.los = params$hosp.los,
+                                icu.delay.time = params$icu.delay.time, 
+                                icu.rate = params$icu.rate, 
+                                icu.los = params$icu.los,
+                                vent.delay.time = params$vent.delay.time, 
+                                vent.rate = params$vent.rate, 
+                                vent.los = params$vent.los)
+        }
+        else{
+            curr.values <- list(
+                curr.day = 0,
+                infection.estimate = input$num_cases, 
+                susceptible.estimate = input$num_people - input$num_cases, 
+                recovered.estimate = 0
+            )
+            
+            curr.values
+        }
     })
     
     
@@ -612,8 +631,8 @@ shinyServer(function(input, output, session) {
             
             if (!is.null(input$r0_prior) & !is.null(params$int.new.r0)){
                 int.table.temp <- rbind(int.table.temp, 
-                                        list(Day = c(-curr.day, input$proj_num_days, params$int.new.num.days ),
-                                             New.Re = c(input$r0_prior, NA, params$int.new.r0 )))
+                                        list(Day = c(params$int.new.num.days, -curr.day, input$proj_num_days ),
+                                             New.Re = c(params$int.new.r0, input$r0_prior, NA )))
             }
             else{
                 int.table.temp <- rbind(int.table.temp, 
@@ -624,10 +643,10 @@ shinyServer(function(input, output, session) {
         }
         else{
             int.table.temp <- rbind(int.table.temp, 
-                                    list(Day = c(-curr.day, input$proj_num_days, params$int.new.num.days),
-                                         New.Double.Time = c(input$doubling_time, NA, params$int.new.double )))
+                                    list(Day = c(params$int.new.num.days, -curr.day, input$proj_num_days),
+                                         New.Double.Time = c(params$int.new.double, input$doubling_time, NA )))
         }
-        
+
         applygetBeta <- function(x){
             if (input$usedouble == FALSE){
                 return(getBetaFromRe(as.numeric(x['New.Re']), 
@@ -659,34 +678,62 @@ shinyServer(function(input, output, session) {
     
     sir.output.df <- reactive({
         
-        # run the same model as initialization model but run extra days
-        curr.day  <- as.numeric(curr.day.list()['curr.day'])
-        new.num.days <- input$proj_num_days + curr.day
-        new.num.days <- ifelse(is.na(new.num.days), 365, new.num.days)
-        
-        # starting conditions
-        start.susc <- input$num_people - start.inf
-        start.res <- 0
-        
-        SIR.df = SIR(S0 = start.susc, 
-                     I0 = start.inf, 
-                     R0 = start.res,
-                     beta.vector = beta.vector(),
-                     gamma = params$gamma,
-                     num.days = new.num.days, 
-                     hosp.delay.time = params$hosp.delay.time,
-                     hosp.rate = params$hosp.rate, 
-                     hosp.los = params$hosp.los,
-                     icu.delay.time = params$icu.delay.time, 
-                     icu.rate = params$icu.rate, 
-                     icu.los = params$icu.los,
-                     vent.delay.time = params$vent.delay.time, 
-                     vent.rate = params$vent.rate, 
-                     vent.los = params$vent.los)
-        
-        # shift the number of days to account for day 0 in the model 
-        SIR.df$days.shift <- SIR.df$day - curr.day
-        SIR.df[SIR.df$days.shift == 0,]$hosp <- input$num_hospitalized
+        if (input$input.metric == 'Hospitalizations'){
+            # run the same model as initialization model but run extra days
+            curr.day  <- as.numeric(curr.day.list()['curr.day'])
+            new.num.days <- input$proj_num_days + curr.day
+            new.num.days <- ifelse(is.na(new.num.days), 365, new.num.days)
+            
+            # starting conditions
+            start.susc <- input$num_people - start.inf
+            start.res <- 0
+            
+            SIR.df = SIR(S0 = start.susc, 
+                         I0 = start.inf, 
+                         R0 = start.res,
+                         beta.vector = beta.vector(),
+                         gamma = params$gamma,
+                         num.days = new.num.days, 
+                         hosp.delay.time = params$hosp.delay.time,
+                         hosp.rate = params$hosp.rate, 
+                         hosp.los = params$hosp.los,
+                         icu.delay.time = params$icu.delay.time, 
+                         icu.rate = params$icu.rate, 
+                         icu.los = params$icu.los,
+                         vent.delay.time = params$vent.delay.time, 
+                         vent.rate = params$vent.rate, 
+                         vent.los = params$vent.los)
+            
+            # shift the number of days to account for day 0 in the model 
+            SIR.df$days.shift <- SIR.df$day - curr.day
+            SIR.df[SIR.df$days.shift == 0,]$hosp <- input$num_hospitalized
+        }
+        else {
+            
+            num.cases <- ifelse(length(input$num_cases) != 0, input$num_cases, 0)
+            start.susc <- input$num_people - num.cases
+            start.inf <- num.cases 
+            start.res <- 0 
+            num.days <- input$proj_num_days
+
+            SIR.df = SIR(S0 = start.susc, 
+                         I0 = start.inf, 
+                         R0 = start.res,
+                         beta.vector = beta.vector(),
+                         gamma = params$gamma,
+                         num.days = num.days, 
+                         hosp.delay.time = params$hosp.delay.time,
+                         hosp.rate = params$hosp.rate, 
+                         hosp.los = params$hosp.los,
+                         icu.delay.time = params$icu.delay.time, 
+                         icu.rate = params$icu.rate, 
+                         icu.los = params$icu.los,
+                         vent.delay.time = params$vent.delay.time, 
+                         vent.rate = params$vent.rate, 
+                         vent.los = params$vent.los)
+            
+            SIR.df$days.shift <- SIR.df$day
+        }
         
         SIR.df$date <- SIR.df$days.shift + as.Date(input$curr_date)
         
@@ -984,14 +1031,23 @@ shinyServer(function(input, output, session) {
     
     # Estimated number of infections
     output$infected_ct <- renderUI({
-        infected <- curr.day.list()['infection.estimate']
-        cases <- as.numeric(curr.day.list()['infection.estimate']) + 
-            as.numeric(curr.day.list()['recovered.estimate'])
         
         curr_date <- format(input$curr_date, format="%B %d, %Y")
         
-        HTML(sprintf('<h4>On %s (Day 0), we estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
-                     <u>%s people actively infected</u>.</h4>', curr_date, cases, infected))
+        if (input$input.metric == 'Hospitalizations'){
+            infected <- curr.day.list()['infection.estimate']
+            cases <- as.numeric(curr.day.list()['infection.estimate']) + 
+                as.numeric(curr.day.list()['recovered.estimate'])
+            
+            HTML(sprintf('<h4>On %s (Day 0), we estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
+                         <u>%s people actively infected</u>.</h4>', curr_date, cases, infected))
+        }
+        else{
+            infected <- input$num_cases
+            cases <- input$num_cases
+            HTML(sprintf('<h4>On %s (Day 0), there have been <u>%s total cases</u> of COVID-19 in the region, with
+                         <u>%s people actively infected</u>.</h4>', curr_date, infected, cases))
+        }
     })
     
     # Word description 
