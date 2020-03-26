@@ -2,8 +2,6 @@ library(ggplot2)
 library(shinyWidgets)
 library(data.table)
 
-# TODO: figure out how to add function documentation
-
 # runs SIR model simulation, and then calculates hospitalizations, 
 # icu numbers, and ventilator numbers 
 SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
@@ -105,7 +103,8 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
 }
 
 # finds current estimates of the number of active infections, 
-# number recovered, and number 
+# number recovered, and number susceptible based on the current # of 
+# hospitalizations
 find.curr.estimates = function(S0, beta.vector, gamma, num.days, num_actual, 
                                metric, start.inf = 3, 
                                hosp.delay.time = 10, hosp.rate = 0.05, hosp.los = 7,
@@ -123,7 +122,6 @@ find.curr.estimates = function(S0, beta.vector, gamma, num.days, num_actual,
 
   # finds the minimum difference between projection and current
   # NOTE: right now, only uses hospitalization numbers to predict so else statement is never used right now
-
   if (metric == 'Hospitalization'){
     
     # find the difference between hospitalized column and the currently hospitalized number

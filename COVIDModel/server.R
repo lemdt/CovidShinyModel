@@ -686,6 +686,7 @@ shinyServer(function(input, output, session) {
         
         # shift the number of days to account for day 0 in the model 
         SIR.df$days.shift <- SIR.df$day - curr.day
+        SIR.df[SIR.df$days.shift == 0,]$hosp <- input$num_hospitalized
         
         SIR.df$date <- SIR.df$days.shift + as.Date(input$curr_date)
         
