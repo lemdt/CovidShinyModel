@@ -478,17 +478,16 @@ shinyServer(function(input, output, session) {
         
         if (input$showint){
             fluidPage(
-                fluidRow(uiOutput(outputId = 'int_val'),
-                         
-                         sliderInput(inputId = 'int_day', 
-                                     label = 'Day after Day 0 Intervention is Implemented',  
-                                     min = 0, 
-                                     max = 365, 
-                                     step = 1, 
-                                     value = 0), 
-                         
-                         actionButton(inputId = 'add_intervention', 
-                                      label = 'Save Intervention'))
+                fluidRow(                         
+                    dateInput(inputId = 'int_date', 
+                              label = 'Date Intervention is Implemented', 
+                              min = input$curr_date - params$hosp.delay.time, 
+                              value = input$curr_date),
+                    
+                    uiOutput(outputId = 'int_val'),
+
+                    actionButton(inputId = 'add_intervention', 
+                                 label = 'Save Intervention'))
             )
         }
         
@@ -531,11 +530,10 @@ shinyServer(function(input, output, session) {
         
     })
     
-    observeEvent(input$int_day, {
-        
-        params$int.new.num.days <- input$int_day
-        
+    observeEvent(input$int_date, {
+        params$int.new.num.days <- input$int_date - input$curr_date
     })
+
     
     intervention.table <- reactiveVal(
         data.frame('Day' = numeric(0),
@@ -585,6 +583,9 @@ shinyServer(function(input, output, session) {
         
         int.df <- intervention.table()
         
+        int.df$Date <- int.df$Day + input$curr_date
+        int.df <- int.df[,c('Date', 'New.Re')]
+        
         if (nrow(int.df) > 0){
             int.df[["Delete"]] <-
                 paste0('
@@ -622,8 +623,8 @@ shinyServer(function(input, output, session) {
         
         if (is.na(curr.day)){
             # TODO: replace hacky fix to bug with non-hacky fix
-            curr.day = 365
-            new.num.days = 1000
+            curr.day <- 365
+            new.num.days <- 1000
         }
         
         # setting doubling time
