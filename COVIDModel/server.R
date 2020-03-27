@@ -388,7 +388,7 @@ shinyServer(function(input, output, session) {
                 sliderInput('icu.los', 'ICU Length of Stay for Non-Ventilated Patients (days)', min = 1, max = 15, step = 1,
                             value = params$icu.los, width = '100%'),
                 
-                sliderInput('vent.los', 'Average Ventilation Course (days)', min = 1, max = 15, step = 1, 
+                sliderInput('vent.los', 'Average time on a ventilator (days)', min = 1, max = 15, step = 1, 
                             value = params$vent.los, width = '100%')),
             footer = tagList(
                 actionButton("save", "Save and Close")
@@ -1137,7 +1137,7 @@ shinyServer(function(input, output, session) {
                                             'S', 'I', 'R', 'new.infections',
                                             'admit.hosp', 'discharge.hosp', 'hosp', 
                                             'admit.icu', 'discharge.icu', 'icu',
-                                            'admit.vent', 'discharge.vent')]
+                                            'admit.vent', 'discharge.vent', 'vent')]
             write.csv(data.frame(df.output), file, row.names = FALSE)
         }
     )

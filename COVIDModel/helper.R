@@ -35,6 +35,8 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
     new.infections <- beta*S*I / N
   }
   
+  # snew.infections <- c(I0, new.infections[1:num.days-1])
+  
   # initialize vectors 
   hosp <- icu <- vent <- admit.hosp <- admit.icu <- admit.vent <- 
     discharge.hosp <- discharge.icu <- discharge.vent <- rep(0, num.days)
