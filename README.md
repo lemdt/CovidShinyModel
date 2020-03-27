@@ -5,7 +5,7 @@ A beta version of the app is live <a href="https://jpspeng.shinyapps.io/COVIDMod
 
 ## Development Environment Setup (R)
 
-1) Install <a href="https://www.r-project.org/">R</a> and a href="https://rstudio.com/products/rstudio/download/">R Studio</a>.
+1) Install <a href="https://www.r-project.org/">R</a> and <a href="https://rstudio.com/products/rstudio/download/">R Studio</a>.
 
 2) Open R Studio and in the console, do the following to install the packages:
 ```
