@@ -72,10 +72,10 @@ shinyUI(
                    
                    hr(),
                    
-                   HTML('<h4><b>Add Influxes of Infections</b></h4>'),
+                   HTML('<h4><b>Add Influx of Infections</b></h4>'),
                    
                    checkboxInput(inputId = 'showinflux', 
-                                 label = 'Add Influx of Infection'),
+                                 label = 'Add Influx of Infected Individuals'),
                    
                    uiOutput(outputId = 'influx_ui'),
                    
