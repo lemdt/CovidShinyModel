@@ -490,9 +490,11 @@ shinyServer(function(input, output, session) {
                     
                     uiOutput(outputId = 'int_val'),
                     
-                    numericInput(inputId = 'smooth.int', 
+                    sliderInput('smooth.int', 
                                  label = 'Smoothed over how many days?', 
-                                 value = 1),
+                                 value = 0, 
+                                min = 0, 
+                                max = 15),
 
                     actionButton(inputId = 'add_intervention', 
                                  label = 'Save Intervention'))
