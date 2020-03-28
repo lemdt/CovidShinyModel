@@ -34,11 +34,7 @@ shinyUI(
                sidebarLayout(
                  sidebarPanel(
                    HTML('<h4><b>Location Information</b></h4>'),
-                   
-                   dateInput(inputId = 'curr_date', 
-                             label = 'Set Day 0 Date',
-                   ),
-                   
+
                    numericInput(inputId = 'num_people', 
                                 label = 'Number of People in Area', 
                                 value = 883305),
@@ -52,6 +48,10 @@ shinyUI(
                                      status = "primary"),
                    
                    uiOutput(outputId = 'prediction_fld'),
+
+                   dateInput(inputId = 'curr_date', 
+                             label = 'On Date:',
+                   ),
                    
                    uiOutput(outputId = 'prior_val'),
                    
@@ -97,7 +97,6 @@ shinyUI(
                  
                  mainPanel(
                    wellPanel(
-                     HTML('<h3><b>Day 0 Estimates</b></h3>'),
                      htmlOutput(outputId = 'infected_ct')
                    ),
                    

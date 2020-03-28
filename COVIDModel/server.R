@@ -101,12 +101,12 @@ shinyServer(function(input, output, session) {
         
         if (input$input.metric == 'Hospitalizations'){
             numericInput(inputId = 'num_hospitalized', 
-                         label = 'Estimate of current inpatients with COVID-19 (diagnosed or not) on Day 0', 
+                         label = 'Estimate of current inpatients with COVID-19:', 
                          value = 50)
         }
         else{
             numericInput(inputId = 'num_cases', 
-                         label = 'Estimate of number of cases on Day 0', 
+                         label = 'Estimate of number of cases of COVID-19:', 
                          value = 50)
         }
     })
@@ -116,9 +116,12 @@ shinyServer(function(input, output, session) {
     ##  ............................................................................
     
     output$prior_val <- renderUI({
+        
+        date.select <- format(input$curr_date, format="%B %d")
+
         if (input$usedouble == TRUE){
             sliderInput(inputId = 'doubling_time', 
-                        label = 'Doubling Time (days) Before Day 0', 
+                        label = sprintf('Doubling Time (days) Before %s', date.select), 
                         min = 1, 
                         max = 12, 
                         step = 1, 
@@ -128,12 +131,12 @@ shinyServer(function(input, output, session) {
             fluidPage(
                 fluidRow(
                     sliderInput(inputId = 'r0_prior', 
-                                label = 'Re Before Day 0', 
+                                label = sprintf('Re Before %s', date.select), 
                                 min = 0.1, 
                                 max = 7, 
                                 step = 0.1, 
                                 value = 2.8),
-                    actionLink('predict_re', 'Estimate Re prior to Day 0 based on data.')
+                    actionLink('predict_re', sprintf('Estimate Re prior to %s based on data.', date.select))
                 )
             )
             
@@ -175,7 +178,7 @@ shinyServer(function(input, output, session) {
                 useShinyjs(),
                 HTML('<h4> Estimate Re based on historical hospitalizations</h4>
                      
-                     Provide data from dates prior to Day 0 to estimate the Re value.<br><br>'),
+                     Provide data from past dates to estimate the Re value.<br><br>'),
                 splitLayout(
                     dateInput(inputId = 'date.hist', 
                               label = 'Date',
@@ -197,7 +200,7 @@ shinyServer(function(input, output, session) {
                 HTML('<br>'),
                 actionButton(
                     inputId = 'run.fit', 
-                    label = 'Estimate Re Prior to Day 0'),
+                    label = 'Estimate Re'),
                 div(id = "predict.ui.toggle",
                     fluidPage(
                         uiOutput('best.re'),
@@ -306,7 +309,7 @@ shinyServer(function(input, output, session) {
             ) + geom_point() + geom_line() + theme(text = element_text(size=20)) +
                 theme(legend.title=element_blank())
             
-            re.estimates$best.estimate <- sprintf('<br><br><h4>The best estimate for Re prior to Day 0 is <b>%s</b>.', 
+            re.estimates$best.estimate <- sprintf('<br><br><h4>The best estimate for Re is <b>%s</b>.', 
                                                   best.fit$best.re)
             
             show("predict.ui.toggle")
@@ -1040,13 +1043,15 @@ shinyServer(function(input, output, session) {
             cases <- as.numeric(curr.day.list()['infection.estimate']) + 
                 as.numeric(curr.day.list()['recovered.estimate'])
             
-            HTML(sprintf('<h4>On %s (Day 0), we estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
+            HTML(sprintf('<h3><b>Estimates for %s</b></h3>
+                        <h4>We estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
                          <u>%s people actively infected</u>.</h4>', curr_date, cases, infected))
         }
         else{
             infected <- input$num_cases
             cases <- input$num_cases
-            HTML(sprintf('<h4>On %s (Day 0), there have been <u>%s total cases</u> of COVID-19 in the region, with
+            HTML(sprintf('<h3><b>Estimates for %s</b></h3>
+            <h4>There have been <u>%s total cases</u> of COVID-19 in the region, with
                          <u>%s people actively infected</u>.</h4>', curr_date, infected, cases))
         }
     })
@@ -1065,14 +1070,14 @@ shinyServer(function(input, output, session) {
             
             if (length(select.day) != 0){
                 if (select.day == 0){
-                    HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s COVID-19 cases</b> in the region, 
+                    HTML(sprintf('<h4>On %s, there are <b>%s COVID-19 cases</b> in the region, 
                                      with <b>%s actively infected</b>.</h4>', 
-                                 select.date, select.day, cases, active))
+                                 select.date, cases, active))
                 }
                 else{
-                    HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s COVID-19 cases</b> in the region, 
+                    HTML(sprintf('<h4>On %s, there will be <b>%s COVID-19 cases</b> in the region, 
                                      with <b>%s actively infected</b>.</h4>', 
-                                 select.date, select.day, cases, active))
+                                 select.date, cases, active))
                 }
             }
             
@@ -1084,14 +1089,14 @@ shinyServer(function(input, output, session) {
             vent <- round(select.row$vent)
             
             if (select.day == 0){
-                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s hospitalized from COVID-19</b> in the region, 
+                HTML(sprintf('<h4>On %s, there are <b>%s hospitalized from COVID-19</b> in the region, 
                                  with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
-                             select.date, select.day, hosp, icu, vent))
+                             select.date, hosp, icu, vent))
             }
             else{
-                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s hospitalized from COVID-19</b> in the region, 
+                HTML(sprintf('<h4>On %s, there will be <b>%s hospitalized from COVID-19</b> in the region, 
                                  with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
-                             select.date, select.day, hosp, icu, vent))
+                             select.date, hosp, icu, vent))
             }
             
             
@@ -1102,14 +1107,14 @@ shinyServer(function(input, output, session) {
             vent_res <- input$vent_cap - round(select.row$vent)
             
             if (select.day == 0){
-                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there are <b>%s hospital beds available</b> in the region, 
+                HTML(sprintf('<h4>On %s, there are <b>%s hospital beds available</b> in the region, 
                                  with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
-                             select.date, select.day, hosp_res, icu_res, vent_res))
+                             select.date, hosp_res, icu_res, vent_res))
             }
             else{
-                HTML(sprintf('<h4>On %s (Day <b>%s</b>), there will be <b>%s hospital beds available</b> in the region, 
+                HTML(sprintf('<h4>On %s, there will be <b>%s hospital beds available</b> in the region, 
                                  with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
-                             select.date, select.day, hosp_res, icu_res, vent_res))
+                             select.date, hosp_res, icu_res, vent_res))
             }
             
             
