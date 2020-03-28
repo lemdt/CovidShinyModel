@@ -355,6 +355,7 @@ shinyServer(function(input, output, session) {
         int.new.r0 = 2.8, 
         int.new.double = 6,
         int.new.num.days = 0, 
+        int.smooth.days = 0,
         hosp.avail = 1000, 
         icu.avail = 200, 
         vent.avail = 100
@@ -488,6 +489,10 @@ shinyServer(function(input, output, session) {
                               value = input$curr_date),
                     
                     uiOutput(outputId = 'int_val'),
+                    
+                    numericInput(inputId = 'smooth.int', 
+                                 label = 'Smoothed over how many days?', 
+                                 value = 1),
 
                     actionButton(inputId = 'add_intervention', 
                                  label = 'Save Intervention'))
@@ -498,13 +503,15 @@ shinyServer(function(input, output, session) {
     
     
     observeEvent(input$showint, {
-        
         params$int.new.double <- input$doubling_time
         params$int.new.r0 <- input$r0_prior
         params$int.new.num.days <- 0
         
     })
 
+    observeEvent(input$smooth.int, {
+        params$int.smooth.days <- input$smooth.int
+    })
     
     observeEvent(input$doubling_time,{
         if(input$showint == FALSE){
@@ -534,26 +541,31 @@ shinyServer(function(input, output, session) {
     })
     
     observeEvent(input$int_date, {
+
         params$int.new.num.days <- input$int_date - input$curr_date
+
     })
 
     
     intervention.table <- reactiveVal(
         data.frame('Day' = numeric(0),
-                   'New R0' = numeric(0))
+                   'New R0' = numeric(0), 
+                   'Days of Smoothing' =  numeric(0))
     )
     
     observeEvent(input$usedouble, {
         if (input$usedouble == TRUE){
             intervention.table(
                 data.frame('Day' = numeric(0),
-                           'New Double Time' = numeric(0))
+                           'New Double Time' = numeric(0), 
+                           'Days of Smoothing' =  numeric(0))
             )
         }
         else{
             intervention.table(
                 data.frame('Day' = numeric(0),
-                           'New Re' = numeric(0))
+                           'New Re' = numeric(0), 
+                           'Days of Smoothing' =  numeric(0))
             )
         }
     })
@@ -564,13 +576,15 @@ shinyServer(function(input, output, session) {
             if (input$usedouble == TRUE){
                 intervention.table(rbind(intervention.table(),
                                          list('Day' = params$int.new.num.days , 
-                                              'New.Double.Time' = params$int.new.double 
+                                              'New.Double.Time' = params$int.new.double, 
+                                              'Days of Smoothing' = params$int.smooth.days
                                          )))
             }
             else{
                 intervention.table(rbind(intervention.table(),
                                          list('Day' = params$int.new.num.days, 
-                                              'New.Re' = params$int.new.r0 
+                                              'New.Re' = params$int.new.r0,
+                                              'Days of Smoothing' = params$int.smooth.days
                                          )))
             }
         
@@ -587,7 +601,8 @@ shinyServer(function(input, output, session) {
         int.df <- intervention.table()
         
         int.df$Date <- int.df$Day + input$curr_date
-        int.df <- int.df[,c('Date', 'New.Re')]
+        int.df <- int.df[,c('Date', 'New.Re', 'Days.of.Smoothing')]
+        colnames(int.df) <- c('Date', 'New Re', 'Days of Smoothing')
         
         if (nrow(int.df) > 0){
             int.df[["Delete"]] <-
@@ -620,7 +635,7 @@ shinyServer(function(input, output, session) {
     beta.vector <- reactive({
 
         int.table.temp <- intervention.table()
-        
+
         # determines what 'day' we are on using the initialization
         curr.day  <- as.numeric(curr.day.list()['curr.day'])
         
@@ -629,26 +644,29 @@ shinyServer(function(input, output, session) {
             curr.day <- 365
             new.num.days <- 1000
         }
-        
+
         # setting doubling time
         if (input$usedouble == FALSE){
             
             if (!is.null(input$r0_prior) & !is.null(params$int.new.r0)){
                 int.table.temp <- rbind(int.table.temp, 
                                         list(Day = c(params$int.new.num.days, -curr.day, input$proj_num_days ),
-                                             New.Re = c(params$int.new.r0, input$r0_prior, NA )))
+                                             New.Re = c(params$int.new.r0, input$r0_prior, NA ), 
+                                             Days.of.Smoothing = c(params$int.smooth.days, 0, 0)))
             }
             else{
                 int.table.temp <- rbind(int.table.temp, 
                                         list(Day = c(-curr.day, input$proj_num_days),
-                                             New.Re = c(r0.default, NA)))
+                                             New.Re = c(r0.default, NA),
+                                             Days.of.Smoothing = c(0, 0)))
             }
             
         }
         else{
             int.table.temp <- rbind(int.table.temp, 
                                     list(Day = c(params$int.new.num.days, -curr.day, input$proj_num_days),
-                                         New.Double.Time = c(params$int.new.double, input$doubling_time, NA )))
+                                         New.Double.Time = c(params$int.new.double, input$doubling_time, NA ),
+                                         Days.of.Smoothing = c(params$int.smooth.days, 0, 0)))
         }
 
         applygetBeta <- function(x){
@@ -669,14 +687,27 @@ shinyServer(function(input, output, session) {
         day.vec <- int.table.temp$Day
         rep.vec <- day.vec[2:length(day.vec)] - day.vec[1:length(day.vec) - 1]
         betas <- int.table.temp$beta[1:length(day.vec) - 1]
+        smooth.vec <- int.table.temp$Days.of.Smoothing
         
         beta.vec <- c()
+
         for (i in 1:length(rep.vec)){
             beta <- betas[i]
             reps <- rep.vec[i]
-            beta.vec <- c(beta.vec, rep(beta, reps))
+            smooth.days <- smooth.vec[i]
+
+            if (smooth.days > 0){
+                beta.last <- betas[i-1]
+                beta.diff <- beta - beta.last
+                beta.step <- beta.diff / smooth.days
+                beta.vec <- c(beta.vec, seq(beta.last+beta.step, beta, beta.step))
+            }
+            
+            beta.vec <- c(beta.vec, rep(beta, reps - smooth.days))
         }
+
         beta.vec
+        
     })
     
     
