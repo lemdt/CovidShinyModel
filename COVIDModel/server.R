@@ -722,15 +722,30 @@ shinyServer(function(input, output, session) {
             beta <- betas[i]
             reps <- rep.vec[i]
             smooth.days <- smooth.vec[i]
+            actual.smooth.days <- min(reps, smooth.days)
 
             if (smooth.days > 0){
                 beta.last <- betas[i-1]
                 beta.diff <- beta - beta.last
                 beta.step <- beta.diff / smooth.days
-                beta.vec <- c(beta.vec, seq(beta.last+beta.step, beta, beta.step))
+                
+                if (beta.step != 0){
+                    smooth.seq <- seq(beta.last+beta.step, beta, beta.step)
+                    smooth.seq <- smooth.seq[1:actual.smooth.days]
+
+                    if (smooth.days > reps){
+                        betas[i] <- smooth.seq[actual.smooth.days]
+                    }
+
+                }
+                else{
+                    smooth.seq <- rep(beta, actual.smooth.days)
+                }
+                
+                beta.vec <- c(beta.vec, smooth.seq)
             }
             
-            beta.vec <- c(beta.vec, rep(beta, reps - smooth.days))
+            beta.vec <- c(beta.vec, rep(beta, reps - actual.smooth.days))
         }
 
         beta.vec
