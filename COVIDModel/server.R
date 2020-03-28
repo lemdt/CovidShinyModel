@@ -593,7 +593,7 @@ shinyServer(function(input, output, session) {
             int.df[["Delete"]] <-
                 paste0('
                <div class="btn-group" role="group" aria-label="Basic example">
-               <button type="button" class="btn btn-secondary delete" id=delete', '_', int.df$Day, '>Delete</button>
+               <button type="button" class="btn btn-secondary delete" id=delete', '_', int.df$Date, '>Delete</button>
                </div>
                ')
             
@@ -610,7 +610,7 @@ shinyServer(function(input, output, session) {
     observeEvent(input$lastClick, {
         if (grepl('delete', input$lastClickId)){
             delete_day <- as.numeric(strsplit(input$lastClickId, '_')[[1]][2])
-            intervention.table(intervention.table()[intervention.table()$Day != delete_day,])
+            intervention.table(intervention.table()[intervention.table()$Date != delete_day,])
         }
     })
     ##  ............................................................................
@@ -1037,11 +1037,12 @@ shinyServer(function(input, output, session) {
     output$infected_ct <- renderUI({
         
         curr_date <- format(input$curr_date, format="%B %d, %Y")
+        curr.day <- curr.day.list()['curr.day']
         
         if (input$input.metric == 'Hospitalizations'){
-            infected <- curr.day.list()['infection.estimate']
-            cases <- as.numeric(curr.day.list()['infection.estimate']) + 
-                as.numeric(curr.day.list()['recovered.estimate'])
+            infected <- round(sir.output.df()[sir.output.df()$day == curr.day,]$I)
+            cases <- round(sir.output.df()[sir.output.df()$day == curr.day,]$I + 
+                sir.output.df()[sir.output.df()$day == curr.day,]$R)
             
             HTML(sprintf('<h3><b>Estimates for %s</b></h3>
                         <h4>We estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
