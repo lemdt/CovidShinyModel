@@ -1,8 +1,7 @@
 
 ##  ............................................................................
-##  What does this app do?  
+##  Overview of App
 ##  ............................................................................
-
 
 about.wording <- "<h4><b>What does this tool do?</b></h4>
 The app projects numbers of <i> active cases, hospitalizations, ICU-use and 
@@ -66,9 +65,26 @@ different timepoints, which will change the projections in the graphs.
 "
 
 ##  ............................................................................
+##  Other Header/Instructions
+##  ............................................................................
+
+estimate.re.header <- '<h4> Estimate Re based on historical hospitalizations</h4>
+Provide data from past dates to estimate the Re value.<br><br>'
+
+##  ............................................................................
 ##  Wording for Inputs
 ##  ............................................................................
 
 hosp.input.wording <- "Estimate of current inpatients with COVID-19:"
 
 cases.input.wording <- "Estimate of number of cases of COVID-19:"
+
+prior.double.wording <- "Doubling Time (days) Before %s"
+
+prior.re.wording <- "Re Before %s"
+
+estimate.re.action.wording <- "Estimate Re prior to %s based on data."
+
+int.double.wording <- "New Doubling Time (days) After Interventions"
+
+int.re.wording <- "New Re After Intervention"

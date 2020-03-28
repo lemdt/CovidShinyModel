@@ -63,7 +63,7 @@ shinyServer(function(input, output, session) {
 
         if (input$usedouble == TRUE){
             sliderInput(inputId = 'doubling_time', 
-                        label = sprintf('Doubling Time (days) Before %s', date.select), 
+                        label = sprintf(prior.double.wording, date.select), 
                         min = 1, 
                         max = 12, 
                         step = 1, 
@@ -73,12 +73,12 @@ shinyServer(function(input, output, session) {
             fluidPage(
                 fluidRow(
                     sliderInput(inputId = 'r0_prior', 
-                                label = sprintf('Re Before %s', date.select), 
+                                label = sprintf(prior.re.wording, date.select), 
                                 min = 0.1, 
                                 max = 7, 
                                 step = 0.1, 
                                 value = 2.8),
-                    actionLink('predict_re', sprintf('Estimate Re prior to %s based on data.', date.select))
+                    actionLink('predict_re', sprintf(estimate.re.action.wording, date.select))
                 )
             )
             
@@ -88,7 +88,7 @@ shinyServer(function(input, output, session) {
     output$int_val <- renderUI({
         if (input$usedouble == TRUE){
             sliderInput(inputId = 'new_double', 
-                        label = 'New Doubling Time (days) After Interventions', 
+                        label = int.double.wording, 
                         min = 0, 
                         max = 50, 
                         step = 1, 
@@ -96,7 +96,7 @@ shinyServer(function(input, output, session) {
         }
         else{
             sliderInput(inputId = 'r0_new', 
-                        label = 'New Re After Intervention', 
+                        label = int.re.wording, 
                         min = 0.1, 
                         max = 6, 
                         step = 0.1,
@@ -117,38 +117,50 @@ shinyServer(function(input, output, session) {
         
         showModal(
             modalDialog(
+
                 useShinyjs(),
-                HTML('<h4> Estimate Re based on historical hospitalizations</h4>
-                     
-                     Provide data from past dates to estimate the Re value.<br><br>'),
+
+                HTML(estimate.re.header),
+
                 splitLayout(
+
                     dateInput(inputId = 'date.hist', 
                               label = 'Date',
                               value = input$curr_date,
                               max = input$curr_date,
                               min = input$curr_date - 14),
+
                     numericInput(inputId = 'num.hospitalized.hist', 
                                  label = 'Number Hospitalized', 
                                  value = NA)
+
                 ),
+
                 actionButton('add.hist', 'Add Data'),
+
                 dataTableOutput(
                     outputId = 'input_hosp_dt'
                 ), 
+
                 tags$script("$(document).on('click', '#input_hosp_dt button', function () {
                   Shiny.onInputChange('lastClickId',this.id);
                                              Shiny.onInputChange('lastClick', Math.random())
                                              });"),
+
                 HTML('<br>'),
+
                 actionButton(
                     inputId = 'run.fit', 
                     label = 'Estimate Re'),
+
                 div(id = "predict.ui.toggle",
                     fluidPage(
                         uiOutput('best.re'),
                         plotOutput('fit.plot')
                     )
+
                 ) %>% hidden()
+
             )
         )
         
@@ -194,7 +206,7 @@ shinyServer(function(input, output, session) {
         if (nrow(hist.dt) > 0){
             hist.dt[["Delete"]] <-
                 paste0('
-               <div class="btn-group" role="group" aria-label="Basic example">
+               <div class="btn-group" role="group" aria-label="">
                <button type="button" class="btn btn-secondary delete" id=delhist', '_', hist.dt$Day, '>Delete</button>
                </div>
                ')
@@ -1010,7 +1022,6 @@ shinyServer(function(input, output, session) {
     
     output$hospitalization.plot <- renderPlot({
         df.to.plot <- hospitalization.df()
-        
         df.to.plot$day <- NULL
         
         if (length(input$selected_hosp) != 0){
