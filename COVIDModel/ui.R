@@ -25,7 +25,7 @@ shinyUI(
                
                HTML('<br>'),
                
-               titlePanel("COVID-19 Epidemic Modeling"),
+               titlePanel("COVID-19 Epidemic Modeling (Pre-Release)"),
                
                actionLink('howtouse', 'Learn more about this tool.'),
                
@@ -55,6 +55,8 @@ shinyUI(
                    
                    uiOutput(outputId = 'prior_val'),
                    
+                   HTML('<br>'),
+                   
                    hr(),
                    
                    HTML('<h4><b>Add Interventions</b></h4>'),
@@ -65,6 +67,19 @@ shinyUI(
                    uiOutput(outputId = 'intervention_ui'),
                    
                    dataTableOutput(outputId = 'int_table'),
+  
+                   HTML('<br>'),
+                   
+                   hr(),
+                   
+                   HTML('<h4><b>Add Influxes of Infections</b></h4>'),
+                   
+                   checkboxInput(inputId = 'showinflux', 
+                                 label = 'Add Influx of Infection'),
+                   
+                   uiOutput(outputId = 'influx_ui'),
+                   
+                   HTML('<br>'),
                    
                    hr(),
                    

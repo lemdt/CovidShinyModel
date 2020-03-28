@@ -7,7 +7,8 @@ library(data.table)
 SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
                 hosp.delay.time = 10, hosp.rate = 0.05, hosp.los = 7,
                 icu.delay.time = 2, icu.rate = 0.5, icu.los = 9,
-                vent.delay.time = 1, vent.rate = 0.5, vent.los = 10) {
+                vent.delay.time = 1, vent.rate = 0.5, vent.los = 10,
+                influx = list('day' = -1, num.influx = 0)) {
   
   # initialize S, I, R 
   S <- I <- R <- rep(NA_real_, num.days)
@@ -23,6 +24,11 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
     S[tt + 1] <-  -beta * S[tt] * I[tt] / N                  + S[tt]
     I[tt + 1] <-   beta * S[tt] * I[tt] / N - gamma * I[tt]  + I[tt]
     R[tt + 1] <-                          gamma * I[tt]  + R[tt]
+    
+    if (influx[['day']] == tt){
+        S[tt + 1] <- S[tt + 1] - influx[['num.influx']]
+        I[tt + 1] <- I[tt + 1] + influx[['num.influx']]
+    }
   }
 
   # create datatable of S, I, R
@@ -36,6 +42,9 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
   }
   
   new.infections <- c(I0, new.infections[1:num.days-1])
+  if (influx[['day']] > 0){
+    new.infections[influx[['day']]] = new.infections[influx[['day']]] + influx[['num.influx']]
+  }
   
   # initialize vectors 
   hosp <- icu <- vent <- admit.hosp <- admit.icu <- admit.vent <- 

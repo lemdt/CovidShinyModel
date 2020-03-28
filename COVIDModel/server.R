@@ -494,7 +494,7 @@ shinyServer(function(input, output, session) {
                                  label = 'Smoothed over how many days?', 
                                  value = 0, 
                                 min = 0, 
-                                max = 15),
+                                max = 30),
 
                     actionButton(inputId = 'add_intervention', 
                                  label = 'Save Intervention'))
@@ -508,6 +508,7 @@ shinyServer(function(input, output, session) {
         params$int.new.double <- input$doubling_time
         params$int.new.r0 <- input$r0_prior
         params$int.new.num.days <- 0
+        params$int.smooth.days <- 0
         
     })
 
@@ -630,6 +631,30 @@ shinyServer(function(input, output, session) {
             intervention.table(intervention.table()[intervention.table()$Date != delete_day,])
         }
     })
+    
+    ##  ............................................................................
+    ##  Influx of Infections 
+    ##  ............................................................................
+    
+    output$influx_ui <- renderUI({ 
+        
+        if (input$showinflux){
+            fluidPage(
+                fluidRow(                         
+                    dateInput(inputId = 'influx_date', 
+                              label = 'Date of Influx', 
+                              min = input$curr_date - params$hosp.delay.time, 
+                              value = input$curr_date),
+                    
+                    numericInput('num.influx', 
+                                label = 'Number of Infected Entering Region', 
+                                value = 0)
+            )
+            )
+        }
+        
+    })
+    
     ##  ............................................................................
     ##  Projection 
     ##  ............................................................................
@@ -725,6 +750,20 @@ shinyServer(function(input, output, session) {
             start.susc <- input$num_people - start.inf
             start.res <- 0
             
+            # influx of infections
+            
+            influx = list('day' = -1, num.influx = 0)
+
+            if (input$showinflux == TRUE){
+                if (length(input$influx_date > 0)){
+                    influx.day <- input$influx_date - input$curr_date + curr.day
+                    influx <- list(
+                        'day' = influx.day, 
+                        'num.influx' = input$num.influx
+                    )
+                }
+            }
+            
             SIR.df = SIR(S0 = start.susc, 
                          I0 = start.inf, 
                          R0 = start.res,
@@ -739,7 +778,8 @@ shinyServer(function(input, output, session) {
                          icu.los = params$icu.los,
                          vent.delay.time = params$vent.delay.time, 
                          vent.rate = params$vent.rate, 
-                         vent.los = params$vent.los)
+                         vent.los = params$vent.los, 
+                         influx = influx)
             
             # shift the number of days to account for day 0 in the model 
             SIR.df$days.shift <- SIR.df$day - curr.day
