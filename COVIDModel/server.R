@@ -12,7 +12,7 @@ library(shinyjs)
 # start simulation from this number of infections
 # TODO: should do a test that this works...if we start with a different start.inf
 # are the results different? 
-start.inf <- 1
+start.exp <- 1
 r0.default <- 2.8
 est.days <- 365
 
@@ -240,7 +240,7 @@ shinyServer(function(input, output, session) {
                                    num.days = est.days, 
                                    day.vec = hist.temp$Day, 
                                    num_actual.vec = hist.temp$Hospitalizations,
-                                   start.inf = start.inf,
+                                   start.exp = start.exp,
                                    hosp.delay.time = params$hosp.delay.time, 
                                    hosp.rate = params$hosp.rate, 
                                    hosp.los = params$hosp.los,
@@ -297,7 +297,9 @@ shinyServer(function(input, output, session) {
     params <- reactiveValues(
         illness.length = 14,
         gamma = 1/14,
-        hosp.delay.time = 10, 
+        incubation.period = 5,
+        sigma = 1/7,
+        hosp.delay.time = 7, 
         hosp.rate = 0.06, 
         hosp.los = 7,
         icu.delay.time = 5, 
@@ -319,7 +321,11 @@ shinyServer(function(input, output, session) {
     observeEvent(input$parameters_modal,{
         showModal(modalDialog(
             fluidPage(
-                sliderInput('illness.length', 'Average Length of Illness (Assumed Same as Time of Infectiousness)', min = 0, max = 20, step = 1, 
+                
+                sliderInput('incubation.period', 'Incubation Period of Illness After Exposure (days)', min = 0, max = 20, step = 1, 
+                            value = params$incubation.period, width = '100%'),
+    
+                sliderInput('illness.length', 'Infectious Period of Illness (days)', min = 0, max = 20, step = 1, 
                             value = params$illness.length, width = '100%'),
                 
                 sliderInput('hosp.rate', 'Percent Hospitalized Among Infections', min = 0, max = 1, step = 0.01, 
@@ -367,6 +373,8 @@ shinyServer(function(input, output, session) {
         params$vent.delay.time = input$vent.after.icu
         params$vent.rate = input$vent.rate
         params$vent.los = input$vent.los
+        params$incubation.period = input$incubation.period
+        params$sigma = 1/input$incubation.period
         removeModal()
     })
     
@@ -399,11 +407,12 @@ shinyServer(function(input, output, session) {
             
             find.curr.estimates(S0 = input$num_people,
                                 beta.vector = initial_beta_vector(), 
+                                sigma = params$sigma,
                                 gamma = params$gamma, 
                                 num.days = est.days, 
                                 num_actual = num.actual,
                                 metric = predict.metric,
-                                start.inf = start.inf,
+                                start.exp = start.exp,
                                 hosp.delay.time = params$hosp.delay.time, 
                                 hosp.rate = params$hosp.rate, 
                                 hosp.los = params$hosp.los,
@@ -716,7 +725,8 @@ shinyServer(function(input, output, session) {
             new.num.days <- ifelse(is.na(new.num.days), 365, new.num.days)
             
             # starting conditions
-            start.susc <- input$num_people - start.inf
+            start.susc <- input$num_people - start.exp
+            start.inf <- 0
             start.res <- 0
             
             # influx of infections
@@ -733,10 +743,12 @@ shinyServer(function(input, output, session) {
                 }
             }
             
-            SIR.df = SIR(S0 = start.susc, 
+            SIR.df = SIR(S0 = start.susc,
+                         E0 = start.exp,
                          I0 = start.inf, 
                          R0 = start.res,
                          beta.vector = beta.vector(),
+                         sigma = params$sigma, 
                          gamma = params$gamma,
                          num.days = new.num.days, 
                          hosp.delay.time = params$hosp.delay.time,
@@ -1182,7 +1194,7 @@ shinyServer(function(input, output, session) {
             }
             # write.csv(data.frame(data), file, row.names = FALSE)
             df.output <- sir.output.df()[,c('day', 'days.shift', 'date',
-                                            'S', 'I', 'R', 'new.infections',
+                                            'S', 'E', 'I', 'R', 'new.infections',
                                             'admit.hosp', 'discharge.hosp', 'hosp', 
                                             'admit.icu', 'discharge.icu', 'icu',
                                             'admit.vent', 'discharge.vent', 'vent')]
