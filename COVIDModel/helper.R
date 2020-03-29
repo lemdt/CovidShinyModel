@@ -4,48 +4,42 @@ library(data.table)
 
 # runs SIR model simulation, and then calculates hospitalizations, 
 # icu numbers, and ventilator numbers 
-SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
+SIR <- function(S0, E0, I0, R0, beta.vector, sigma, gamma, num.days,
                 hosp.delay.time = 10, hosp.rate = 0.05, hosp.los = 7,
                 icu.delay.time = 2, icu.rate = 0.5, icu.los = 9,
                 vent.delay.time = 1, vent.rate = 0.5, vent.los = 10,
                 influx = list('day' = -1, num.influx = 0)) {
   
   # initialize S, I, R 
-  S <- I <- R <- rep(NA_real_, num.days)
+  S <- E <- I <- R <- rep(NA_real_, num.days)
   S[1] <- S0
+  E[1] <- E0
   I[1] <- I0
   R[1] <- R0
   
-  N = S[1] + I[1] + R[1]
+  N = S[1] + E[1] + I[1] + R[1]
 
   # run SIR model 
   for (tt in 1:(num.days - 1)) {
     beta <- beta.vector[tt]
     S[tt + 1] <-  -beta * S[tt] * I[tt] / N                  + S[tt]
-    I[tt + 1] <-   beta * S[tt] * I[tt] / N - gamma * I[tt]  + I[tt]
-    R[tt + 1] <-                          gamma * I[tt]  + R[tt]
+    E[tt + 1] <-  beta * S[tt] * I[tt] / N - sigma * E[tt]   + E[tt]
+    I[tt + 1] <-  sigma * E[tt] - gamma * I[tt]              + I[tt]
+    R[tt + 1] <-  gamma * I[tt]                              + R[tt]
     
     if (influx[['day']] == tt){
         S[tt + 1] <- S[tt + 1] - influx[['num.influx']]
-        I[tt + 1] <- I[tt + 1] + influx[['num.influx']]
+        E[tt + 1] <- E[tt + 1] + influx[['num.influx']]
     }
   }
 
-  # create datatable of S, I, R
-  dt <- data.table(days = 0:(num.days-1), S, I, R)
+  # create datatable of S, E, I, R
+  dt <- data.table(days = 0:(num.days-1), S, E, I, R)
   
-  if (length(beta.vector) == num.days){
-    new.infections <- beta.vector*S*I / N
-  }
-  else{
-    new.infections <- beta*S*I / N
-  }
-  
+  new.infections <- sigma * E
+
   new.infections <- c(I0, new.infections[1:num.days-1])
-  if (influx[['day']] > 0){
-    new.infections[influx[['day']]] = new.infections[influx[['day']]] + influx[['num.influx']]
-  }
-  
+
   # initialize vectors 
   hosp <- icu <- vent <- admit.hosp <- admit.icu <- admit.vent <- 
     discharge.hosp <- discharge.icu <- discharge.vent <- rep(0, num.days)
@@ -108,24 +102,26 @@ SIR <- function(S0, I0, R0, beta.vector, gamma, num.days,
   dt2 <- data.table(day = 0:(num.days-1), hosp, admit.hosp, discharge.hosp, 
                     icu, admit.icu, discharge.icu, 
                     vent, admit.vent, discharge.vent, 
-                    S, I, R, new.infections)
+                    S, E, I, R, new.infections)
   return(dt2)
 }
 
 # finds current estimates of the number of active infections, 
 # number recovered, and number susceptible based on the current # of 
 # hospitalizations
-find.curr.estimates = function(S0, beta.vector, gamma, num.days, num_actual, 
-                               metric, start.inf = 3, 
+find.curr.estimates = function(S0, beta.vector, sigma, gamma, 
+                               num.days, num_actual, metric, start.exp = 3, 
                                hosp.delay.time = 10, hosp.rate = 0.05, hosp.los = 7,
                                icu.delay.time = 13, icu.rate = 0.02, icu.los = 9,
                                vent.delay.time = 13, vent.rate = 0.01, vent.los = 10){
   
   # starting number of susceptible people
-  start.susc <- S0 - start.inf
+  start.susc <- S0 - start.exp
   start.res <- 0 
+  start.inf <- 0
   
-  SIR.df = SIR(start.susc, start.inf, start.res, beta.vector, gamma, num.days, 
+  SIR.df = SIR(start.susc, start.exp, start.inf, start.res, 
+               beta.vector, sigma, gamma, num.days, 
                hosp.delay.time, hosp.rate, hosp.los,
                icu.delay.time, icu.rate, icu.los,
                vent.delay.time, vent.rate, vent.los)
