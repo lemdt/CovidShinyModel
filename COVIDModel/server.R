@@ -21,7 +21,7 @@ library(shinyjs)
 # start simulation from this number of infections
 # TODO: should do a test that this works...if we start with a different start.inf
 # are the results different? 
-start.exp <- 1
+start.exp.default <- 1
 r0.default <- 2.8
 est.days <- 365
 
@@ -217,7 +217,7 @@ shinyServer(function(input, output, session) {
                                    num.days = est.days, 
                                    day.vec = hist.temp$Day, 
                                    num_actual.vec = hist.temp$Hospitalizations,
-                                   start.exp = start.exp,
+                                   start.exp = start.exp.default,
                                    hosp.delay.time = params$hosp.delay.time, 
                                    hosp.rate = params$hosp.rate, 
                                    hosp.los = params$hosp.los,
@@ -367,7 +367,7 @@ shinyServer(function(input, output, session) {
                                 num.days = est.days, 
                                 num_actual = num.actual,
                                 metric = predict.metric,
-                                start.exp = start.exp,
+                                start.exp = start.exp.default,
                                 hosp.delay.time = params$hosp.delay.time, 
                                 hosp.rate = params$hosp.rate, 
                                 hosp.los = params$hosp.los,
@@ -664,7 +664,7 @@ shinyServer(function(input, output, session) {
             new.num.days <- ifelse(is.na(new.num.days), 365, new.num.days)
             
             # starting conditions
-            start.susc <- input$num_people - start.exp
+            start.susc <- input$num_people - start.exp.default
             start.inf <- 0
             start.res <- 0
             
@@ -683,7 +683,7 @@ shinyServer(function(input, output, session) {
             }
             
             SIR.df = SIR(S0 = start.susc,
-                         E0 = start.exp,
+                         E0 = start.exp.default,
                          I0 = start.inf, 
                          R0 = start.res,
                          beta.vector = beta.vector(),
@@ -824,8 +824,8 @@ shinyServer(function(input, output, session) {
         df_temp <- sir.output.df()
         df_temp <- df_temp[df_temp$days.shift >= 0,]
         
-        df_temp$Cases <- df_temp$I + df_temp$R
-        df_temp$Active <- df_temp$I 
+        df_temp$Cases <- df_temp$I + df_temp$R + df_temp$E
+        df_temp$Active <- df_temp$I + df_temp$E
         df_temp$Resolved <- df_temp$R
         
         df_temp <- df_temp[,c('date', 'days.shift', 'Cases', 'Active', 'Resolved')]
@@ -1021,9 +1021,11 @@ shinyServer(function(input, output, session) {
         curr.day <- curr.day.list()['curr.day']
         
         if (input$input.metric == 'Hospitalizations'){
-            infected <- round(sir.output.df()[sir.output.df()$day == curr.day,]$I)
+            infected <- round(sir.output.df()[sir.output.df()$day == curr.day,]$I + 
+                                  sir.output.df()[sir.output.df()$day == curr.day,]$E)
             cases <- round(sir.output.df()[sir.output.df()$day == curr.day,]$I + 
-                sir.output.df()[sir.output.df()$day == curr.day,]$R)
+                sir.output.df()[sir.output.df()$day == curr.day,]$R + 
+                    sir.output.df()[sir.output.df()$day == curr.day,]$E)
             
             HTML(sprintf(curr.inf.est.wording, curr_date, cases, infected))
         }
@@ -1043,8 +1045,8 @@ shinyServer(function(input, output, session) {
         select.day <- select.row$days.shift
         
         if (input$selected_graph == 'Cases'){
-            cases <- round(select.row$I + select.row$R)
-            active <- floor(select.row$I)
+            cases <- round(select.row$I + select.row$R + select.row$E)
+            active <- floor(select.row$I + select.row$E)
             
             if (length(select.day) != 0){
                 if (select.day == 0){
