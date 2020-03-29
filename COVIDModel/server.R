@@ -345,7 +345,7 @@ shinyServer(function(input, output, session) {
         gamma = 1/14,
         incubation.period = 5,
         sigma = 1/7,
-        hosp.delay.time = 3, 
+        hosp.delay.time = 7, 
         hosp.rate = 0.06, 
         hosp.los = 7,
         icu.delay.time = 5, 
@@ -371,7 +371,7 @@ shinyServer(function(input, output, session) {
                 sliderInput('incubation.period', 'Incubation Period of Illness After Exposure (days)', min = 0, max = 20, step = 1, 
                             value = params$incubation.period, width = '100%'),
     
-                sliderInput('illness.length', 'Average Length of Illness after Incubation Period', min = 0, max = 20, step = 1, 
+                sliderInput('illness.length', 'Infectious Period of Illness (days)', min = 0, max = 20, step = 1, 
                             value = params$illness.length, width = '100%'),
                 
                 sliderInput('hosp.rate', 'Percent Hospitalized Among Infections', min = 0, max = 1, step = 0.01, 
