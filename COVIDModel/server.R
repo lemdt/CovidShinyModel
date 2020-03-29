@@ -1,7 +1,15 @@
+# loading helper functions
 source('helper.R')
+
+# loading model functions
+
+# loading language strings
 source('wording.R')
+
+# loading inputs
 source('inputs.R')
 
+# libraries
 library(shiny)
 library(ggplot2)
 library(shinyWidgets)
@@ -74,20 +82,10 @@ shinyServer(function(input, output, session) {
     
     output$int_val <- renderUI({
         if (input$usedouble == TRUE){
-            sliderInput(inputId = 'new_double', 
-                        label = int.double.wording, 
-                        min = 0, 
-                        max = 50, 
-                        step = 1, 
-                        value = 6)
+            int.double.input
         }
         else{
-            sliderInput(inputId = 'r0_new', 
-                        label = int.re.wording, 
-                        min = 0.1, 
-                        max = 6, 
-                        step = 0.1,
-                        value = 2.8)
+            int.re.input
         }
     })
     
@@ -111,19 +109,13 @@ shinyServer(function(input, output, session) {
 
                 splitLayout(
 
-                    dateInput(inputId = 'date.hist', 
-                              label = 'Date',
-                              value = input$curr_date,
-                              max = input$curr_date,
-                              min = input$curr_date - 14),
+                    date.hist.input(input$curr_date),
 
-                    numericInput(inputId = 'num.hospitalized.hist', 
-                                 label = 'Number Hospitalized', 
-                                 value = NA)
+                    hist.hosp.input
 
                 ),
 
-                actionButton('add.hist', 'Add Data'),
+                add.hist.action,
 
                 dataTableOutput(
                     outputId = 'input_hosp_dt'
@@ -136,9 +128,7 @@ shinyServer(function(input, output, session) {
 
                 HTML('<br>'),
 
-                actionButton(
-                    inputId = 'run.fit', 
-                    label = 'Estimate Re'),
+                run.fit.action,
 
                 div(id = "predict.ui.toggle",
                     fluidPage(
@@ -308,41 +298,19 @@ shinyServer(function(input, output, session) {
     observeEvent(input$parameters_modal,{
         showModal(modalDialog(
             fluidPage(
-                
-                sliderInput('incubation.period', incubation.input.wording, min = 0, max = 20, step = 1, 
-                            value = params$incubation.period, width = '100%'),
-    
-                sliderInput('illness.length', infectious.input.wording, min = 0, max = 20, step = 1, 
-                            value = params$illness.length, width = '100%'),
-                
-                sliderInput('hosp.rate', per.hosp.wording, min = 0, max = 1, step = 0.01, 
-                            value = params$hosp.rate, width = '100%'),
-                
-                sliderInput('icu.rate', per.icu.wording, min = 0, max = 1, step = 0.01, 
-                            value = params$icu.rate, width = '100%'),
-                
-                sliderInput('vent.rate', per.vent.wording, min = 0, max = 1, step = 0.01, 
-                            value = params$vent.rate, width = '100%'),
-                
-                sliderInput('hosp.after.inf', inf.to.hosp.wording, min = 0, max = 30, step = 1, 
-                            value = params$hosp.delay.time, width = '100%'),
-                
-                sliderInput('icu.after.hosp', hosp.to.icu.wording, min = 0, max = 30, step = 1, 
-                            value = params$icu.delay.time, width = '100%'),
-                
-                sliderInput('vent.after.icu', icu.to.vent.wording, min = 0, max = 30, step = 1, 
-                            value = params$vent.delay.time, width = '100%'),
-                
-                sliderInput('hosp.los', hosp.los.wording, min = 1, max = 15, step = 1, 
-                            value = params$hosp.los, width = '100%'),
-                
-                sliderInput('icu.los', icu.los.wording, min = 1, max = 15, step = 1,
-                            value = params$icu.los, width = '100%'),
-                
-                sliderInput('vent.los', vent.los.wording, min = 1, max = 15, step = 1, 
-                            value = params$vent.los, width = '100%')),
+                incubation.period.input(params$incubation.period),
+                illness.length.input(params$illness.length),
+                hosp.rate.input(params$hosp.rate),
+                icu.rate.input(params$icu.rate),
+                vent.rate.input(params$vent.rate),
+                hosp.after.inf.input(params$hosp.delay.time),
+                icu.after.hosp.input(params$icu.delay.time),
+                vent.after.icu.input(params$vent.delay.time),
+                hosp.los.input(params$hosp.los),
+                icu.los.input(params$icu.los),
+                vent.los.input(params$vent.los)),
             footer = tagList(
-                actionButton("save", params.save.msg)
+                save.parameter.action
             )
         )
         )
@@ -432,22 +400,12 @@ shinyServer(function(input, output, session) {
         
         if (input$showint){
             fluidPage(
-                fluidRow(                         
-                    dateInput(inputId = 'int_date', 
-                              label = int.date.wording, 
-                              min = input$curr_date - params$hosp.delay.time, 
-                              value = input$curr_date),
-                    
+                fluidRow(    
+                    int.date.input(input$curr_date, params$hosp.delay.time),
                     uiOutput(outputId = 'int_val'),
-                    
-                    sliderInput('smooth.int', 
-                                 label = int.smooth.wording, 
-                                 value = 0, 
-                                min = 0, 
-                                max = 30),
-
-                    actionButton(inputId = 'add_intervention', 
-                                 label = save.int.wording))
+                    smooth.int.input,
+                    add.int.action
+                    )
             )
         }
         
@@ -590,15 +548,9 @@ shinyServer(function(input, output, session) {
         
         if (input$showinflux){
             fluidPage(
-                fluidRow(                         
-                    dateInput(inputId = 'influx_date', 
-                              label = influx.date.wording, 
-                              min = input$curr_date - params$hosp.delay.time, 
-                              value = input$curr_date),
-                    
-                    numericInput('num.influx', 
-                                label = influx.num.wording, 
-                                value = 0)
+                fluidRow(    
+                    influx.date.input(input$curr_date, params$hosp.delay.time),
+                    num.influx.input
             )
             )
         }
@@ -757,14 +709,17 @@ shinyServer(function(input, output, session) {
             
             num.cases <- ifelse(length(input$num_cases) != 0, input$num_cases, 0)
             start.susc <- input$num_people - num.cases
+            start.exp <- 0
             start.inf <- num.cases 
             start.res <- 0 
             num.days <- input$proj_num_days
 
             SIR.df = SIR(S0 = start.susc, 
+                         E0 = start.exp,
                          I0 = start.inf, 
                          R0 = start.res,
                          beta.vector = beta.vector(),
+                         sigma = params$sigma, 
                          gamma = params$gamma,
                          num.days = num.days, 
                          hosp.delay.time = params$hosp.delay.time,
@@ -797,35 +752,21 @@ shinyServer(function(input, output, session) {
             if (!is.na(input$num_hospitalized)){
                 if (input$selected_graph == 'Cases'){
                     fluidPage(
-                        checkboxGroupInput(inputId = 'selected_cases', 
-                                           label = 'Selected', 
-                                           choices = c('Active', 'Resolved', 'Cases'), 
-                                           selected = c('Active', 'Resolved', 'Cases'), 
-                                           inline = TRUE),
-                        
+                        selected.cases.input,
                         plotOutput(outputId = 'cases.plot', 
                                    click = "plot_click")
                     )
                 }
                 else if (input$selected_graph == 'Hospitalization'){
                     fluidPage(
-                        checkboxGroupInput(inputId = 'selected_hosp', 
-                                           label = 'Selected', 
-                                           choices = c('Hospital', 'ICU', 'Ventilator'), 
-                                           selected =  c('Hospital', 'ICU', 'Ventilator'), 
-                                           inline = TRUE),
-                        
+                        selected.hosp.input,
                         plotOutput(outputId = 'hospitalization.plot', 
                                    click = "plot_click")
                     )
                 }
                 else{
                     fluidPage(
-                        column(4,
-                               numericInput(inputId = 'hosp_cap', 
-                                            label = avail.hosp.wording, 
-                                            value = params$hosp.avail)),
-                        
+                        column(4, hosp.cap.input(params$hosp.avail)),
                         column(4,
                                numericInput(inputId = 'icu_cap', 
                                             label = avail.icu.wording, 
