@@ -1,3 +1,10 @@
+# loading language strings
+source('wording.R')
+
+# loading inputs
+source('inputs.R')
+
+# libraries
 library(shiny)
 library(shinyWidgets)
 library(DT)
@@ -18,91 +25,53 @@ shinyUI(
     
     tags$div(class="container",
              fluidPage(
-               
                tags$head(
                  tags$style(HTML("hr {border-top: 1px solid #000000;}"))
                ),
-               
                HTML('<br>'),
                
-               titlePanel("COVID-19 Epidemic Modeling (Pre-Release)"),
-               
-               actionLink('howtouse', 'Learn more about this tool.'),
+               titlePanel(app.title),
+               how.to.use.link,
                
                HTML('<br><br>'),
                
                sidebarLayout(
                  sidebarPanel(
-                   HTML('<h4><b>Location Information</b></h4>'),
-
-                   numericInput(inputId = 'num_people', 
-                                label = 'Number of People in Area', 
-                                value = 883305),
                    
-                   # TODO: add in prediction fields for ICU patients, deaths and ventilators
-                   
-                   radioGroupButtons(inputId = 'input.metric', 
-                                     label = 'Input Metric:', 
-                                     choices = c('Hospitalizations', 'Cases'),
-                                     justified = TRUE, 
-                                     status = "primary"),
-                   
+                   # Location Information
+                   HTML(location.header),
+                   num.people.input,
+                   input.metric.input,
                    uiOutput(outputId = 'prediction_fld'),
-
-                   dateInput(inputId = 'curr_date', 
-                             label = 'On Date:',
-                   ),
-                   
+                   curr.date.input,
                    uiOutput(outputId = 'prior_val'),
                    
                    HTML('<br>'),
-                   
                    hr(),
                    
-                   HTML('<h4><b>Add Interventions</b></h4>'),
-                   
-                   checkboxInput(inputId = 'showint', 
-                                 label = 'Add Intervention'),
-                   
+                   # Interventions
+                   HTML(int.header),
+                   show.int.input,
                    uiOutput(outputId = 'intervention_ui'),
-                   
                    dataTableOutput(outputId = 'int_table'),
   
                    HTML('<br>'),
-                   
                    hr(),
                    
-                   HTML('<h4><b>Add Influx of Infections</b></h4>'),
-                   
-                   checkboxInput(inputId = 'showinflux', 
-                                 label = 'Add Influx of Infected Individuals'),
-                   
+                   # Influx 
+                   HTML(influx.header),
+                   show.influx.input,
                    uiOutput(outputId = 'influx_ui'),
                    
                    HTML('<br>'),
-                   
                    hr(),
                    
-                   HTML('<h4><b>Settings</b></h4>'),
-                   
-                   sliderInput(inputId = 'proj_num_days', 
-                               label = 'Number of Days to Project', 
-                               min = 10, 
-                               max = 730, 
-                               step = 5, 
-                               value = 365),
-                   
-                   materialSwitch(inputId = "usedouble", 
-                                  label = 'Use doubling time instead of Re', 
-                                  status = 'primary'),
-                   
-                   actionButton(inputId = 'parameters_modal',
-                                label = 'Customize Other Parameters'), 
-                   
-                   HTML('<br><br><b>Notes</b>: This app is a modified version of the <a href="http://penn-chime.phl.io/">Penn Chime app</a>.
-                 This is a beta version - the projections may or may not be accurate.
-                        
-                        <br><br> The code for this tool is on <a href="https://github.com/jpspeng/CovidShinyModel">Github</a>.'),
+                   # Other Settings
+                   HTML(settings.wording),
+                   proj.num.days.input,
+                   use.double.input,
+                   other.params.button, 
+                   HTML(end.notes),
                    
                    tags$script("$(document).on('click', '#int_table button', function () {
                   Shiny.onInputChange('lastClickId',this.id);
@@ -111,35 +80,26 @@ shinyUI(
                  ),
                  
                  mainPanel(
+                   
+                   # Day 0 Estimates 
                    wellPanel(
                      htmlOutput(outputId = 'infected_ct')
                    ),
                    
+                   # Projections
                    wellPanel(
                      style = "background: white",
-                     HTML('<h3><b>Projections</b></h3>'),
                      
-                     radioGroupButtons(inputId = 'selected_graph', 
-                                       label = '', 
-                                       choices = c('Cases', 'Hospitalization', 'Hospital Resources'),
-                                       justified = TRUE, 
-                                       status = "primary"),
-                     
+                     HTML(proj.header),
+                     selected.graph.input,
                      uiOutput(outputId = 'plot_output'),
-                     
                      HTML('<br>'),
-                     
                      fluidRow(
                        align = 'center',
                        column(width = 1),
-                       column(width = 1, 
-                              HTML('<br>'),
-                              actionButton("goleft", "", icon = icon("arrow-left"), width = '100%')),
-                       column(width = 8,  
-                              uiOutput(outputId = 'description')),
-                       column(width = 1, 
-                              HTML('<br>'),
-                              actionButton("goright", "", icon = icon("arrow-right"), width = '100%')),
+                       column(width = 1, HTML('<br>'), go.left.button),
+                       column(width = 8,  uiOutput(outputId = 'description')),
+                       column(width = 1, HTML('<br>'), go.right.button),
                        column(width = 1)
                      ),
                      
@@ -149,7 +109,7 @@ shinyUI(
                        dataTableOutput(outputId = 'rendered.table'),
                        style = "font-size:110%"),
                      downloadButton(outputId = 'downloadData', 
-                                    label = "Download as CSV"),
+                                    label = download.link.wording),
                      HTML('<br><br>')
                    )
                  )

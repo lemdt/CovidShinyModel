@@ -2,10 +2,17 @@
 ## Compilation of all of the strings that are outputted in the app.
 ##  ............................................................................
 
+##  ............................................................................
+##  General
+##  ............................................................................
 
-##  ............................................................................
-##  App Overview Message
-##  ............................................................................
+app.title <- "COVID-19 Epidemic Modeling (Pre-Release)"
+
+about.link.wording <- "Learn more about this tool."
+
+end.notes <- '<br><br><b>Notes</b>: This app is a modified version of the <a href="http://penn-chime.phl.io/">Penn Chime app</a>.
+This is a beta version - the projections may or may not be accurate.
+<br><br> The code for this tool is on <a href="https://github.com/jpspeng/CovidShinyModel">Github</a>.'
 
 about.wording <- "<h4><b>What does this tool do?</b></h4>
 The app projects numbers of <i> active cases, hospitalizations, ICU-use and 
@@ -69,13 +76,6 @@ different timepoints, which will change the projections in the graphs.
 "
 
 ##  ............................................................................
-##  Other Header/Instructions
-##  ............................................................................
-
-estimate.re.header <- "<h4> Estimate Re based on historical hospitalizations</h4>
-Provide data from past dates to estimate the Re value.<br><br>"
-
-##  ............................................................................
 ##  Warning/Notifications
 ##  ............................................................................
 
@@ -100,8 +100,43 @@ re.blank.table <- "No historical data added."
 search.msg <- "Find in table:"
 
 ##  ............................................................................
+## Headers/Instructions/Misc
+##  ............................................................................
+
+location.header <- '<h4><b>Location Information</b></h4>'
+
+int.header <- '<h4><b>Add Interventions</b></h4>'
+
+add.int.cb.wording <- 'Add Intervention'
+
+influx.header <- '<h4><b>Add Influx of Infections</b></h4>'
+
+influx.cb.wording <- 'Add Influx of Infected Individuals'
+
+use.double.wording <- 'Use doubling time instead of Re'
+
+settings.wording <- '<h4><b>Settings</b></h4>'
+
+cust.params.wording <- 'Customize Other Parameters'
+
+proj.header <- '<h3><b>Projections</b></h3>'
+
+download.link.wording <-"Download as CSV"
+
+estimate.re.header <- "<h4> Estimate Re based on historical hospitalizations</h4>
+Provide data from past dates to estimate the Re value.<br><br>"
+
+##  ............................................................................
 ##  Wording for Inputs
 ##  ............................................................................
+
+num.people.wording <- "Number of People in Area"
+
+input.metric.wording <- "Input Metric:"
+
+curr.date.wording <- "On Date:"
+
+proj.days.wording <- 'Number of Days to Project'
 
 hosp.input.wording <- "Estimate of current inpatients with COVID-19:"
 

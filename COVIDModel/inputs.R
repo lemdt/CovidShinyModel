@@ -6,8 +6,27 @@ library(shiny)
 source('wording.R')
 
 ##  ............................................................................
+##  General
+##  ............................................................................
+
+how.to.use.link <- actionLink('howtouse', about.link.wording)
+
+##  ............................................................................
 ##  Location inputs
 ##  ............................................................................
+
+num.people.input <- numericInput(inputId = 'num_people', 
+                                 label = num.people.wording, 
+                                 value = 883305)
+
+curr.date.input <- dateInput(inputId = 'curr_date', 
+                             label = curr.date.wording)
+
+input.metric.input <- radioGroupButtons(inputId = 'input.metric', 
+                                        label = input.metric.wording, 
+                                        choices = c('Hospitalizations', 'Cases'),
+                                        justified = TRUE, 
+                                        status = "primary")
 
 num.hosp.input <- numericInput(inputId = 'num_hospitalized', 
                                label = hosp.input.wording, 
@@ -47,6 +66,9 @@ pred.re.action <- function(date.select){
 ##  Intervention inputs
 ##  ............................................................................
 
+show.int.input <- checkboxInput(inputId = 'showint', 
+                                label = add.int.cb.wording)
+
 int.double.input <- sliderInput(inputId = 'new_double', 
                                 label = int.double.wording, 
                                 min = 0, 
@@ -83,6 +105,9 @@ add.int.action <- actionButton(inputId = 'add_intervention',
 ##  Influx inputs
 ##  ............................................................................
 
+show.influx.input <- checkboxInput(inputId = 'showinflux', 
+                                   label = influx.cb.wording)
+
 influx.date.input <- function(curr.date, hosp.delay.time){
   input.return <- dateInput(inputId = 'influx_date', 
                             label = influx.date.wording, 
@@ -95,6 +120,26 @@ influx.date.input <- function(curr.date, hosp.delay.time){
 num.influx.input <- numericInput('num.influx', 
                                  label = influx.num.wording, 
                                  value = 0)
+
+
+##  ............................................................................
+##  Settings Inputs
+##  ............................................................................
+
+proj.num.days.input <- sliderInput(inputId = 'proj_num_days', 
+                                   label = proj.days.wording, 
+                                   min = 10, 
+                                   max = 730, 
+                                   step = 5, 
+                                   value = 365)
+
+use.double.input <-  materialSwitch(inputId = "usedouble", 
+                                    label = use.double.wording, 
+                                    status = 'primary')
+
+other.params.button <- actionButton(inputId = 'parameters_modal',
+                                   label = cust.params.wording)
+
 
 ##  ............................................................................
 ##  Re Estimation Inputs
@@ -212,6 +257,12 @@ save.parameter.action <- actionButton("save", params.save.msg)
 ##  Graph selection inputs
 ##  ............................................................................
 
+selected.graph.input <- radioGroupButtons(inputId = 'selected_graph', 
+                                          label = '', 
+                                          choices = c('Cases', 'Hospitalization', 'Hospital Resources'),
+                                          justified = TRUE, 
+                                          status = "primary")
+
 selected.cases.input <- checkboxGroupInput(inputId = 'selected_cases', 
                                            label = 'Selected', 
                                            choices = c('Active', 'Resolved', 'Cases'), 
@@ -229,6 +280,10 @@ selected.res.input <- checkboxGroupInput(inputId = 'selected_res',
                                          choices = c('Hospital', 'ICU', 'Ventilator'), 
                                          selected =  c('Hospital', 'ICU', 'Ventilator'), 
                                          inline = TRUE)
+
+go.left.button <- actionButton("goleft", "", icon = icon("arrow-left"), width = '100%')
+
+go.right.button <- actionButton("goright", "", icon = icon("arrow-right"), width = '100%')
 
 ##  ............................................................................
 ##  Resource availability 
