@@ -767,22 +767,9 @@ shinyServer(function(input, output, session) {
                 else{
                     fluidPage(
                         column(4, hosp.cap.input(params$hosp.avail)),
-                        column(4,
-                               numericInput(inputId = 'icu_cap', 
-                                            label = avail.icu.wording, 
-                                            value = params$icu.avail)),
-                        
-                        column(4,
-                               numericInput(inputId = 'vent_cap', 
-                                            label = avail.vent.wording , 
-                                            value = params$vent.avail)),
-                        
-                        fluidPage(checkboxGroupInput(inputId = 'selected_res', 
-                                                     label = 'Selected', 
-                                                     choices = c('Hospital', 'ICU', 'Ventilator'), 
-                                                     selected =  c('Hospital', 'ICU', 'Ventilator'), 
-                                                     inline = TRUE)),
-                        
+                        column(4,icu.cap.input(params$icu.avail)),
+                        column(4,vent.cap.input(params$vent.avail)),
+                        fluidPage(selected.res.input),
                         plotOutput(outputId = 'resource.plot', 
                                    click = "plot_click")
                     )

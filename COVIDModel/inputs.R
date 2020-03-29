@@ -224,10 +224,35 @@ selected.hosp.input <- checkboxGroupInput(inputId = 'selected_hosp',
                                           selected =  c('Hospital', 'ICU', 'Ventilator'), 
                                           inline = TRUE)
 
+selected.res.input <- checkboxGroupInput(inputId = 'selected_res', 
+                                         label = 'Selected', 
+                                         choices = c('Hospital', 'ICU', 'Ventilator'), 
+                                         selected =  c('Hospital', 'ICU', 'Ventilator'), 
+                                         inline = TRUE)
+
+##  ............................................................................
+##  Resource availability 
+##  ............................................................................
+
 hosp.cap.input <- function(hosp.avail){
   input.return <- numericInput(inputId = 'hosp_cap', 
                                label = avail.hosp.wording, 
                                value = hosp.avail)
   return(input.return)
 }
+
+icu.cap.input <- function(icu.avail){
+  input.return <- numericInput(inputId = 'icu_cap', 
+                               label = avail.icu.wording, 
+                               value = icu.avail)
+  return(input.return)
+}
+
+vent.cap.input <- function(vent.avail){
+  input.return <- numericInput(inputId = 'vent_cap', 
+                               label = avail.vent.wording , 
+                               value = vent.avail)
+  return(input.return)
+}
+
   
