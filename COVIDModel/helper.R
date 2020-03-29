@@ -1,236 +1,10 @@
+##  ............................................................................
+##  Common Helper Functions  
+##  ............................................................................
+
 library(ggplot2)
 library(shinyWidgets)
 library(data.table)
-
-# runs SIR model simulation, and then calculates hospitalizations, 
-# icu numbers, and ventilator numbers 
-SIR <- function(S0, E0, I0, R0, beta.vector, sigma, gamma, num.days,
-                hosp.delay.time = 10, hosp.rate = 0.05, hosp.los = 7,
-                icu.delay.time = 2, icu.rate = 0.5, icu.los = 9,
-                vent.delay.time = 1, vent.rate = 0.5, vent.los = 10,
-                influx = list('day' = -1, num.influx = 0)) {
-  
-  # initialize S, I, R 
-  S <- E <- I <- R <- rep(NA_real_, num.days)
-  S[1] <- S0
-  E[1] <- E0
-  I[1] <- I0
-  R[1] <- R0
-  
-  N = S[1] + E[1] + I[1] + R[1]
-
-  # run SIR model 
-  for (tt in 1:(num.days - 1)) {
-    beta <- beta.vector[tt]
-    S[tt + 1] <-  -beta * S[tt] * I[tt] / N                  + S[tt]
-    E[tt + 1] <-  beta * S[tt] * I[tt] / N - sigma * E[tt]   + E[tt]
-    I[tt + 1] <-  sigma * E[tt] - gamma * I[tt]              + I[tt]
-    R[tt + 1] <-  gamma * I[tt]                              + R[tt]
-    
-    if (influx[['day']] == tt){
-        S[tt + 1] <- S[tt + 1] - influx[['num.influx']]
-        E[tt + 1] <- E[tt + 1] + influx[['num.influx']]
-    }
-  }
-
-  # create datatable of S, E, I, R
-  dt <- data.table(days = 0:(num.days-1), S, E, I, R)
-  
-  new.infections <- sigma * E
-
-  new.infections <- c(I0, new.infections[1:num.days-1])
-
-  # initialize vectors 
-  hosp <- icu <- vent <- admit.hosp <- admit.icu <- admit.vent <- 
-    discharge.hosp <- discharge.icu <- discharge.vent <- rep(0, num.days)
-  
-  # iteratively creates hospitalization/icu/ventilation admission numbers based 
-  # on hospital delay time and hospitalization rates
-  for (tt in 1:num.days) {
-    admit.hosp[tt + hosp.delay.time] <- new.infections[tt] * hosp.rate
-    
-    admit.icu[tt + hosp.delay.time + icu.delay.time
-              ] <- new.infections[tt] * hosp.rate * icu.rate
-    
-    admit.vent[tt + hosp.delay.time + icu.delay.time + vent.delay.time
-               ] <- new.infections[tt] * hosp.rate * icu.rate * vent.rate
-  }
-  
-  # iteratively creates hospitalization/icu/ventilation discharge numbers based on 
-  # admission numbers and length of stays
-  for (tt in 1:num.days) {
-    # discharged from ventilator 
-    discharge.vent[tt + vent.los] <- admit.vent[tt]
-  } 
-
-  for (tt in 1:num.days) {
-    # the number of people discharged from icu includes:
-    # 1) Non-Ventilated: all the non-ventilated ICU people admitted at icu.los days earlier 
-    # 2) Ventilated: all the people who were discharged from the ventilator on that day
-    discharge.icu[tt + icu.los] <- (admit.icu[tt] * (1 - vent.rate)) + discharge.vent[tt + icu.los]
-  }
-
-  for (tt in 1:num.days) {
-    # the number of people discharged from the hospital includes: 
-    # 1) Non-ICU: all the non-ICU people admitted to the hospital at hosp.los days earlier
-    # 2) ICU: all the people discharged from the ICU that day 
-    discharge.hosp[tt + hosp.los] <- (admit.hosp[tt] * (1 - icu.rate)) + discharge.icu[tt + hosp.los]
-  }
-  
-  # iteratively creates hospitalization/icu/ventilation numbers based 
-  # previous day numbers plus admits minus discharges 
-  for (tt in 2:num.days) {
-    hosp[tt] <- hosp[tt - 1] + admit.hosp[tt] - discharge.hosp[tt]
-    icu[tt] <- icu[tt - 1] + admit.icu[tt] - discharge.icu[tt]
-    vent[tt] <- vent[tt - 1] + admit.vent[tt] - discharge.vent[tt]
-  }
-  
-  # ignore values after num.days, they're not correct
-  hosp <- hosp[1:num.days]
-  admit.hosp <- admit.hosp[1:num.days]
-  discharge.hosp <- discharge.hosp[1:num.days]
-  
-  icu <- icu[1:num.days] 
-  admit.icu <- admit.icu[1:num.days]
-  discharge.icu <- discharge.icu[1:num.days]
-  
-  vent <- vent[1:num.days]
-  admit.vent <- admit.vent[1:num.days]
-  discharge.vent <- discharge.vent[1:num.days]
-  
-  # create final data table with all numbers 
-  dt2 <- data.table(day = 0:(num.days-1), hosp, admit.hosp, discharge.hosp, 
-                    icu, admit.icu, discharge.icu, 
-                    vent, admit.vent, discharge.vent, 
-                    S, E, I, R, new.infections)
-  return(dt2)
-}
-
-# finds current estimates of the number of active infections, 
-# number recovered, and number susceptible based on the current # of 
-# hospitalizations
-find.curr.estimates = function(S0, beta.vector, sigma, gamma, 
-                               num.days, num_actual, metric, start.exp = 3, 
-                               hosp.delay.time = 10, hosp.rate = 0.05, hosp.los = 7,
-                               icu.delay.time = 13, icu.rate = 0.02, icu.los = 9,
-                               vent.delay.time = 13, vent.rate = 0.01, vent.los = 10){
-  
-  # starting number of susceptible people
-  start.susc <- S0 - start.exp
-  start.res <- 0 
-  start.inf <- 0
-  
-  SIR.df = SIR(start.susc, start.exp, start.inf, start.res, 
-               beta.vector, sigma, gamma, num.days, 
-               hosp.delay.time, hosp.rate, hosp.los,
-               icu.delay.time, icu.rate, icu.los,
-               vent.delay.time, vent.rate, vent.los)
-
-  # finds the minimum difference between projection and current
-  # NOTE: right now, only uses hospitalization numbers to predict so else statement is never used right now
-  if (metric == 'Hospitalization'){
-    
-    # find the difference between hospitalized column and the currently hospitalized number
-    SIR.df$diff_proj <- abs(SIR.df$hosp - num_actual)
-    
-    # hacky 
-    # the # hospitalized will be achieved twice according to model 
-    # first as the hospitalizations go up, and second as the hospitalizations go down 
-    # we want to find the day
-    hosp.numbers <- SIR.df$hosp
-    hosp.change <- hosp.numbers[2:length(hosp.numbers)] - hosp.numbers[1:length(hosp.numbers) - 1]
-    hosp.change <- c(0, hosp.change)
-    SIR.df$hosp.change <- hosp.change
-
-    curr.day.df <- SIR.df[SIR.df$hosp.change > 0,]
-    curr.day.df <- curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj, na.rm = TRUE),] 
-  }
-  else{
-    
-    # find the difference between ICU column and the current ICU number
-    SIR.df$diff_proj <- abs(SIR.df$icu - num_actual)
-    
-    icu.numbers <- SIR.df$icu
-    icu.change <- icu.numbers[2:length(icu.numbers)] - icu.numbers[1:length(icu.numbers) - 1]
-    icu.change <- c(0, icu.change)
-    SIR.df$icu.change <- icu.change
-    
-    curr.day.df <- SIR.df[SIR.df$icu.change > 0,]
-    curr.day.df <- curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj, na.rm = TRUE),] 
-  }
-  
-  curr.day <- as.integer(curr.day.df$day)
-  infection.estimate <- as.integer(curr.day.df$I)
-  susceptible.estimate <- as.integer(curr.day.df$S)
-  recovered.estimate <- as.integer(curr.day.df$R)
-  
-  curr.day.list <- list(
-    curr.day = curr.day,
-    infection.estimate = infection.estimate, 
-    susceptible.estimate = susceptible.estimate, 
-    recovered.estimate = recovered.estimate
-  )
-  
-  return(curr.day.list)
-}
-
-
-# function to get the best value of Re given historical data 
-findBestRe <- function(S0, gamma, num.days, day.vec, num_actual.vec, 
-                       start.inf = 3, hosp.delay.time = 10, 
-                       hosp.rate = 0.05, hosp.los = 7, icu.delay.time = 13, 
-                       icu.rate = 0.02, icu.los = 9,vent.delay.time = 13, 
-                       vent.rate = 0.01, vent.los = 10){
-  
-  # starting number of susceptible people
-  start.susc <- S0 - start.inf
-  start.res <- 0 
-  
-  # TODO: implement binary search
-  
-  min.sqrd.sum <- Inf
-  re_choice <- NA
-  vec.choice <- c()
-  
-  for (re in c(seq(1, 7, 0.1))){
-    beta <- getBetaFromRe(re, gamma)
-    
-    SIR.df = SIR(start.susc, start.inf, start.res, rep(beta, num.days), gamma, num.days, 
-                 hosp.delay.time, hosp.rate, hosp.los,
-                 icu.delay.time, icu.rate, icu.los,
-                 vent.delay.time, vent.rate, vent.los)
-    
-    SIR.df$diff_proj <- abs(SIR.df$hosp - num_actual.vec[1])
-    hosp.numbers <- SIR.df$hosp
-    hosp.change <- hosp.numbers[2:length(hosp.numbers)] - hosp.numbers[1:length(hosp.numbers) - 1]
-    hosp.change <- c(0, hosp.change)
-    SIR.df$hosp.change <- hosp.change
-    
-    curr.day.df <- SIR.df[SIR.df$hosp.change > 0,]
-    curr.day <- curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj, na.rm = TRUE),]$day - day.vec[1]
-    
-    compare.idx <- curr.day + day.vec
-    
-    compare.vec <- rev(SIR.df[SIR.df$day %in% compare.idx,]$hosp)
-    
-    sqrd.sum <- sum((num_actual.vec - compare.vec) ** 2)
-    
-    if (sqrd.sum < min.sqrd.sum){
-      re_choice <- re
-      min.sqrd.sum <- sqrd.sum
-      vec.choice <- compare.vec
-    }
-    
-  }
-  
-  list.return <- list(
-    'best.re' = re_choice, 
-    'best.vals' = vec.choice
-  )
-  
-  return(list.return)
-}
-
 
 # gets beta based on doubling time, gamma, and N
 getBetaFromDoubling <- function(doubling.time, gamma) {
@@ -242,4 +16,117 @@ getBetaFromDoubling <- function(doubling.time, gamma) {
 getBetaFromRe <- function(Re, gamma) {
   beta <- Re * gamma
   return(beta)
+}
+
+# rounds non-date columns
+roundNonDateCols <- function(df){
+  
+  df.new <- data.frame(df)
+  
+  for (col in colnames(df.new)){
+    if (col != 'date'){
+      df.new[,col] <- round(df.new[,col])
+    }
+  }
+  return(df.new)
+}
+
+# add to historical table
+add.to.hist.table <- function(hist.data, date.hist, num.hospitalized.hist, curr.date){
+  new.hist <- rbind(hist.data,
+                    list('Date' = as.character(date.hist), 
+                         'Hospitalizations' = num.hospitalized.hist, 
+                         'Day' = date.hist - curr.date
+                    ))
+  
+  new.hist <- arrange(new.hist, Day)
+  new.hist$Date <- as.Date(as.character(new.hist$Date))
+  
+  return(new.hist)
+}
+
+# bind to intervention table 
+bind.to.intervention <- function(int.table, params, usedouble){
+  if (usedouble == TRUE){
+    new.table <- rbind(int.table,
+                       list('Day' = params$int.new.num.days , 
+                            'New.Double.Time' = params$int.new.double, 
+                            'Days of Smoothing' = params$int.smooth.days
+                             ))
+  }
+  else{
+    new.table <- rbind(int.table,
+                       list('Day' = params$int.new.num.days, 
+                            'New.Re' = params$int.new.r0,
+                            'Days of Smoothing' = params$int.smooth.days
+                             ))
+  }
+  
+  new.table <- arrange(new.table, Day)
+  return(new.table)
+}
+
+# create cases dataframe 
+create.cases.df <- function(sir.output.df){
+  df_temp <- sir.output.df
+  
+  df_temp <- df_temp[df_temp$days.shift >= 0,]
+  
+  df_temp$Cases <- df_temp$I + df_temp$R + df_temp$E
+  df_temp$Active <- df_temp$I + df_temp$E
+  df_temp$Resolved <- df_temp$R
+  
+  df_temp <- df_temp[,c('date', 'days.shift', 'Cases', 'Active', 'Resolved')]
+  colnames(df_temp) <- c('date', 'day', 'Cases', 'Active', 'Resolved')
+  df_temp <- roundNonDateCols(df_temp)
+  
+  return(df_temp)
+}
+
+# create hospital dataframe 
+create.hosp.df <- function(sir.output.df){
+  df_temp <- sir.output.df
+
+  df_temp <- df_temp[df_temp$days.shift >= 0,]
+  
+  df_temp <- df_temp[,c('date', 'days.shift', 'hosp', 'icu', 'vent')]
+  colnames(df_temp) <- c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
+  df_temp <- roundNonDateCols(df_temp)
+  
+  return(df_temp)
+}
+
+# create resources dataframe
+create.res.df <- function(sir.output.df, hosp_cap, icu_cap, vent_cap){
+  df_temp <- sir.output.df
+  df_temp <- df_temp[df_temp$days.shift >= 0,]
+  
+  if (!is.null(hosp_cap)){
+    df_temp$hosp <- hosp_cap - df_temp$hosp
+    df_temp$icu <- icu_cap - df_temp$icu
+    df_temp$vent <- vent_cap - df_temp$vent
+  }
+  
+  df_temp <- df_temp[,c('date', 'days.shift', 'hosp', 'icu', 'vent')]
+  colnames(df_temp) <- c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
+  df_temp <- roundNonDateCols(df_temp)
+  
+}
+
+# format and create graphs 
+create.graph <- function(df.to.plot, selected, plot.day, curr.date){
+
+  if (length(selected) != 0){
+    cols <- c('date', selected)
+    
+    df.to.plot <- df.to.plot[,cols]
+    
+    df_melt <- melt(df.to.plot, 'date')
+  
+    graph = ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() + 
+      geom_line() +  geom_vline(xintercept=curr.date) + theme(text = element_text(size=20)) + 
+      geom_vline(xintercept=plot.day, color = 'red') + ylab('') + geom_hline(yintercept = 0)
+    
+    return(graph)
+  }
 }

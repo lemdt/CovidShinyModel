@@ -219,3 +219,20 @@ with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>"
 
 res.fut.wording <- "<h4>On %s, there will be <b>%s hospital beds available</b> in the region, 
 with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>"
+
+
+##  ............................................................................
+##  Initialized Dataframes 
+##  ............................................................................
+
+historical.df.blank <- data.frame('Date' = character(0),
+                            'Hospitalizations' = numeric(0),
+                            'Day' = numeric(0))
+
+int.df.with.re <- data.frame('Day' = numeric(0),
+                             'New Re' = numeric(0), 
+                             'Days of Smoothing' =  numeric(0))
+
+int.df.with.double <- data.frame('Day' = numeric(0),
+                                'New Double Time' = numeric(0), 
+                                'Days of Smoothing' =  numeric(0))
