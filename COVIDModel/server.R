@@ -343,7 +343,7 @@ shinyServer(function(input, output, session) {
     params <- reactiveValues(
         illness.length = 14,
         gamma = 1/14,
-        incubation.period = 7,
+        incubation.period = 5,
         sigma = 1/7,
         hosp.delay.time = 3, 
         hosp.rate = 0.06, 
