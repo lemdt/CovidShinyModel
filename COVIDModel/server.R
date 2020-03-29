@@ -1,5 +1,6 @@
 source('helper.R')
 source('wording.R')
+source('inputs.R')
 
 library(shiny)
 library(ggplot2)
@@ -42,14 +43,10 @@ shinyServer(function(input, output, session) {
     output$prediction_fld <- renderUI({
         
         if (input$input.metric == 'Hospitalizations'){
-            numericInput(inputId = 'num_hospitalized', 
-                         label = hosp.input.wording, 
-                         value = 50)
+            num.hosp.input
         }
         else{
-            numericInput(inputId = 'num_cases', 
-                         label = cases.input.wording, 
-                         value = 50)
+            num.cases.input
         }
     })
     
@@ -62,23 +59,13 @@ shinyServer(function(input, output, session) {
         date.select <- format(input$curr_date, format="%B %d")
 
         if (input$usedouble == TRUE){
-            sliderInput(inputId = 'doubling_time', 
-                        label = sprintf(prior.double.wording, date.select), 
-                        min = 1, 
-                        max = 12, 
-                        step = 1, 
-                        value = 6)
+            double.time.input(date.select)
         }
         else{
             fluidPage(
                 fluidRow(
-                    sliderInput(inputId = 'r0_prior', 
-                                label = sprintf(prior.re.wording, date.select), 
-                                min = 0.1, 
-                                max = 7, 
-                                step = 0.1, 
-                                value = 2.8),
-                    actionLink('predict_re', sprintf(estimate.re.action.wording, date.select))
+                    r0.prior.input(date.select),
+                    pred.re.action(date.select)
                 )
             )
             
@@ -190,11 +177,11 @@ shinyServer(function(input, output, session) {
                             value = input$date.hist - 1)
         }
         else if (as.character(input$date.hist) %in% as.character(hist.data()$Date))(
-            showNotification("This date has already been added.",
+            showNotification(re.warning.date.repeat,
                              type = "error")
         )
         else{
-            showNotification("Please enter the hospitalization number.",
+            showNotification(re.warning.blank.num,
                              type = "error")
         }
     })
@@ -217,8 +204,8 @@ shinyServer(function(input, output, session) {
         datatable(hist.dt,
                   escape=F, selection = 'none',
                   options = list(pageLength = 10, language = list(
-                      zeroRecords = "No historical data added.",
-                      search = 'Find in table:'), dom = 't'), rownames = FALSE)
+                      zeroRecords = re.blank.table,
+                      search = search.msg), dom = 't'), rownames = FALSE)
         
     })
     
@@ -263,14 +250,14 @@ shinyServer(function(input, output, session) {
             ) + geom_point() + geom_line() + theme(text = element_text(size=20)) +
                 theme(legend.title=element_blank())
             
-            re.estimates$best.estimate <- sprintf('<br><br><h4>The best estimate for Re is <b>%s</b>.', 
+            re.estimates$best.estimate <- sprintf(best.re.msg, 
                                                   best.fit$best.re)
             
             show("predict.ui.toggle")
             
         }
         else{
-            showNotification("You need at least two timepoints of data to make a prediction.",
+            showNotification(re.warning.more.data,
                              type = "error")
         }
         
@@ -285,8 +272,8 @@ shinyServer(function(input, output, session) {
     
     observeEvent(input$curr_date, {
         hist.data(data.frame('Date' = character(0),
-                   'Hospitalizations' = numeric(0),
-                   'Day' = numeric(0)))
+                             'Hospitalizations' = numeric(0),
+                             'Day' = numeric(0)))
     })
     
     ##  ............................................................................
@@ -322,40 +309,40 @@ shinyServer(function(input, output, session) {
         showModal(modalDialog(
             fluidPage(
                 
-                sliderInput('incubation.period', 'Incubation Period of Illness After Exposure (days)', min = 0, max = 20, step = 1, 
+                sliderInput('incubation.period', incubation.input.wording, min = 0, max = 20, step = 1, 
                             value = params$incubation.period, width = '100%'),
     
-                sliderInput('illness.length', 'Infectious Period of Illness (days)', min = 0, max = 20, step = 1, 
+                sliderInput('illness.length', infectious.input.wording, min = 0, max = 20, step = 1, 
                             value = params$illness.length, width = '100%'),
                 
-                sliderInput('hosp.rate', 'Percent Hospitalized Among Infections', min = 0, max = 1, step = 0.01, 
+                sliderInput('hosp.rate', per.hosp.wording, min = 0, max = 1, step = 0.01, 
                             value = params$hosp.rate, width = '100%'),
                 
-                sliderInput('icu.rate', 'Percent ICU Admitted Among Hospitalized', min = 0, max = 1, step = 0.01, 
+                sliderInput('icu.rate', per.icu.wording, min = 0, max = 1, step = 0.01, 
                             value = params$icu.rate, width = '100%'),
                 
-                sliderInput('vent.rate', 'Percent Ventilated Among ICU Admissions', min = 0, max = 1, step = 0.01, 
+                sliderInput('vent.rate', per.vent.wording, min = 0, max = 1, step = 0.01, 
                             value = params$vent.rate, width = '100%'),
                 
-                sliderInput('hosp.after.inf', 'Infection to hospitalization (days)', min = 0, max = 30, step = 1, 
+                sliderInput('hosp.after.inf', inf.to.hosp.wording, min = 0, max = 30, step = 1, 
                             value = params$hosp.delay.time, width = '100%'),
                 
-                sliderInput('icu.after.hosp', 'Hospitalization to ICU Admission (days)', min = 0, max = 30, step = 1, 
+                sliderInput('icu.after.hosp', hosp.to.icu.wording, min = 0, max = 30, step = 1, 
                             value = params$icu.delay.time, width = '100%'),
                 
-                sliderInput('vent.after.icu', 'ICU Admission to Ventilation (days)', min = 0, max = 30, step = 1, 
+                sliderInput('vent.after.icu', icu.to.vent.wording, min = 0, max = 30, step = 1, 
                             value = params$vent.delay.time, width = '100%'),
                 
-                sliderInput('hosp.los', 'Hospital Length of Stay for Non-ICU Patients (days)', min = 1, max = 15, step = 1, 
+                sliderInput('hosp.los', hosp.los.wording, min = 1, max = 15, step = 1, 
                             value = params$hosp.los, width = '100%'),
                 
-                sliderInput('icu.los', 'ICU Length of Stay for Non-Ventilated Patients (days)', min = 1, max = 15, step = 1,
+                sliderInput('icu.los', icu.los.wording, min = 1, max = 15, step = 1,
                             value = params$icu.los, width = '100%'),
                 
-                sliderInput('vent.los', 'Average time on a ventilator (days)', min = 1, max = 15, step = 1, 
+                sliderInput('vent.los', vent.los.wording, min = 1, max = 15, step = 1, 
                             value = params$vent.los, width = '100%')),
             footer = tagList(
-                actionButton("save", "Save and Close")
+                actionButton("save", params.save.msg)
             )
         )
         )
@@ -447,20 +434,20 @@ shinyServer(function(input, output, session) {
             fluidPage(
                 fluidRow(                         
                     dateInput(inputId = 'int_date', 
-                              label = 'Date Intervention is Implemented', 
+                              label = int.date.wording, 
                               min = input$curr_date - params$hosp.delay.time, 
                               value = input$curr_date),
                     
                     uiOutput(outputId = 'int_val'),
                     
                     sliderInput('smooth.int', 
-                                 label = 'Smoothed over how many days?', 
+                                 label = int.smooth.wording, 
                                  value = 0, 
                                 min = 0, 
                                 max = 30),
 
                     actionButton(inputId = 'add_intervention', 
-                                 label = 'Save Intervention'))
+                                 label = save.int.wording))
             )
         }
         
@@ -558,7 +545,7 @@ shinyServer(function(input, output, session) {
         }
         
         else{
-            showNotification('You have already added an intervention on this date', type = 'error')
+            showNotification(double.int.warning, type = 'error')
         }
     })
     
@@ -605,12 +592,12 @@ shinyServer(function(input, output, session) {
             fluidPage(
                 fluidRow(                         
                     dateInput(inputId = 'influx_date', 
-                              label = 'Date of Influx', 
+                              label = influx.date.wording, 
                               min = input$curr_date - params$hosp.delay.time, 
                               value = input$curr_date),
                     
                     numericInput('num.influx', 
-                                label = 'Number of Infected Entering Region', 
+                                label = influx.num.wording, 
                                 value = 0)
             )
             )
@@ -836,17 +823,17 @@ shinyServer(function(input, output, session) {
                     fluidPage(
                         column(4,
                                numericInput(inputId = 'hosp_cap', 
-                                            label = 'Hospital Bed Availability', 
+                                            label = avail.hosp.wording, 
                                             value = params$hosp.avail)),
                         
                         column(4,
                                numericInput(inputId = 'icu_cap', 
-                                            label = 'ICU Space Availability', 
+                                            label = avail.icu.wording, 
                                             value = params$icu.avail)),
                         
                         column(4,
                                numericInput(inputId = 'vent_cap', 
-                                            label = 'Ventilator Availability', 
+                                            label = avail.vent.wording , 
                                             value = params$vent.avail)),
                         
                         fluidPage(checkboxGroupInput(inputId = 'selected_res', 
@@ -1097,16 +1084,12 @@ shinyServer(function(input, output, session) {
             cases <- round(sir.output.df()[sir.output.df()$day == curr.day,]$I + 
                 sir.output.df()[sir.output.df()$day == curr.day,]$R)
             
-            HTML(sprintf('<h3><b>Estimates for %s</b></h3>
-                        <h4>We estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
-                         <u>%s people actively infected</u>.</h4>', curr_date, cases, infected))
+            HTML(sprintf(curr.inf.est.wording, curr_date, cases, infected))
         }
         else{
             infected <- input$num_cases
             cases <- input$num_cases
-            HTML(sprintf('<h3><b>Estimates for %s</b></h3>
-            <h4>There have been <u>%s total cases</u> of COVID-19 in the region, with
-                         <u>%s people actively infected</u>.</h4>', curr_date, infected, cases))
+            HTML(sprintf(curr.inf.known.wording, curr_date, infected, cases))
         }
     })
     
@@ -1124,14 +1107,10 @@ shinyServer(function(input, output, session) {
             
             if (length(select.day) != 0){
                 if (select.day == 0){
-                    HTML(sprintf('<h4>On %s, there are <b>%s COVID-19 cases</b> in the region, 
-                                     with <b>%s actively infected</b>.</h4>', 
-                                 select.date, cases, active))
+                    HTML(sprintf(cases.curr.wording, select.date, cases, active))
                 }
                 else{
-                    HTML(sprintf('<h4>On %s, there will be <b>%s COVID-19 cases</b> in the region, 
-                                     with <b>%s actively infected</b>.</h4>', 
-                                 select.date, cases, active))
+                    HTML(sprintf(cases.fut.wording, select.date, cases, active))
                 }
             }
             
@@ -1143,14 +1122,10 @@ shinyServer(function(input, output, session) {
             vent <- round(select.row$vent)
             
             if (select.day == 0){
-                HTML(sprintf('<h4>On %s, there are <b>%s hospitalized from COVID-19</b> in the region, 
-                                 with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
-                             select.date, hosp, icu, vent))
+                HTML(sprintf(hosp.curr.wording, select.date, hosp, icu, vent))
             }
             else{
-                HTML(sprintf('<h4>On %s, there will be <b>%s hospitalized from COVID-19</b> in the region, 
-                                 with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>', 
-                             select.date, hosp, icu, vent))
+                HTML(sprintf(hosp.fut.wording, select.date, hosp, icu, vent))
             }
             
             
@@ -1161,16 +1136,11 @@ shinyServer(function(input, output, session) {
             vent_res <- input$vent_cap - round(select.row$vent)
             
             if (select.day == 0){
-                HTML(sprintf('<h4>On %s, there are <b>%s hospital beds available</b> in the region, 
-                                 with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
-                             select.date, hosp_res, icu_res, vent_res))
+                HTML(sprintf(res.curr.wording, select.date, hosp_res, icu_res, vent_res))
             }
             else{
-                HTML(sprintf('<h4>On %s, there will be <b>%s hospital beds available</b> in the region, 
-                                 with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>', 
-                             select.date, hosp_res, icu_res, vent_res))
+                HTML(sprintf(res.fut.wording, select.date, hosp_res, icu_res, vent_res))
             }
-            
             
         }
     })

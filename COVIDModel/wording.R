@@ -1,6 +1,10 @@
+##  ............................................................................
+## Compilation of all of the strings that are outputted in the app.
+##  ............................................................................
+
 
 ##  ............................................................................
-##  Overview of App
+##  App Overview Message
 ##  ............................................................................
 
 about.wording <- "<h4><b>What does this tool do?</b></h4>
@@ -68,8 +72,32 @@ different timepoints, which will change the projections in the graphs.
 ##  Other Header/Instructions
 ##  ............................................................................
 
-estimate.re.header <- '<h4> Estimate Re based on historical hospitalizations</h4>
-Provide data from past dates to estimate the Re value.<br><br>'
+estimate.re.header <- "<h4> Estimate Re based on historical hospitalizations</h4>
+Provide data from past dates to estimate the Re value.<br><br>"
+
+##  ............................................................................
+##  Warning/Notifications
+##  ............................................................................
+
+re.warning.date.repeat <- "This date has already been added."
+
+re.warning.blank.num <- "Please enter the hospitalization number."
+
+re.warning.more.data <- "You need at least two timepoints of data to make a prediction."
+
+best.re.msg <- "<br><br><h4>The best estimate for Re is <b>%s</b>."
+
+params.save.msg <- "Save and Close"
+
+double.int.warning <- "You have already added an intervention on this date."
+
+##  ............................................................................
+##  Datatable Messages
+##  ............................................................................
+
+re.blank.table <- "No historical data added."
+
+search.msg <- "Find in table:"
 
 ##  ............................................................................
 ##  Wording for Inputs
@@ -88,3 +116,71 @@ estimate.re.action.wording <- "Estimate Re prior to %s based on data."
 int.double.wording <- "New Doubling Time (days) After Interventions"
 
 int.re.wording <- "New Re After Intervention"
+
+incubation.input.wording <- "Incubation Period of Illness After Exposure (days)"
+
+infectious.input.wording <- "Infectious Period of Illness (days)"
+
+per.hosp.wording <- "Percent Hospitalized Among Infections"
+
+per.icu.wording <- "Percent ICU Admitted Among Hospitalized"
+
+per.vent.wording <- "Percent Ventilated Among ICU Admissions"
+
+inf.to.hosp.wording <- "Infection to hospitalization (days)"
+
+hosp.to.icu.wording <- "Hospitalization to ICU Admission (days)"
+
+icu.to.vent.wording <- "ICU Admission to Ventilation (days)"
+
+hosp.los.wording <- "Hospital Length of Stay for Non-ICU Patients (days)"
+
+icu.los.wording <- "ICU Length of Stay for Non-Ventilated Patients (days)"
+
+vent.los.wording <- "Average time on a ventilator (days)"
+
+int.date.wording <-  "Date Intervention is Implemented"
+
+int.smooth.wording <- "Smoothed over how many days?"
+
+save.int.wording <- "Save Intervention"
+
+avail.hosp.wording <- "Hospital Bed Availability"
+
+avail.icu.wording <- "ICU Space Availability"
+
+avail.vent.wording <- "Ventilator Availability"
+
+influx.date.wording <- "Date of Influx"
+
+influx.num.wording <-  "Number of Infected Entering Region"
+
+##  ............................................................................
+##  Natural Language Messages
+##  ............................................................................
+
+curr.inf.est.wording <- "<h3><b>Estimates for %s</b></h3>
+<h4>We estimate there have been <u>%s total cases</u> of COVID-19 in the region, with
+<u>%s people actively infected</u>.</h4>"
+
+curr.inf.known.wording <- "<h3><b>Estimates for %s</b></h3>
+<h4>There have been <u>%s total cases</u> of COVID-19 in the region, with
+<u>%s people actively infected</u>.</h4>"
+
+cases.curr.wording <- "<h4>On %s, there are <b>%s COVID-19 cases</b> in the region, 
+with <b>%s actively infected</b>.</h4>"
+
+cases.fut.wording <- "<h4>On %s, there will be <b>%s COVID-19 cases</b> in the region, 
+with <b>%s actively infected</b>.</h4>"
+
+hosp.curr.wording <- "<h4>On %s, there are <b>%s hospitalized from COVID-19</b> in the region, 
+with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>"
+
+hosp.fut.wording <- "<h4>On %s, there will be <b>%s hospitalized from COVID-19</b> in the region, 
+with <b>%s in ICU care</b> and <b>%s on ventilators</b>.</h4>"
+
+res.curr.wording <- "<h4>On %s, there are <b>%s hospital beds available</b> in the region, 
+with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>"
+
+res.fut.wording <- "<h4>On %s, there will be <b>%s hospital beds available</b> in the region, 
+with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>"
