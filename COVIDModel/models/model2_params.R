@@ -73,7 +73,8 @@ parameters.modal <- function(params){
 
 save.params <- function(params,input){
   params$illness.length = input$illness.length
-  params$gamma = 1/input$illness.length
+  params$gamma = ((1 - input$hosp.rate) * 1/input$illness.length) + 
+    (input$hosp.rate * 1/input$inf.to.hosp)
   params$inf.to.hosp = input$hosp.after.inf
   params$gamma.h = 1/input$hosp.after.inf
   params$hosp.rate = input$hosp.rate
