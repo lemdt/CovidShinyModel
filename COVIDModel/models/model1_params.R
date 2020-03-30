@@ -10,7 +10,7 @@ default.params <- reactiveValues(
   gamma = 1/7,
   incubation.period = 5,
   sigma = 1/5,
-  hosp.delay.time = 7, 
+  hosp.delay.time = 10, 
   hosp.rate = 0.06, 
   hosp.los = 7,
   icu.delay.time = 5, 

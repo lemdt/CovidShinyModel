@@ -112,7 +112,7 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
     }
   }
   
-  I <- IR + IH
+  I <- IR + IH + newG
   
   df.return <- data.frame(day = 0:(num.days-1), S, E, I, IR, IH, R, newG)
   
