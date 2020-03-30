@@ -3,6 +3,19 @@ This is a shiny app that models the COVID-19 epidemic. This is based on the <a h
 
 A beta version of the app is live <a href="https://jpspeng.shinyapps.io/COVIDModel/">here</a>.
 
+## Development Environment Setup (R)
+
+1) Install <a href="https://www.r-project.org/">R</a> and <a href="https://rstudio.com/products/rstudio/download/">R Studio</a>.
+
+2) Open R Studio and in the console, do the following to install the packages:
+```
+reqs <- c('shiny', 'ggplot2', 'shinyWidgets', 'data.table', 'DT', 'dplyr', 'shinyjs')
+install.packages(reqs)
+```
+
+3) To run locally, open ui.R or server.R in R Studio and press "Run App" on the upper right hand corner.
+
+
 ## Development Environment Setup (Python)
 Some quick instructions for getting dev environment setup for Python parts of the pipeline.
 
