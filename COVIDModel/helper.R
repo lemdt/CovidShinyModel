@@ -163,6 +163,66 @@ findBestRe <- function(S0, start.exp, num.days, day.vec, num_actual.vec, params)
   return(list.return)
 }
 
+
+# convert intervention table to beta vector
+create.beta.vec <- function(int.table, gamma, usedouble){
+  
+  # inner helper function
+  applygetBeta <- function(x){
+    if (usedouble == FALSE){
+      return(getBetaFromRe(as.numeric(x['New.Re']), gamma))
+    }
+    else{
+      return(getBetaFromDoubling(as.numeric(x['New.Double.Time']), gamma))
+    }
+  }
+  
+  # processing df
+  int.table.temp <- int.table
+  int.table.temp$beta <- apply(int.table.temp, 1, applygetBeta)
+  int.table.temp <- arrange(int.table.temp, Day)
+  int.table.temp <- int.table.temp[!duplicated(int.table.temp$Day),]
+
+  day.vec <- int.table.temp$Day
+  rep.vec <- day.vec[2:length(day.vec)] - day.vec[1:length(day.vec) - 1]
+  betas <- int.table.temp$beta[1:length(day.vec) - 1]
+  smooth.vec <- int.table.temp$Days.of.Smoothing
+  
+  beta.vec <- c()
+  
+  for (i in 1:length(rep.vec)){
+    beta <- betas[i]
+    reps <- rep.vec[i]
+    smooth.days <- smooth.vec[i]
+    actual.smooth.days <- min(reps, smooth.days)
+    
+    if (smooth.days > 0){
+      beta.last <- betas[i-1]
+      beta.diff <- beta - beta.last
+      beta.step <- beta.diff / smooth.days
+      
+      if (beta.step != 0){
+        smooth.seq <- seq(beta.last+beta.step, beta, beta.step)
+        smooth.seq <- smooth.seq[1:actual.smooth.days]
+        
+        if (smooth.days > reps){
+          betas[i] <- smooth.seq[actual.smooth.days]
+        }
+        
+      }
+      else{
+        smooth.seq <- rep(beta, actual.smooth.days)
+      }
+      
+      beta.vec <- c(beta.vec, smooth.seq)
+    }
+    
+    beta.vec <- c(beta.vec, rep(beta, reps - actual.smooth.days))
+  }
+  
+  return(beta.vec)
+}
+
 ##  ............................................................................
 ##  App Helpers  
 ##  ............................................................................

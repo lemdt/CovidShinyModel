@@ -2,7 +2,7 @@
 source('wording.R')
 
 # loading inputs
-source('inputs.R')
+source('inputsAndPages.R')
 
 # libraries
 library(shiny)

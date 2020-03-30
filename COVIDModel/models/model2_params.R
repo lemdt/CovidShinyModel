@@ -82,11 +82,11 @@ save.params <- function(params,input){
   params$p.g_icu = input$p.g_icu
   params$p.g_d = input$p.g_d
   params$p.g_g = 1 - input$p.g_d - input$p.g_icu
-  params$icu_g = input$p.icu_g
-  params$icu_v = input$p.icu_v
-  params$icu_icu = 1 - input$p.icu_g - input$p.icu_v
-  params$v_icu = input$p.v_icu
-  params$v_m = input$p.v_m
+  params$p.icu_g = input$p.icu_g
+  params$p.icu_v = input$p.icu_v
+  params$p.icu_icu = 1 - input$p.icu_g - input$p.icu_v
+  params$p.v_icu = input$p.v_icu
+  params$p.v_m = input$p.v_m
   params$p.v_v = 1 - input$p.v_icu - input$p.v_m
   
   return(params)

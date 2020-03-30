@@ -1,13 +1,18 @@
 ##  ............................................................................
-## Compilation of all of the inputs that are used in the app
+## Inputs and UIs, separated from server.R
 ##  ............................................................................
 
-library(shiny)
-library(shinyWidgets)
+# loading language strings
 source('wording.R')
 
+# libraries
+library(shiny)
+library(shinyjs)
+library(shinyWidgets)
+
+
 ##  ............................................................................
-##  General
+##  General Inputs
 ##  ............................................................................
 
 how.to.use.link <- actionLink('howtouse', about.link.wording)
@@ -84,11 +89,20 @@ int.re.input <- sliderInput(inputId = 'r0_new',
                             step = 0.1,
                             value = 2.8)
 
-int.date.input <- function(curr.date, hosp.delay.time){
-  input.return <- dateInput(inputId = 'int_date', 
-                            label = int.date.wording, 
-                            min = curr.date - hosp.delay.time, 
-                            value = curr.date)
+int.date.input <- function(curr.date, hosp.delay.time, input.metric){
+  
+  if (input.metric == 'Hospitalizations'){
+    input.return <- dateInput(inputId = 'int_date', 
+                              label = int.date.wording, 
+                              min = curr.date - hosp.delay.time, 
+                              value = curr.date)
+  }
+  else{
+    input.return <- dateInput(inputId = 'int_date', 
+                              label = int.date.wording, 
+                              min = curr.date + 1, 
+                              value = curr.date + 1)
+  }
   
   return(input.return)
 }
@@ -122,7 +136,6 @@ num.influx.input <- numericInput('num.influx',
                                  label = influx.num.wording, 
                                  value = 0)
 
-
 ##  ............................................................................
 ##  Settings Inputs
 ##  ............................................................................
@@ -139,7 +152,7 @@ use.double.input <-  materialSwitch(inputId = "usedouble",
                                     status = 'primary')
 
 other.params.button <- actionButton(inputId = 'parameters_modal',
-                                   label = cust.params.wording)
+                                    label = cust.params.wording)
 
 
 ##  ............................................................................
@@ -166,7 +179,7 @@ run.fit.action <- actionButton(inputId = 'run.fit',
                                label = 'Estimate Re')
 
 ##  ............................................................................
-##  Model 1 Parameters
+##  Model 1 Parameter Inputs
 ##  ............................................................................
 
 incubation.period.input <- function(incubation.period){
@@ -187,7 +200,7 @@ illness.length.input <- function(illness.length){
 hosp.rate.input <- function(hosp.rate){
   input.return <- sliderInput('hosp.rate', per.hosp.wording, min = 0, max = 1, step = 0.01, 
                               value = hosp.rate, width = '100%')
-
+  
   return(input.return)
 }
 
@@ -255,17 +268,17 @@ vent.los.input <- function(vent.los){
 save.parameter.action <- actionButton("save", params.save.msg)
 
 ##  ............................................................................
-##  Model 2 Parameters
+##  Model 2 Parameter Inputs
 ##  ............................................................................
 
 trans.prob.slider <- function(inputId, label, value){
   input.return <- sliderInput(inputId, label, min = 0, max = 1, 
-                                 value = value, step = 0.01, width = '100%')
+                              value = value, step = 0.01, width = '100%')
   return(input.return)
 }
 
 ##  ............................................................................
-##  Graph selection inputs
+##  Graph selection Inputs
 ##  ............................................................................
 
 selected.graph.input <- radioGroupButtons(inputId = 'selected_graph', 
@@ -297,7 +310,7 @@ go.left.button <- actionButton("goleft", "", icon = icon("arrow-left"), width = 
 go.right.button <- actionButton("goright", "", icon = icon("arrow-right"), width = '100%')
 
 ##  ............................................................................
-##  Resource availability 
+##  Resource Availability Inputs 
 ##  ............................................................................
 
 hosp.cap.input <- function(hosp.avail){
@@ -321,4 +334,116 @@ vent.cap.input <- function(vent.avail){
   return(input.return)
 }
 
+##  ............................................................................
+##  Modals and Pages 
+##  ............................................................................
+
+
+about.page <- modalDialog(
+  fluidPage(
+    HTML(about.wording)
+    
+  ),
+  size = 'l'
+)
+
+prior.re.page <- function(date.select){
+  return.page <- fluidPage(
+    fluidRow(
+      r0.prior.input(date.select),
+      pred.re.action(date.select)
+    )
+  )
   
+  return(return.page) 
+}
+
+predict.re.page <- function(curr.date){
+  return.page <-modalDialog(
+    
+    useShinyjs(),
+    
+    HTML(estimate.re.header),
+    
+    splitLayout(
+      
+      date.hist.input(curr.date),
+      
+      hist.hosp.input
+      
+    ),
+    
+    add.hist.action,
+    
+    dataTableOutput(
+      outputId = 'input_hosp_dt'
+    ), 
+    
+    tags$script("$(document).on('click', '#input_hosp_dt button', function () {
+                  Shiny.onInputChange('lastClickId',this.id);
+                                             Shiny.onInputChange('lastClick', Math.random())
+                                             });"),
+    
+    HTML('<br>'),
+    
+    run.fit.action,
+    
+    div(id = "predict.ui.toggle",
+        fluidPage(
+          uiOutput('best.re'),
+          plotOutput('fit.plot')
+        )
+        
+    ) %>% hidden()
+    
+  )
+}
+
+intervention.ui <- function(curr.date, hosp.delay.time, input.metric){
+  return.page <- fluidPage(
+    fluidRow(    
+      int.date.input(curr.date, hosp.delay.time, input.metric),
+      uiOutput(outputId = 'int_val'),
+      smooth.int.input,
+      add.int.action
+    )
+  )
+  
+  return(return.page)
+}
+
+influx.ui <- function(curr.date, hosp.delay.time){
+  return.page <- fluidPage(
+    fluidRow(    
+      influx.date.input(curr.date, hosp.delay.time),
+      num.influx.input
+    )
+  )
+  
+  return(return.page)
+}
+
+cases.graph.ui <-  fluidPage(
+  selected.cases.input,
+  plotOutput(outputId = 'cases.plot', 
+             click = "plot_click")
+  )
+
+hosp.graph.ui <- fluidPage(
+  selected.hosp.input,
+  plotOutput(outputId = 'hospitalization.plot', 
+             click = "plot_click")
+  )
+
+res.graph.ui <- function(hosp.avail, icu.avail, vent.avail){
+  return.page <- fluidPage(
+    column(4, hosp.cap.input(hosp.avail)),
+    column(4,icu.cap.input(icu.avail)),
+    column(4,vent.cap.input(vent.avail)),
+    fluidPage(selected.res.input),
+    plotOutput(outputId = 'resource.plot', 
+               click = "plot_click")
+  )
+  
+  return(return.page)
+}

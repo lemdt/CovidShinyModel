@@ -106,20 +106,20 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
     R[tt + 1] <- R[tt] + dR
     newG[tt + 1] <- gamma.h * IH[tt]
     
-    if (influx[['day']] == tt){
-      S[tt + 1] <- S[tt + 1] - influx[['num.influx']]
-      E[tt + 1] <- E[tt + 1] + influx[['num.influx']]
+    if (influx[['day']] == tt-1){
+      S[tt] <- S[tt] - influx[['num.influx']]
+      E[tt] <- E[tt] + influx[['num.influx']]
     }
   }
   
   I <- IR + IH
   
-  df.return <- data.frame(day = 1:num.days, S, E, I, IR, IH, R, newG)
+  df.return <- data.frame(day = 0:(num.days-1), S, E, I, IR, IH, R, newG)
   
   markov.df <- runMarkov(new.g.vec = newG,
                          trans.mat = trans.mat)
   
-  markov.df$day <- 1:num.days 
+  markov.df$day <- 0:(num.days-1)
   
   df.return <- merge(df.return, markov.df, by = 'day')
   

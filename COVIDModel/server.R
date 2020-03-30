@@ -1,6 +1,6 @@
 # loading model functions
-source('model2.R')
-source('model2_helper.R')
+source('models/model2.R')
+source('models/model2_params.R')
 
 # loading common helper functions
 source('helper.R')
@@ -9,10 +9,7 @@ source('helper.R')
 source('wording.R')
 
 # loading inputs
-source('inputs.R')
-
-# loading side UIs
-source('sideuis.R')
+source('inputsAndPages.R')
 
 
 # libraries
@@ -258,7 +255,7 @@ shinyServer(function(input, output, session) {
     
     output$intervention_ui <- renderUI({ 
         if (input$showint){
-            intervention.ui(input$curr_date, params$hosp.delay.time)
+            intervention.ui(input$curr_date, params$hosp.delay.time, input$input.metric)
         }
     })
     
@@ -331,9 +328,15 @@ shinyServer(function(input, output, session) {
         int.df <- intervention.table()
         
         int.df$Date <- int.df$Day + input$curr_date
-        int.df <- int.df[,c('Date', 'New.Re', 'Days.of.Smoothing', 'Day')]
-        colnames(int.df) <- c('Date', 'New Re', 'Days of Smoothing', 'Day')
         
+        if (input$usedouble){
+            int.df <- int.df[,c('Date', 'New.Double.Time', 'Days.of.Smoothing', 'Day')]
+            colnames(int.df) <- c('Date', 'New Double Time', 'Days of Smoothing', 'Day')
+        }
+        else{
+            int.df <- int.df[,c('Date', 'New.Re', 'Days.of.Smoothing', 'Day')]
+            colnames(int.df) <- c('Date', 'New Re', 'Days of Smoothing', 'Day')
+        }
         
         if (nrow(int.df) > 0){
             int.df[["Delete"]] <-
@@ -385,7 +388,6 @@ shinyServer(function(input, output, session) {
         curr.day  <- as.numeric(curr.day.list()['curr.day'])
         
         if (is.na(curr.day)){
-            # TODO: replace hacky fix to bug with non-hacky fix
             curr.day <- 365
             new.num.days <- 1000
         }
@@ -413,90 +415,41 @@ shinyServer(function(input, output, session) {
                                          New.Double.Time = c(params$int.new.double, input$doubling_time, NA ),
                                          Days.of.Smoothing = c(params$int.smooth.days, 0, 0)))
         }
-
-        applygetBeta <- function(x){
-            if (input$usedouble == FALSE){
-                return(getBetaFromRe(as.numeric(x['New.Re']), 
-                                     params$gamma))
-            }
-            else{
-                return(getBetaFromDoubling(as.numeric(x['New.Double.Time']), 
-                                           params$gamma))
-            }
-        }
         
-        int.table.temp$beta <- apply(int.table.temp, 1, applygetBeta)
-        int.table.temp <- arrange(int.table.temp, Day)
-        int.table.temp <- int.table.temp[!duplicated(int.table.temp$Day),]
-        
-        day.vec <- int.table.temp$Day
-        rep.vec <- day.vec[2:length(day.vec)] - day.vec[1:length(day.vec) - 1]
-        betas <- int.table.temp$beta[1:length(day.vec) - 1]
-        smooth.vec <- int.table.temp$Days.of.Smoothing
-        
-        beta.vec <- c()
-
-        for (i in 1:length(rep.vec)){
-            beta <- betas[i]
-            reps <- rep.vec[i]
-            smooth.days <- smooth.vec[i]
-            actual.smooth.days <- min(reps, smooth.days)
-
-            if (smooth.days > 0){
-                beta.last <- betas[i-1]
-                beta.diff <- beta - beta.last
-                beta.step <- beta.diff / smooth.days
-                
-                if (beta.step != 0){
-                    smooth.seq <- seq(beta.last+beta.step, beta, beta.step)
-                    smooth.seq <- smooth.seq[1:actual.smooth.days]
-
-                    if (smooth.days > reps){
-                        betas[i] <- smooth.seq[actual.smooth.days]
-                    }
-
-                }
-                else{
-                    smooth.seq <- rep(beta, actual.smooth.days)
-                }
-                
-                beta.vec <- c(beta.vec, smooth.seq)
-            }
-            
-            beta.vec <- c(beta.vec, rep(beta, reps - actual.smooth.days))
-        }
-
-        beta.vec
-        
+        create.beta.vec(int.table = int.table.temp, 
+                        usedouble = input$usedouble,
+                        gamma = params$gamma)
     })
     
     
     sir.output.df <- reactive({
         
+        # get current day
+        curr.day  <- as.numeric(curr.day.list()['curr.day'])
+        
+        # make influx list
         influx = list('day' = -1, num.influx = 0)
 
+        if (input$showinflux == TRUE){
+            if (length(input$influx_date > 0)){
+                influx.day <- input$influx_date - input$curr_date + curr.day
+                influx <- list(
+                    'day' = influx.day, 
+                    'num.influx' = input$num.influx
+                )
+            }
+        }
+
         if (input$input.metric == 'Hospitalizations'){
+            
             # run the same model as initialization model but run extra days
-            
-            curr.day  <- as.numeric(curr.day.list()['curr.day'])
             new.num.days <- input$proj_num_days + curr.day
-            
             new.num.days <- ifelse(is.na(new.num.days), 365, new.num.days)
             
             # starting conditions
             start.susc <- input$num_people - start.exp.default
             start.inf <- 0
             start.res <- 0
-            
-            if (input$showinflux == TRUE){
-                if (length(input$influx_date > 0)){
-                    influx.day <- input$influx_date - input$curr_date + curr.day
-                    influx <- list(
-                        'day' = influx.day, 
-                        'num.influx' = input$num.influx
-                    )
-                }
-            }
             
             SIR.df = SEIR(S0 = start.susc,
                           E0 = start.exp.default,
@@ -519,7 +472,6 @@ shinyServer(function(input, output, session) {
             start.inf <- num.cases 
             start.res <- 0 
             num.days <- input$proj_num_days
-            influx <- list('day' = -1, num.influx = 0)
 
             SIR.df <- SEIR(S0 = start.susc, 
                            E0 = start.exp,
@@ -723,22 +675,21 @@ shinyServer(function(input, output, session) {
     
     # estimatated number of infections of "day 0"
     output$infected_ct <- renderUI({
-        
-        curr_date <- format(input$curr_date, format="%B %d, %Y")
-        curr.day <- curr.day.list()['curr.day']
-        curr.row <- sir.output.df()[sir.output.df()$day == curr.day,]
+        curr.date <- format(input$curr_date, format="%B %d, %Y")
         
         if (input$input.metric == 'Hospitalizations'){
+            curr.day <- curr.day.list()['curr.day']
+            curr.row <- sir.output.df()[sir.output.df()$day == curr.day,]
+            
             infected <- round(curr.row$I + curr.row$E)
-
             cases <- round(curr.row$I + curr.row$R + curr.row$E)
             
-            HTML(sprintf(curr.inf.est.wording, curr_date, cases, infected))
+            HTML(sprintf(curr.inf.est.wording, curr.date, cases, infected))
         }
         else{
             infected <- input$num_cases
             cases <- input$num_cases
-            HTML(sprintf(curr.inf.known.wording, curr_date, infected, cases))
+            HTML(sprintf(curr.inf.known.wording, curr.date, infected, cases))
         }
     })
     
@@ -749,7 +700,7 @@ shinyServer(function(input, output, session) {
         select.row <- df_temp[df_temp$date == plot_day(),]
         select.date <- format(select.row$date, format="%B %d, %Y")
         select.day <- select.row$days.shift
-        
+
         if (input$selected_graph == 'Cases'){
             cases <- round(select.row$I + select.row$R + select.row$E)
             active <- floor(select.row$I + select.row$E)
