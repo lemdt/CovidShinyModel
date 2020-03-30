@@ -153,9 +153,9 @@ int.double.wording <- "New Doubling Time (days) After Interventions"
 
 int.re.wording <- "New Re After Intervention"
 
-incubation.input.wording <- "Incubation Period of Illness After Exposure (days)"
+incubation.input.wording <- "Latent period from infection to becoming infectious (days)"
 
-infectious.input.wording <- "Infectious Period of Illness (days)"
+infectious.input.wording <- "Number of days an infected person is infectious"
 
 per.hosp.wording <- "Percent Hospitalized Among Infections"
 
@@ -163,11 +163,11 @@ per.icu.wording <- "Percent ICU Admitted Among Hospitalized"
 
 per.vent.wording <- "Percent Ventilated Among ICU Admissions"
 
-inf.to.hosp.wording <- "Infection to hospitalization (days)"
+inf.to.hosp.wording <- "Number of days from infection to hospitalization"
 
-hosp.to.icu.wording <- "Hospitalization to ICU Admission (days)"
+hosp.to.icu.wording <- "Number of days from hospitalization to ICU Admission"
 
-icu.to.vent.wording <- "ICU Admission to Ventilation (days)"
+icu.to.vent.wording <- "Number of days from ICU admission to ventilation"
 
 hosp.los.wording <- "Hospital Length of Stay for Non-ICU Patients (days)"
 
@@ -196,22 +196,22 @@ influx.num.wording <-  "Number of Infected Entering Region"
 ##  Wording for Inputs - Model 2 Specific
 ##  ............................................................................
 
-g.trans.prob.head <- '<br><h4>Given a person is in the non-ICU on a given day, what is the 
-chance that - on the next day - they will:</h4>'
+g.trans.prob.head <- '<br><h4>For an infected person that is in the non-ICU, 
+on a given day, what is the chance that - on the next day - they will:</h4>'
 
-icu.trans.prob.head <- '<br><h4>Given a person is in the ICU on a given day, what is the 
-chance that - on the next day - they will:</h4>'
-
-vent.trans.prob.head <- '<br><h4>Given a person is in the ICU on a ventilator on a given day, 
+icu.trans.prob.head <- '<br><h4>For an infected person in the ICU, on a given day, 
 what is the chance that - on the next day - they will:</h4>'
+
+vent.trans.prob.head <- '<br><h4> For an infected person in the ICU who is on a ventilator, 
+on a given day, what is the chance that - on the next day - they will:</h4>'
 
 g.to.icu.wording <- 'Go to ICU?'
 g.to.disc.wording <- 'Be discharged?'
 
-icu.to.g.wording <- 'Move to the non-ICU hospital?'
-icu.to.vent.wording <- 'Go on a ventilator'
+icu.to.g.wording <- 'Move back to the general hospital (non-ICU)?'
+icu.to.vent.wording <- 'Go on a ventilator?'
 
-vent.to.icu.wording <- 'Move to the non-ventilated ICU state?'
+vent.to.icu.wording <- 'Move off the ventilator (staying in ICU)?'
 vent.to.m.wording <- 'Die?'
 
 ##  ............................................................................

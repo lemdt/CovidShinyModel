@@ -273,7 +273,7 @@ save.parameter.action <- actionButton("save", params.save.msg)
 
 trans.prob.slider <- function(inputId, label, value){
   input.return <- sliderInput(inputId, label, min = 0, max = 1, 
-                              value = value, step = 0.01, width = '100%')
+                              value = value, step = 0.001, width = '100%')
   return(input.return)
 }
 
