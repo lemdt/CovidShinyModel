@@ -6,13 +6,9 @@
 ##  General
 ##  ............................................................................
 
-app.title <- "COVID-19 Epidemic Modeling (Pre-Release)"
+app.title <- "COVID-19 Epidemic Modeling (Model 2 - Markov - Pre-Release)"
 
 about.link.wording <- "Learn more about this tool."
-
-end.notes <- '<br><br><b>Notes</b>: This app is a modified version of the <a href="http://penn-chime.phl.io/">Penn Chime app</a>.
-This is a beta version - the projections may or may not be accurate.
-<br><br> The code for this tool is on <a href="https://github.com/jpspeng/CovidShinyModel">Github</a>.'
 
 about.wording <- "<h4><b>What does this tool do?</b></h4>
 The app projects numbers of <i> active cases, hospitalizations, ICU-use and 
@@ -74,6 +70,11 @@ change the dynamics of the disease?</b></h4>
 Under the 'Add Interventions' section, you can add and save changes in Re over 
 different timepoints, which will change the projections in the graphs.
 "
+
+end.notes <- '<br><br><b>Notes</b>: This app is a modified version of the <a href="http://penn-chime.phl.io/">Penn Chime app</a>.
+This is a beta version - the projections may or may not be accurate.
+<br><br> The code for this tool is on <a href="https://github.com/jpspeng/CovidShinyModel">Github</a>.'
+
 
 ##  ............................................................................
 ##  Warning/Notifications
@@ -189,6 +190,29 @@ avail.vent.wording <- "Ventilator Availability"
 influx.date.wording <- "Date of Influx"
 
 influx.num.wording <-  "Number of Infected Entering Region"
+
+
+##  ............................................................................
+##  Wording for Inputs - Model 2 Specific
+##  ............................................................................
+
+g.trans.prob.head <- '<br><h4>Given a person is in the non-ICU on a given day, what is the 
+chance that - on the next day - they will:</h4>'
+
+icu.trans.prob.head <- '<br><h4>Given a person is in the ICU on a given day, what is the 
+chance that - on the next day - they will:</h4>'
+
+vent.trans.prob.head <- '<br><h4>Given a person is in the ICU on a ventilator on a given day, 
+what is the chance that - on the next day - they will:</h4>'
+
+g.to.icu.wording <- 'Go to ICU?'
+g.to.disc.wording <- 'Be discharged?'
+
+icu.to.g.wording <- 'Move to the non-ICU hospital?'
+icu.to.vent.wording <- 'Go on a ventilator'
+
+vent.to.icu.wording <- 'Move to the non-ventilated ICU state?'
+vent.to.m.wording <- 'Die?'
 
 ##  ............................................................................
 ##  Natural Language Messages

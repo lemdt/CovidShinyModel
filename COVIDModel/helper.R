@@ -6,6 +6,11 @@ library(ggplot2)
 library(shinyWidgets)
 library(data.table)
 
+##  ............................................................................
+##  General  
+##  ............................................................................
+
+
 # gets beta based on doubling time, gamma, and N
 getBetaFromDoubling <- function(doubling.time, gamma) {
   g <- 2^(1/doubling.time) - 1
@@ -31,6 +36,138 @@ roundNonDateCols <- function(df){
   return(df.new)
 }
 
+
+##  ............................................................................
+##  Model Helpers  
+##  ............................................................................
+
+# finds current estimates of the number of active infections, 
+# number recovered, and number susceptible based on the current # of 
+# hospitalizations
+find.curr.estimates = function(S0, beta.vector, num.days, num.actual, 
+                               metric, start.exp, params){
+  
+  # starting number of susceptible people
+  start.susc <- S0 - start.exp
+  start.res <- 0 
+  start.inf <- 0
+  
+  SIR.df = SEIR(S0 = start.susc, 
+                E0 = start.exp, 
+                I0 = start.inf, 
+                R0 = start.res, 
+                beta.vector = beta.vector, 
+                num.days = num.days, 
+                influx = list('day' = -1, num.influx = 0), 
+                params = params)
+
+  # if hospitalization is the input
+  if (metric == 'Hospitalizations'){
+    
+    # find the difference between hospitalized column and the currently hospitalized number
+    SIR.df$diff_proj <- abs(SIR.df$hosp - num.actual)
+    
+    # the # hospitalized will be achieved twice according to model 
+    # first as the hospitalizations go up, and second as the hospitalizations go down 
+    hosp.numbers <- SIR.df$hosp
+    hosp.change <- hosp.numbers[2:length(hosp.numbers)] - hosp.numbers[1:length(hosp.numbers) - 1]
+    hosp.change <- c(0, hosp.change)
+    SIR.df$hosp.change <- hosp.change
+    
+    curr.day.df <- SIR.df[which(SIR.df$hosp.change > 0),]
+    curr.day.df <- curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj, na.rm = TRUE),]
+    
+    curr.day <- as.integer(curr.day.df$day)
+    infection.estimate <- as.integer(curr.day.df$I)
+    susceptible.estimate <- as.integer(curr.day.df$S)
+    recovered.estimate <- as.integer(curr.day.df$R)
+    
+  }
+  
+  # if cases are the input
+  else{
+    curr.day <- 0
+    infection.estimate <- num.actual 
+    susceptible.estimate <- start.susc - num.actual
+    recovered.estimate <- 0
+  }
+  
+  curr.day.list <- list(
+    curr.day = curr.day,
+    infection.estimate = infection.estimate, 
+    susceptible.estimate = susceptible.estimate, 
+    recovered.estimate = recovered.estimate
+  )
+  
+  return(curr.day.list)
+}
+
+
+# function to get the best value of Re given historical data 
+findBestRe <- function(S0, start.exp, num.days, day.vec, num_actual.vec, params){
+  
+  # starting number of susceptible people
+  start.susc <- S0 - start.exp
+  start.inf <- 0 
+  start.res <- 0 
+  
+  # TODO: implement binary search
+  
+  min.sqrd.sum <- Inf
+  re_choice <- NA
+  vec.choice <- c()
+  
+  for (re in c(seq(1, 7, 0.1))){
+    beta <- getBetaFromRe(re, params$gamma)
+    
+    SIR.df = SEIR(S0 = start.susc, 
+                  E0 = start.exp, 
+                  I0 = start.inf, 
+                  R0 = start.res, 
+                  beta.vector = rep(beta, num.days),
+                  num.days = num.days, 
+                  influx = list('day' = -1, num.influx = 0), 
+                  params = params)
+    
+    SIR.df$diff_proj <- abs(SIR.df$hosp - num_actual.vec[1])
+    hosp.numbers <- SIR.df$hosp
+    hosp.change <- hosp.numbers[2:length(hosp.numbers)] - 
+      hosp.numbers[1:length(hosp.numbers) - 1]
+    
+    hosp.change <- c(0, hosp.change)
+    SIR.df$hosp.change <- hosp.change
+    
+    curr.day.df <- SIR.df[SIR.df$hosp.change > 0,]
+    curr.day <- curr.day.df[curr.day.df$diff_proj == 
+                              min(curr.day.df$diff_proj, na.rm = TRUE),]$day - day.vec[1]
+    
+    compare.idx <- curr.day + day.vec
+    
+    compare.vec <- rev(SIR.df[SIR.df$day %in% compare.idx,]$hosp)
+    
+    sqrd.sum <- sum((num_actual.vec - compare.vec) ** 2)
+    
+    if (sqrd.sum < min.sqrd.sum){
+      re_choice <- re
+      min.sqrd.sum <- sqrd.sum
+      vec.choice <- compare.vec
+    }
+    
+  }
+  
+  list.return <- list(
+    'best.re' = re_choice, 
+    'best.vals' = vec.choice
+  )
+  
+  return(list.return)
+}
+
+##  ............................................................................
+##  App Helpers  
+##  ............................................................................
+
+
 # add to historical table
 add.to.hist.table <- function(hist.data, date.hist, num.hospitalized.hist, curr.date){
   new.hist <- rbind(hist.data,
@@ -50,15 +187,15 @@ bind.to.intervention <- function(int.table, params, usedouble){
   if (usedouble == TRUE){
     new.table <- rbind(int.table,
                        list('Day' = params$int.new.num.days , 
-                            'New.Double.Time' = params$int.new.double, 
-                            'Days of Smoothing' = params$int.smooth.days
+                            'New.Double.Time'= params$int.new.double, 
+                            'Days.of.Smoothing' = params$int.smooth.days
                              ))
   }
   else{
     new.table <- rbind(int.table,
                        list('Day' = params$int.new.num.days, 
                             'New.Re' = params$int.new.r0,
-                            'Days of Smoothing' = params$int.smooth.days
+                            'Days.of.Smoothing' = params$int.smooth.days
                              ))
   }
   

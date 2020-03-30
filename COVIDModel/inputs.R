@@ -166,7 +166,7 @@ run.fit.action <- actionButton(inputId = 'run.fit',
                                label = 'Estimate Re')
 
 ##  ............................................................................
-##  Parameters
+##  Model 1 Parameters
 ##  ............................................................................
 
 incubation.period.input <- function(incubation.period){
@@ -253,6 +253,16 @@ vent.los.input <- function(vent.los){
 }
 
 save.parameter.action <- actionButton("save", params.save.msg)
+
+##  ............................................................................
+##  Model 2 Parameters
+##  ............................................................................
+
+trans.prob.slider <- function(inputId, label, value){
+  input.return <- sliderInput(inputId, label, min = 0, max = 1, 
+                                 value = value, step = 0.01, width = '100%')
+  return(input.return)
+}
 
 ##  ............................................................................
 ##  Graph selection inputs

@@ -45,6 +45,9 @@ shinyUI(
                    uiOutput(outputId = 'prediction_fld'),
                    curr.date.input,
                    uiOutput(outputId = 'prior_val'),
+                   HTML('<br>'),
+                   use.double.input,
+
                    
                    HTML('<br>'),
                    hr(),
@@ -69,7 +72,6 @@ shinyUI(
                    # Other Settings
                    HTML(settings.wording),
                    proj.num.days.input,
-                   use.double.input,
                    other.params.button, 
                    HTML(end.notes),
                    

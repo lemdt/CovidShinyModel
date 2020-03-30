@@ -1,9 +1,9 @@
+# loading model functions
+source('model2.R')
+source('model2_helper.R')
+
 # loading common helper functions
 source('helper.R')
-
-# loading model functions
-source('model1.R')
-source('model1_helper.R')
 
 # loading language strings
 source('wording.R')
@@ -24,9 +24,7 @@ library(DT)
 library(dplyr)
 library(shinyjs)
 
-# start simulation from this number of infections
-# TODO: should do a test that this works...if we start with a different start.inf
-# are the results different? 
+# start simulation from this number of exposures
 start.exp.default <- 1
 r0.default <- 2.8
 est.days <- 365
@@ -173,9 +171,9 @@ shinyServer(function(input, output, session) {
             
             df.melt <- melt(df.graph, id.vars = 'Date')
             
-            re.estimates$graph <- ggplot(df.melt, aes(x = Date, y = value, col = variable)) 
-            + geom_point() + geom_line() + theme(text = element_text(size=20)) 
-            + theme(legend.title=element_blank())
+            re.estimates$graph <- ggplot(df.melt, aes(x = Date, y = value, col = variable)) + 
+                geom_point() + geom_line() + theme(text = element_text(size=20)) + 
+                theme(legend.title=element_blank())
             
             re.estimates$best.estimate <- sprintf(best.re.msg, 
                                                   best.fit$best.re)
@@ -241,7 +239,8 @@ shinyServer(function(input, output, session) {
     curr.day.list <- reactive({
         
         num.actual <- ifelse(is.null(input$num_cases), 
-                                input$num_hospitalized, input$num_cases)
+                                ifelse(is.null(input$num_hospitalized), 50, input$num_hospitalized),
+                             input$num_cases)
 
         find.curr.estimates(S0 = input$num_people,
                             beta.vector = initial_beta_vector(), 
@@ -332,18 +331,21 @@ shinyServer(function(input, output, session) {
         int.df <- intervention.table()
         
         int.df$Date <- int.df$Day + input$curr_date
-        int.df <- int.df[,c('Date', 'New.Re', 'Days.of.Smoothing')]
-        colnames(int.df) <- c('Date', 'New Re', 'Days of Smoothing')
+        int.df <- int.df[,c('Date', 'New.Re', 'Days.of.Smoothing', 'Day')]
+        colnames(int.df) <- c('Date', 'New Re', 'Days of Smoothing', 'Day')
+        
         
         if (nrow(int.df) > 0){
             int.df[["Delete"]] <-
                 paste0('
                <div class="btn-group" role="group" aria-label="">
-               <button type="button" class="btn btn-secondary delete" id=delete', '_', int.df$Date, '>Delete</button>
+               <button type="button" class="btn btn-secondary delete" id=delete', '_', int.df$Day, '>Delete</button>
                </div>
                ')
         }
         
+        int.df$Day <- NULL
+
         datatable(int.df,
                   escape=F, selection = 'none',
                   options = list(pageLength = 10, language = list(
@@ -354,8 +356,8 @@ shinyServer(function(input, output, session) {
     
     observeEvent(input$lastClick, {
         if (grepl('delete', input$lastClickId)){
-            delete_day <- as.numeric(strsplit(input$lastClickId, '_')[[1]][2])
-            intervention.table(intervention.table()[intervention.table()$Date != delete_day,])
+            delete_day <- strsplit(input$lastClickId, '_')[[1]][2]
+            intervention.table(intervention.table()[intervention.table()$Day != delete_day,])
         }
     })
     
@@ -475,8 +477,10 @@ shinyServer(function(input, output, session) {
 
         if (input$input.metric == 'Hospitalizations'){
             # run the same model as initialization model but run extra days
+            
             curr.day  <- as.numeric(curr.day.list()['curr.day'])
             new.num.days <- input$proj_num_days + curr.day
+            
             new.num.days <- ifelse(is.na(new.num.days), 365, new.num.days)
             
             # starting conditions
@@ -518,13 +522,13 @@ shinyServer(function(input, output, session) {
             influx <- list('day' = -1, num.influx = 0)
 
             SIR.df <- SEIR(S0 = start.susc, 
-                         E0 = start.exp,
-                         I0 = start.inf, 
-                         R0 = start.res,
-                         beta.vector = beta.vector(),
-                         num.days = num.days, 
-                         influx = influx,
-                         params = params)
+                           E0 = start.exp,
+                           I0 = start.inf, 
+                           R0 = start.res,
+                           beta.vector = beta.vector(),
+                           num.days = num.days, 
+                           influx = influx,
+                           params = params)
             
             SIR.df$days.shift <- SIR.df$day
         }
@@ -808,11 +812,7 @@ shinyServer(function(input, output, session) {
                 data <- resource.df()
             }
             # write.csv(data.frame(data), file, row.names = FALSE)
-            df.output <- sir.output.df()[,c('day', 'days.shift', 'date',
-                                            'S', 'E', 'I', 'R', 'new.infections',
-                                            'admit.hosp', 'discharge.hosp', 'hosp', 
-                                            'admit.icu', 'discharge.icu', 'icu',
-                                            'admit.vent', 'discharge.vent', 'vent')]
+            df.output <- sir.output.df()
             write.csv(data.frame(df.output), file, row.names = FALSE)
         }
     )
