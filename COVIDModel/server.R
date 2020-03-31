@@ -762,8 +762,16 @@ shinyServer(function(input, output, session) {
             else{
                 data <- resource.df()
             }
+            
+            # TODO: this is for testing only, uncomment and 
+            # remove bottom lines after testing is done
             # write.csv(data.frame(data), file, row.names = FALSE)
             df.output <- sir.output.df()
+            
+            # model specific dataframe downloads 
+            # process.df.for.download function is in model1.R or model2.R
+            df.output <- process.df.for.download(df.output)
+            
             write.csv(data.frame(df.output), file, row.names = FALSE)
         }
     )

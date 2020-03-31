@@ -117,3 +117,9 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
                     S, E, I, R, new.infections)
   return(dt2)
 }
+
+
+# TODO: placeholder for now. fill in later.
+process.df.for.download <- function(df){
+  return(df)
+}

@@ -40,7 +40,7 @@ runMarkov <- function(new.g.vec, trans.mat){
     df.final <- rbind(df.final, step.vec)
   }
   
-  colnames(df.final) <- c('g.only', 'icu.only', 'vent.only', 'disc', 'death')
+  colnames(df.final) <- c('G.state', 'ICU.state', 'V.state', 'DCH.state', 'M.state')
   return(df.final)
 }
 
@@ -123,10 +123,26 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
   df.return <- merge(df.return, markov.df, by = 'day')
   
   # df.return$R <- df.return$R + df.return$disc
-  df.return$hosp <- df.return$g.only + df.return$icu.only + df.return$vent.only
-  df.return$icu <- df.return$icu.only + df.return$vent.only
-  df.return$vent <- df.return$vent.only
+  df.return$hosp <- df.return$G.state + df.return$ICU.state + df.return$V.state
+  df.return$icu <- df.return$ICU.state + df.return$V.state
+  df.return$vent <- df.return$V.state
   
   return(df.return)
   
+}
+
+
+process.df.for.download <- function(df){
+  df$HOSP.report <- df$hosp
+  df$ICU.report <- df$icu 
+  df$VENT.report <- df$vent
+  df$DISCHARGE.report <- df$DCH.state
+  df$MORTALITY.report <- df$M.state
+  
+  df <- df[,c('day', 'days.shift', 'date', 'S', 'E', 'I', 'IR', 'IH', 'R',
+              'newG', 'G.state', 'ICU.state', 'V.state', 'DCH.state', 'M.state', 
+              'HOSP.report', 'ICU.report', 'VENT.report', 'DISCHARGE.report', 'MORTALITY.report')]
+  
+  return(df)
+
 }
