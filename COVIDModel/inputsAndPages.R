@@ -271,9 +271,9 @@ save.parameter.action <- actionButton("save", params.save.msg)
 ##  Model 2 Parameter Inputs
 ##  ............................................................................
 
-trans.prob.slider <- function(inputId, label, value){
-  input.return <- sliderInput(inputId, label, min = 0, max = 1, 
-                              value = value, step = 0.001, width = '100%')
+trans.prob.slider <- function(inputId, label, value, min = 0, max = 1, step = 0.01){
+  input.return <- sliderInput(inputId, label, min = min, max = max, 
+                              value = value, step = step, width = '100%')
   return(input.return)
 }
 

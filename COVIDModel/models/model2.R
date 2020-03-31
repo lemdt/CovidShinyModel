@@ -47,10 +47,9 @@ runMarkov <- function(new.g.vec, trans.mat){
 # Runs SEIR, combines with Markov
 SEIR <- function(S0, E0, I0, R0, beta.vector, 
                  num.days, influx, params) {
-  
   # get parameters
   sigma <- params$sigma
-  gamma.r <- params$gamma
+  gamma.r <- params$gamma.r
   gamma.h <- params$gamma.h
   hosp.rate <- params$hosp.rate 
   p.g_g <- params$p.g_g
@@ -112,7 +111,7 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
     }
   }
   
-  I <- IR + IH + newG
+  I <- IR + IH
   
   df.return <- data.frame(day = 0:(num.days-1), S, E, I, IR, IH, R, newG)
   
@@ -123,7 +122,7 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
   
   df.return <- merge(df.return, markov.df, by = 'day')
   
-  df.return$R <- df.return$R + df.return$disc
+  # df.return$R <- df.return$R + df.return$disc
   df.return$hosp <- df.return$g.only + df.return$icu.only + df.return$vent.only
   df.return$icu <- df.return$icu.only + df.return$vent.only
   df.return$vent <- df.return$vent.only

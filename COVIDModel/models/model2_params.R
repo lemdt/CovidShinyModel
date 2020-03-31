@@ -9,9 +9,10 @@ default.params <- reactiveValues(
   incubation.period = 5,
   sigma = 1/5,
   illness.length = 7,
+  gamma.r = 1/7,
+  inf.to.hosp = 7, 
+  gamma.h = 1/7,
   gamma = 1/7,
-  inf.to.hosp = 10, 
-  gamma.h = 1/10,
   hosp.rate = 0.06, 
   p.g_g = 0.5,
   p.g_icu = 0.25,
@@ -61,7 +62,10 @@ parameters.modal <- function(params){
                         value = params$p.v_icu),
       trans.prob.slider(inputId = 'p.v_m', 
                         label = vent.to.m.wording,
-                        value = params$p.v_m)
+                        value = params$p.v_m, 
+                        min = 0, 
+                        max = 0.2,
+                        step = 0.001)
       ),
     footer = tagList(
       save.parameter.action
@@ -73,10 +77,11 @@ parameters.modal <- function(params){
 
 save.params <- function(params,input){
   params$illness.length = input$illness.length
-  params$gamma = ((1 - input$hosp.rate) * 1/input$illness.length) + 
-    (input$hosp.rate * 1/input$hosp.after.inf)
+  params$gamma.r = 1/input$illness.length
   params$inf.to.hosp = input$hosp.after.inf
   params$gamma.h = 1/input$hosp.after.inf
+  params$gamma = ((1 - input$hosp.rate) * 1/input$illness.length) + 
+    (input$hosp.rate * 1/input$hosp.after.inf)
   params$hosp.rate = input$hosp.rate
   params$incubation.period = input$incubation.period
   params$sigma = 1/input$incubation.period
