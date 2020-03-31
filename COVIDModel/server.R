@@ -26,9 +26,57 @@ start.exp.default <- 1
 r0.default <- 2.8
 est.days <- 365
 
-
 shinyServer(function(input, output, session) {
+    ##  ............................................................................
+    ##  Bookmarking logic
+    ##  ............................................................................
     
+    setBookmarkExclude(c(
+        # DT sends this, no reason to save it in bookmarks
+        "int_table_rows_all", "int_table_rows_current", "int_table_search", "int_table_state", "int_table_cell_clicked",
+        "rendered.table_rows_all", "rendered.table_rows_current", "rendered.table_rows_selected", "rendered.table_search", "rendered.table_state", "rendered.table_cell_clicked",
+        # Buttons shouldn't be saved; they can cause problems on restore if their
+        # stored values cause observeEvents to be triggered
+        "parameters_modal", "add_intervention", "save", "goleft", "goright",
+        "showint", "predict_re", "howtouse",
+        "lastClick", "lastClickId"
+    ))
+
+    # Shiny takes care of restoring most inputs automatically, but state whose
+    # "single source of truth" is on the server (in the form of reactiveVal and
+    # reactiveValues, usually) need to be manually saved and restored.
+    onBookmark(function(state) {
+        state$values$params <- reactiveValuesToList(params)
+        state$values$intervention.table <- intervention.table()
+        state$values$plot_day <- plot_day()
+    })
+    onRestore(function(state) {
+        mapply(function(name, value) {
+            params[[name]] <- value
+        }, names(state$values$params), state$values$params)
+        plot_day(state$values$plot_day)
+        # There are two complicating factors with restoring intervention.table
+        # from bookmarked state.
+        #
+        # First, the bookmarked state doesn't contain type information, so Shiny
+        # gives this value back to us as a list, not a data frame. Use
+        # as.data.frame to turn it back into a data frame.
+        #
+        # Second, each individual column doesn't contain type information
+        # either, so IF there weren't any rows to the intervention table, then
+        # the columns are given back to us as NULL, which as.data.frame will
+        # simply throw out; the resulting data frame as 0 columns. Forcing each
+        # column to be numeric preserves the columns.
+        intervention.table(as.data.frame(
+            lapply(state$values$intervention.table, as.numeric)
+        ))
+    })
+    onBookmarked(function(url) {
+        # url <- shorten_url_somehow(url)
+        showBookmarkUrlModal(url)
+    })
+
+
     ##  ............................................................................
     ##  Helper Modal 
     ##  ............................................................................
@@ -296,8 +344,8 @@ shinyServer(function(input, output, session) {
     })
     
     intervention.table <- reactiveVal(int.df.with.re)
-    
-    observeEvent(input$usedouble, {
+
+    observeEvent(input$usedouble, ignoreInit = TRUE, {
         if (input$usedouble == TRUE){
             intervention.table(int.df.with.double)
         }
