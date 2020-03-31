@@ -2,7 +2,7 @@ library(shiny)
 library(shinyWidgets)
 library(DT)
 
-shinyUI(
+shinyUI(function(req) {
   tagList(
     
     tags$style(".container{
@@ -85,7 +85,9 @@ shinyUI(
                    tags$script("$(document).on('click', '#int_table button', function () {
                   Shiny.onInputChange('lastClickId',this.id);
                                              Shiny.onInputChange('lastClick', Math.random())
-                                             });")
+                                             });"),
+                   hr(),
+                   bookmarkButton()
                  ),
                  
                  mainPanel(
@@ -136,4 +138,4 @@ shinyUI(
              )
     )
   )
-)
+})
