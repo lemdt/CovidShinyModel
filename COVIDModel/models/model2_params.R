@@ -5,6 +5,7 @@
 # libraries 
 library(shiny)
 
+# default parameters for Model 2
 default.params <- reactiveValues(
   incubation.period = 5,
   sigma = 1/5,
@@ -32,6 +33,7 @@ default.params <- reactiveValues(
   vent.avail = 100
 )
 
+# modal to enter parameters that pops up after clicking on "Customize Other Parameters"
 parameters.modal <- function(params){
   params.page <- modalDialog(
     fluidPage(
@@ -75,6 +77,12 @@ parameters.modal <- function(params){
   return(params.page)
 }
 
+#' Save Parameters
+#'
+#' @param params ReactiveVals list. 
+#' @param input List (from shiny's inputs). 
+#'
+#' @return ReactiveVals list, with new set of saved parameters. 
 save.params <- function(params,input){
   params$illness.length = input$illness.length
   params$gamma.r = 1/input$illness.length
