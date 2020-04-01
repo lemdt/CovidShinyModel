@@ -45,7 +45,8 @@ num.cases.input <- numericInput(inputId = 'num_cases',
 #' Creates input for prior doubling time 
 #' 
 #' @param date.select A date.
-#' @return sliderInput object with the date in the label string 
+#' @return sliderInput object with the date in the label string. 
+
 double.time.input <- function(date.select){
   input.return <- sliderInput(inputId = 'doubling_time', 
                               label = sprintf(prior.double.wording, date.select), 
