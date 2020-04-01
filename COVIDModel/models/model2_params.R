@@ -78,6 +78,8 @@ parameters.modal <- function(params){
 }
 
 #' Save Parameters
+#' 
+#' Saves parameters in the 'params' ReactiveVals. 
 #'
 #' @param params ReactiveVals list. 
 #' @param input List (from shiny's inputs). 
