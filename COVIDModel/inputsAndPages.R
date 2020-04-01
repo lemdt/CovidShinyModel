@@ -60,7 +60,8 @@ double.time.input <- function(date.select){
 #' Creates input for prior Re. 
 #' 
 #' @param date.select A date.
-#' @return sliderInput object with the date in the label string 
+#' @return sliderInput object with the date in the label string. 
+
 r0.prior.input <- function(date.select){
   input.return <- sliderInput(inputId = 'r0_prior', 
                               label = sprintf(prior.re.wording, date.select), 
