@@ -131,7 +131,6 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
   
 }
 
-
 process.df.for.download <- function(df){
   df$HOSP.report <- df$hosp
   df$ICU.report <- df$icu 

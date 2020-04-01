@@ -2,9 +2,6 @@
 ##  Model 1 Helper Code
 ##  ............................................................................
 
-# libraries 
-library(data.table)
-
 default.params <- reactiveValues(
   illness.length = 7,
   gamma = 1/7,

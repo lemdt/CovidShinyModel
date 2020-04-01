@@ -6,7 +6,7 @@
 ##  General
 ##  ............................................................................
 
-app.title <- "COVID-19 Epidemic Modeling (Model 2 - Markov - Pre-Release)"
+app.title <- "COVID-19 Epidemic Modeling (Model 0 with Percentages - Testing)"
 
 about.link.wording <- "Learn more about this tool."
 
@@ -159,9 +159,9 @@ infectious.input.wording <- "Number of days an infected person is infectious"
 
 per.hosp.wording <- "Percent Hospitalized Among Infections"
 
-per.icu.wording <- "Percent ICU Admitted Among Hospitalized"
+per.icu.wording <- "Percent of All Hospitalized That are Currently in the ICU (including Ventilated)"
 
-per.vent.wording <- "Percent Ventilated Among ICU Admissions"
+per.vent.wording <- "Percent of All ICU Patients that are Currently Ventilated"
 
 inf.to.hosp.wording <- "Number of days from infection to hospitalization"
 
@@ -170,6 +170,8 @@ hosp.to.icu.wording <- "Number of days from hospitalization to ICU Admission"
 icu.to.vent.wording <- "Number of days from ICU admission to ventilation"
 
 hosp.los.wording <- "Hospital Length of Stay for Non-ICU Patients (days)"
+
+hosp.los.wording.model0 <- "Average Hospital Length of Stay in Days (used as a rate)"
 
 icu.los.wording <- "ICU Length of Stay for Non-Ventilated Patients (days)"
 

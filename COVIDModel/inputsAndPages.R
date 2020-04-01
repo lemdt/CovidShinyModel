@@ -270,6 +270,14 @@ hosp.los.input <- function(hosp.los){
   return(input.return)
 }
 
+hosp.los.input.model0 <- function(hosp.los){
+  input.return <- sliderInput('hosp.los', hosp.los.wording.model0, min = 1, max = 15, step = 1, 
+                              value = hosp.los, width = '100%')
+  
+  return(input.return)
+}
+
+
 icu.los.input <- function(icu.los){
   input.return <- sliderInput('icu.los', icu.los.wording, min = 1, max = 15, step = 1,
                               value = icu.los, width = '100%')

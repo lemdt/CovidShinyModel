@@ -1,6 +1,6 @@
 # loading model functions
-source('models/model2.R')
-source('models/model2_params.R')
+source('models/model0.R')
+source('models/model0_params.R')
 
 # loading common helper functions
 source('helper.R')
@@ -713,8 +713,6 @@ shinyServer(function(input, output, session) {
                     HTML(sprintf(cases.fut.wording, select.date, cases, active))
                 }
             }
-            
-            
         }
         else if (input$selected_graph == 'Hospitalization'){
             hosp <- round(select.row$hosp)
