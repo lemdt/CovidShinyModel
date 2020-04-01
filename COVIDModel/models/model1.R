@@ -2,10 +2,37 @@
 ##  Model 1 Main Code
 ##  ............................................................................
 
-library(data.table)
-
-# runs SEIR model simulation, and then calculates hospitalizations, 
-# icu numbers, and ventilator numbers 
+#' Run SEIR model 
+#' 
+#' Runs the SEIR model using the Model 1 specification. 
+#' https://docs.google.com/document/d/1CEoKQ1pD1x4yH7GzR3mViWtfVG-4Do8ViZUd4z_t9Ts/edit?usp=sharing
+#' 
+#' The simulation ignores births and deaths.  
+#'
+#' @param S0 Numeric. Initial number of susceptible individuals. 
+#' @param E0 Numeric. Initial number of exposed individuals. 
+#' @param I0 Numeric. Initial number of infected individuals. 
+#' @param R0 Numeric. Initial number of recovered individuals.
+#' @param beta.vector Vector, of beta values to use in the simulation on each day. 
+#' Should have the same length as num.days.  
+#' @param num.days Numeric. Number of days to run the simulation. 
+#' @param influx List. This is hash consisting of a 'day' and an 'influx' number, 
+#' meant to represent an influx of infections into the region 
+#' @param params List. This should contain the parameters for running the SEIR, including:
+#' - Sigma 
+#' - Gamma 
+#' - hosp.delay.time: time between infection and hospitalization
+#' - hosp.rate: percent hospitalized out of those infected
+#' - hosp.los: hospital length of stay if not admitted to ICU 
+#' - icu.delay.time: time between hospitalization and ICU admission
+#' - icu.rate: percent ICU admitted among those hospitalized
+#' - icu.los : average ICU length of stay if not ventilated
+#' - vent.delay.time: time between ICU ventilation and being put on a ventilator
+#' - vent.rate: percent ventilated among those ICU admitted 
+#' - vent.los: average time on a ventilator
+#'
+#' @return Dataframe, with susceptible counts, exposed counts, infected counts, 
+#' hospitalization numbers, recovery numbers, and death numbers. 
 SEIR <- function(S0, E0, I0, R0, beta.vector, 
                  num.days, influx, params) {
   
@@ -119,7 +146,14 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
 }
 
 
-# TODO: placeholder for now. fill in later.
+#' Process dataframe to download 
+#' 
+#' Processes download dataframe with columns with specified names in a
+#' specified order. For model 1, no processing is currently done. 
+#'
+#' @param df Dataframe. 
+#'
+#' @return Dataframe. 
 process.df.for.download <- function(df){
   return(df)
 }
