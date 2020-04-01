@@ -3,7 +3,34 @@
 ##  ............................................................................
 
 
-# Runs SEIR for model 0
+#' Run SEIR model 
+#' 
+#' Runs the SEIR model using the Model 0 specification.
+#' https://drive.google.com/file/d/12Vppztxe6JdNUHEv9hMQZdmsLVs3elsJ/view?usp=sharing 
+#' 
+#' The simulation ignores births and deaths.  
+#'
+#' @param S0 Numeric. Initial number of susceptible individuals. 
+#' @param E0 Numeric. Initial number of exposed individuals. 
+#' @param I0 Numeric. Initial number of infected individuals. 
+#' @param R0 Numeric. Initial number of recovered individuals.
+#' @param beta.vector Vector, of beta values to use in the simulation on each day. 
+#' Should have the same length as num.days.  
+#' @param num.days Numeric. Number of days to run the simulation. 
+#' @param influx List. This is hash consisting of a 'day' and an 'influx' number, 
+#' meant to represent an influx of infections into the region 
+#' @param params List. This should contain the parameters for running the SEIR, including:
+#' - Sigma 
+#' - gamma.r: The rate at which non-hospitalized people recover. 
+#' - gamma.h: The rate at which to-be hospitalized people in the general population
+#' get admitted to the hospital. 
+#' - psi: The rate at which those that are hospitalized leave the hospital. 
+#' - hosp.rate: percent hospitalized out of those infected
+#' - icu.rate: percent ICU admitted among those hospitalized
+#' - vent.rate: percent ventilated among those ICU admitted 
+#'
+#' @return Dataframe, with susceptible counts, exposed counts, infected counts, 
+#' hospitalization numbers, and recovery numbers numbers. 
 SEIR <- function(S0, E0, I0, R0, beta.vector, 
                  num.days, influx, params) {
 
@@ -72,6 +99,14 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
   
 }
 
+#' Process dataframe to download 
+#' 
+#' Processes download dataframe with columns with specified names in a
+#' specified order. For model 1, no processing is currently done. 
+#'
+#' @param df Dataframe. 
+#'
+#' @return Dataframe which has been processed.
 process.df.for.download <- function(df){
   
   df.return <- df

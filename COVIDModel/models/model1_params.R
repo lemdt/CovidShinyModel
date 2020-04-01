@@ -2,6 +2,9 @@
 ##  Model 1 Helper Code
 ##  ............................................................................
 
+# libraries 
+library(shiny)
+
 # default parameters for Model 1
 default.params <- reactiveValues(
   illness.length = 7,

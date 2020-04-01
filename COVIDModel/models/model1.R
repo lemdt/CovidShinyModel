@@ -32,7 +32,7 @@
 #' - vent.los: average time on a ventilator
 #'
 #' @return Dataframe, with susceptible counts, exposed counts, infected counts, 
-#' hospitalization numbers, recovery numbers, and death numbers. 
+#' hospitalization numbers, and recovery numbers. 
 SEIR <- function(S0, E0, I0, R0, beta.vector, 
                  num.days, influx, params) {
   
@@ -153,7 +153,7 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
 #'
 #' @param df Dataframe. 
 #'
-#' @return Dataframe. 
+#' @return Dataframe which has been processed. 
 process.df.for.download <- function(df){
   return(df)
 }
