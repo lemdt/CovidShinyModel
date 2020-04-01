@@ -42,6 +42,10 @@ num.cases.input <- numericInput(inputId = 'num_cases',
                                 label = cases.input.wording, 
                                 value = 50)
 
+#' Creates input for prior doubling time 
+#' 
+#' @param date.select A date.
+#' @return sliderInput object with the date in the label string 
 double.time.input <- function(date.select){
   input.return <- sliderInput(inputId = 'doubling_time', 
                               label = sprintf(prior.double.wording, date.select), 
@@ -52,6 +56,10 @@ double.time.input <- function(date.select){
   return(input.return)
 }
 
+#' Creates input for prior Re. 
+#' 
+#' @param date.select A date.
+#' @return sliderInput object with the date in the label string 
 r0.prior.input <- function(date.select){
   input.return <- sliderInput(inputId = 'r0_prior', 
                               label = sprintf(prior.re.wording, date.select), 
@@ -62,6 +70,10 @@ r0.prior.input <- function(date.select){
   return(input.return)
 }
 
+#' Creates action link for modal popup to determine past Re. 
+#' 
+#' @param date.select A date.
+#' @return actionLink object with the date in the label string 
 pred.re.action <- function(date.select){
   input.return <- actionLink('predict_re', sprintf(estimate.re.action.wording, date.select))
   
@@ -89,6 +101,14 @@ int.re.input <- sliderInput(inputId = 'r0_new',
                             step = 0.1,
                             value = 2.8)
 
+#' Creates date input for the interventions added.   
+#' 
+#' @param curr.date A date. 
+#' @param hosp.delay.time Numeric. (The number of days between infection and hospitalization.) 
+#' @param input.metric. String. (Either 'Hospitalization' or 'Cases' for now.)
+#' @return return a dateInput object. For the 'Hospitalization' option, allows inputs starting
+#' from the current date minus the hopsitalization gap. For the 'Cases' option, allows input 
+#' starting from the day after the current date. 
 int.date.input <- function(curr.date, hosp.delay.time, input.metric){
   
   if (input.metric == 'Hospitalizations'){
