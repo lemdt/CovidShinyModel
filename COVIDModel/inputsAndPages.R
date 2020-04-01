@@ -108,7 +108,8 @@ int.re.input <- sliderInput(inputId = 'r0_new',
 #' @param curr.date A date. 
 #' @param hosp.delay.time Numeric. (The number of days between infection and hospitalization.) 
 #' @param input.metric. String. (Either 'Hospitalization' or 'Cases' for now.)
-#' @return return a dateInput object. For the 'Hospitalization' option, allows inputs starting
+#' @return return a dateInput object. For the `Hospitalization` option, allows inputs starting
+
 #' from the current date minus the hopsitalization gap. For the 'Cases' option, allows input 
 #' starting from the day after the current date. 
 int.date.input <- function(curr.date, hosp.delay.time, input.metric){
