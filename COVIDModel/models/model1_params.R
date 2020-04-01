@@ -2,6 +2,7 @@
 ##  Model 1 Helper Code
 ##  ............................................................................
 
+# default parameters for Model 1
 default.params <- reactiveValues(
   illness.length = 7,
   gamma = 1/7,
@@ -25,6 +26,7 @@ default.params <- reactiveValues(
   vent.avail = 100
 )
 
+# modal to enter parameters that pops up after clicking on "Customize Other Parameters"
 parameters.modal <- function(params){
   params.page <- modalDialog(
     fluidPage(
@@ -47,6 +49,12 @@ parameters.modal <- function(params){
   return(params.page)
 }
 
+#' Save Parameters
+#'
+#' @param params ReactiveVals list. 
+#' @param input List (from shiny's inputs). 
+#'
+#' @return ReactiveVals list, with new set of saved parameters. 
 save.params <- function(params,input){
   params$illness.length = input$illness.length
   params$gamma = 1/input$illness.length
