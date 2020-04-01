@@ -74,9 +74,10 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
 
 process.df.for.download <- function(df){
   
+  df.return <- df
   df.return$R <- df.return$R.orig
 
-  df.return <- df[,c('day', 'days.shift', 'date', 'S', 'E', 'I', 'IR', 
+  df.return <- df.return[,c('day', 'days.shift', 'date', 'S', 'E', 'I', 'IR', 
                      'IH', 'R', 'HP', 'icu', 'vent', 'DC')]
   
   return(df.return)

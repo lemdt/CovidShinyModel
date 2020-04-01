@@ -4,7 +4,25 @@
 
 library(data.table)
 
-# Transition Matrix
+#' Transition matrix
+#'
+#' Creates Markov transition matrix using the transition probabilties. 
+#' 
+#' The transition model is used 
+#'
+#' @param p.g_g Numeric. Transition probability from G -> G state. 
+#' @param p.g_icu Numeric. Transition probability from G -> ICU state. 
+#' @param p.g_d Numeric. Transition probability from G -> D state. 
+#' @param p.icu_g Numeric. Transition probability from ICU -> G state. 
+#' @param p.icu_icu Numeric. Transition probability from ICU -> ICU state. 
+#' @param p.icu_v Numeric. Transition probability from ICU -> V state
+#' @param p.v_icu Numeric. Transition probability from V -> ICU state. 
+#' @param p.v_v Numeric. Transition probability from V -> V state. 
+#' @param p.v_m Numeric. Transition probability from V -> M state. 
+#' @param p.g_m Numeric. Transition probability from G -> M state. 
+#' @param p.icu_m Numeric. Transition probability from ICU -> M state. 
+#'
+#' @return The transition matrix used in the update step of the Markov model. 
 createTransition <- function(p.g_g, 
                              p.g_icu, 
                              p.g_d, 
