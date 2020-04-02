@@ -949,6 +949,7 @@ shinyServer(function(input, output, session) {
             # process.df.for.download function is in model1.R or model2.R
             df.output <- process.df.for.download(df.output)
 
+            # TODO: this is dirty. Should perhaps be parsed out into a function. 
             # process parameters 
             gen.param.names <- c('Number of people in Area', 'Date') 
             gen.param.vals <- c(input$num_people, input$curr_date)
