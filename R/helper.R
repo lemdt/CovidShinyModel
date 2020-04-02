@@ -1,3 +1,9 @@
+# Declare some globals to prevent warnings
+# Reference: https://community.rstudio.com/t/how-to-solve-no-visible-binding-for-global-variable-note/28887
+
+utils::globalVariables(c("Day", "value", "variable", "Date"))
+
+
 #' Get Beta from Doubling Time
 #'
 #' Returns beta from doubling time using formulas here:

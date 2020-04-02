@@ -1,3 +1,6 @@
+utils::globalVariables(c("about.page", "SEIR"))
+
+
 #' Server part
 #' @import shiny ggplot2 shinyWidgets DT shinyjs urlshorteneR
 M0 <- new.env()
@@ -14,6 +17,7 @@ r0.default <- 2.8
 est.days <- 365
 
 #' @importFrom urlshorteneR isgd_LinksShorten
+#' @importFrom utils write.csv
 server <- function(input, output, session) {
     model <- M0
     ##  ............................................................................
@@ -220,7 +224,7 @@ server <- function(input, output, session) {
     observeEvent(input$run.fit, {
 
         hist.temp <- hist.data()
-        hist.temp <- arrange(hist.temp, desc(Date))
+        hist.temp <- dplyr::arrange(hist.temp, dplyr::desc(Date))
 
         if (nrow(hist.temp) >= 2){
             best.fit <- findBestRe(N = input$num_people,
@@ -981,7 +985,7 @@ server <- function(input, output, session) {
                 df.binded <- cbind.fill(df.output, params.df)
             }
 
-            write.csv(data.frame(df.binded), file, row.names = FALSE, na = '')
+            utils::write.csv(data.frame(df.binded), file, row.names = FALSE, na = '')
         }
     )
 }
