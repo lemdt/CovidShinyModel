@@ -118,7 +118,7 @@ find.curr.estimates = function(N, beta.vector, num.days, num.actual,
   start.res <- 0 
   start.inf <- 0
   
-  SEIR.df = SEIR(S0 = start.susc, 
+  SEIR.df = model$SEIR(S0 = start.susc, 
                  E0 = start.exp, 
                  I0 = start.inf, 
                  R0 = start.res, 

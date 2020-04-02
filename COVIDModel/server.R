@@ -1,15 +1,22 @@
 # loading model functions
-source('models/model0.R')
-source('models/model0_params.R')
+M0 <- new.env()
+source('models/model0.R', local = M0)
+source('models/model0_params.R', local = M0)
+
+M2 <- new.env()
+source('models/model2.R', local = M2)
+source('models/model2_params.R', local = M2)
+
+model <- M0
 
 # loading common helper functions
-source('helper.R')
+source('helper.R', local = TRUE)
 
 # loading language strings
-source('wording.R')
+source('wording.R', local = TRUE)
 
 # loading inputs
-source('inputsAndPages.R')
+source('inputsAndPages.R', local = TRUE)
 
 # libraries
 library(shiny)
@@ -31,7 +38,7 @@ shinyServer(function(input, output, session) {
     ##  ............................................................................
     ##  Bookmarking logic
     ##  ............................................................................
-    
+
     setBookmarkExclude(c(
         # DT sends this, no reason to save it in bookmarks
         "int_table_rows_all", "int_table_rows_current", "int_table_search", "int_table_state", "int_table_cell_clicked",
@@ -284,17 +291,13 @@ shinyServer(function(input, output, session) {
     
     # Markov Model selection
     observeEvent(input$model_select, ignoreInit = TRUE, {
-        if (input$model_select == TRUE){
-            source('models/model2.R')
-            source('models/model2_params.R')
-
-        }
-        else{
-            source('models/model0.R')
-            source('models/model0_params.R')
+        model <<- if (input$model_select == TRUE){
+            M2
+        } else {
+            M0
         }
         
-        default.params.list <- reactiveValuesToList(default.params)
+        default.params.list <- reactiveValuesToList(model$default.params)
         for (param in names(default.params.list)){
             params[[param]] = as.numeric(default.params.list[param])
         }
@@ -306,15 +309,15 @@ shinyServer(function(input, output, session) {
     })
     
     # initializing a set of parameters  
-    params <- default.params
+    params <- model$default.params
     
     # modal pop-up to update parameters
     observeEvent(input$parameters_modal,{
-        showModal(parameters.modal(params))
+        showModal(model$parameters.modal(params))
     })
     
     observeEvent(input$save, {
-        params <- save.params(params, input)
+        params <- model$save.params(params, input)
         removeModal()
     })
     
@@ -603,7 +606,7 @@ shinyServer(function(input, output, session) {
             start.inf <- 0
             start.res <- 0
             
-            seir.df = SEIR(S0 = start.susc,
+            seir.df = model$SEIR(S0 = start.susc,
                            E0 = start.exp.default,
                            I0 = start.inf, 
                            R0 = start.res,
@@ -625,7 +628,7 @@ shinyServer(function(input, output, session) {
             start.res <- 0 
             num.days <- input$proj_num_days
             
-            seir.df <- SEIR(S0 = start.susc, 
+            seir.df <- model$SEIR(S0 = start.susc, 
                             E0 = start.exp,
                             I0 = start.inf, 
                             R0 = start.res,
@@ -947,7 +950,7 @@ shinyServer(function(input, output, session) {
             
             # model specific dataframe downloads 
             # process.df.for.download function is in model1.R or model2.R
-            df.output <- process.df.for.download(df.output)
+            df.output <- model$process.df.for.download(df.output)
 
             # TODO: this is dirty. Should perhaps be parsed out into a function. 
             # process parameters 
@@ -979,7 +982,7 @@ shinyServer(function(input, output, session) {
                 gen.param.vals <- c(gen.param.vals, input$influx.date, input$num_influx)
             }
             
-            params.list <- process.params.for.download(params)
+            params.list <- model$process.params.for.download(params)
             
             params.df <- data.frame(PARAMETERS = rep(NA, length(c(gen.param.names, names(params.list)))),
                                     params = c(gen.param.names, names(params.list)),
