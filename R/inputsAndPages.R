@@ -106,7 +106,7 @@ trans.prob.slider <- function(inputId, label, value, min = 0, max = 1, step = 0.
 ##  Modals
 ##  ............................................................................
 
-
+#' @importFrom DT dataTableOutput
 predict.re.page <- function(curr.date){
   return.page <-modalDialog(
 
@@ -132,7 +132,7 @@ predict.re.page <- function(curr.date){
 
     actionButton('add.hist', 'Add Data'),
 
-    dataTableOutput(
+    DT::dataTableOutput(
       outputId = 'input_hosp_dt'
     ),
 

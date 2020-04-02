@@ -5,6 +5,7 @@
 \title{Find 'Current' Information}
 \usage{
 find.curr.estimates(
+  model,
   N,
   beta.vector,
   num.days,
@@ -15,6 +16,8 @@ find.curr.estimates(
 )
 }
 \arguments{
+\item{model}{[TODO]}
+
 \item{N}{Numeric, number of people in the area.}
 
 \item{beta.vector}{Vector of numerics, should be the same length as num.days.}

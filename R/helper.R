@@ -50,14 +50,12 @@ roundNonDateCols <- function(df){
 
 }
 
-#' Column Bind
-#'
-#' Same as rbind.fill in plyr, but with columns. Stolen from here:
-#' https://stackoverflow.com/questions/7962267/cbind-a-dataframe-with-an-empty-dataframe-cbind-fill
-#'
-#' @param ...
-#'
-#' @return Dataframe.
+# Column Bind
+#
+# Same as rbind.fill in plyr, but with columns. Stolen from here:
+# https://stackoverflow.com/questions/7962267/cbind-a-dataframe-with-an-empty-dataframe-cbind-fill
+
+#' @noRd
 cbind.fill <- function(...){
   nm <- list(...)
   nm <- lapply(nm, as.matrix)
@@ -85,6 +83,7 @@ cbind.fill <- function(...){
 #' It then returns a list with that day as well as the number susceptible, exposed,
 #' infected, and recovered on that day.
 #'
+#' @param model [TODO]
 #' @param N Numeric, number of people in the area.
 #' @param beta.vector Vector of numerics, should be the same length as num.days.
 #' @param num.days Numeric. Number of days to simulate.
@@ -274,7 +273,7 @@ create.beta.vec <- function(int.table, gamma, usedouble){
   # processing intervention table
   int.table.temp <- int.table
   int.table.temp$beta <- apply(int.table.temp, 1, applygetBeta)
-  int.table.temp <- arrange(int.table.temp, Day)
+  int.table.temp <- dplyr::arrange(int.table.temp, Day)
   int.table.temp <- int.table.temp[!duplicated(int.table.temp$Day),]
 
   # rep.vec consists of the number of days the beta value will repeat
@@ -345,7 +344,7 @@ add.to.hist.table <- function(hist.data, date.hist, num.hospitalized.hist, curr.
                          'Day' = date.hist - curr.date
                     ))
 
-  new.hist <- arrange(new.hist, Day)
+  new.hist <- dplyr::arrange(new.hist, Day)
   new.hist$Date <- as.Date(as.character(new.hist$Date))
 
   return(new.hist)
@@ -378,7 +377,7 @@ bind.to.intervention <- function(int.table, params, usedouble){
                        ))
   }
 
-  new.table <- arrange(new.table, Day)
+  new.table <- dplyr::arrange(new.table, Day)
   return(new.table)
 }
 
