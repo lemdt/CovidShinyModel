@@ -31,7 +31,8 @@ shinyUI(function(req) {
                HTML('<br>'),
                
                titlePanel(app.title),
-               how.to.use.link,
+               
+               actionLink('howtouse', about.link.wording),
                
                HTML('<br><br>'),
                
@@ -40,13 +41,28 @@ shinyUI(function(req) {
                    
                    # Location Information
                    HTML(location.header),
-                   num.people.input,
-                   input.metric.input,
+                   numericInput(inputId = 'num_people', 
+                                label = num.people.wording, 
+                                value = 883305),
+                   
+                   radioGroupButtons(inputId = 'input.metric', 
+                                     label = input.metric.wording, 
+                                     choices = c('Hospitalizations', 'Cases'),
+                                     justified = TRUE, 
+                                     status = "primary"),
+                   
                    uiOutput(outputId = 'prediction_fld'),
-                   curr.date.input,
+                   
+                   dateInput(inputId = 'curr_date', 
+                             label = curr.date.wording),
+                   
                    uiOutput(outputId = 'prior_val'),
+                   
                    HTML('<br>'),
-                   use.double.input,
+                   
+                   materialSwitch(inputId = "usedouble", 
+                                  label = use.double.wording, 
+                                  status = 'primary'),
 
                    
                    HTML('<br>'),
@@ -54,16 +70,24 @@ shinyUI(function(req) {
                    
                    # Interventions
                    HTML(int.header),
-                   show.int.input,
+                   
+                   checkboxInput(inputId = 'showint', 
+                                 label = add.int.cb.wording),
+                   
                    uiOutput(outputId = 'intervention_ui'),
+                   
                    dataTableOutput(outputId = 'int_table'),
   
                    HTML('<br>'),
+                   
                    hr(),
                    
                    # Influx 
                    HTML(influx.header),
-                   show.influx.input,
+                   
+                   checkboxInput(inputId = 'showinflux', 
+                                 label = influx.cb.wording),
+                   
                    uiOutput(outputId = 'influx_ui'),
                    
                    HTML('<br>'),
@@ -71,8 +95,17 @@ shinyUI(function(req) {
                    
                    # Other Settings
                    HTML(settings.wording),
-                   proj.num.days.input,
-                   other.params.button, 
+                   
+                   sliderInput(inputId = 'proj_num_days', 
+                               label = proj.days.wording, 
+                               min = 10, 
+                               max = 730, 
+                               step = 5, 
+                               value = 365),
+                   
+                   actionButton(inputId = 'parameters_modal',
+                                label = cust.params.wording),
+                   
                    HTML(end.notes),
                    
                    tags$script("$(document).on('click', '#int_table button', function () {
@@ -80,6 +113,8 @@ shinyUI(function(req) {
                                              Shiny.onInputChange('lastClick', Math.random())
                                              });"),
                    hr(),
+                   
+                   # Bookmarks
                    bookmarkButton()
                  ),
                  
@@ -95,15 +130,21 @@ shinyUI(function(req) {
                      style = "background: white",
                      
                      HTML(proj.header),
-                     selected.graph.input,
+                     radioGroupButtons(inputId = 'selected_graph', 
+                                       label = '', 
+                                       choices = c('Cases', 'Hospitalization', 'Hospital Resources'),
+                                       justified = TRUE, 
+                                       status = "primary"),
                      uiOutput(outputId = 'plot_output'),
                      HTML('<br>'),
                      fluidRow(
                        align = 'center',
                        column(width = 1),
-                       column(width = 1, HTML('<br>'), go.left.button),
+                       column(width = 1, HTML('<br>'), 
+                              actionButton("goleft", "", icon = icon("arrow-left"), width = '100%')),
                        column(width = 8,  uiOutput(outputId = 'description')),
-                       column(width = 1, HTML('<br>'), go.right.button),
+                       column(width = 1, HTML('<br>'), 
+                              actionButton("goright", "", icon = icon("arrow-right"), width = '100%')),
                        column(width = 1)
                      ),
                      
