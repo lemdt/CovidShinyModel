@@ -1,5 +1,5 @@
 #' Server part
-#' @import shiny ggplot2 shinyWidgets data.table DT plyr dplyr shinyjs urlshorteneR
+#' @import shiny ggplot2 shinyWidgets DT shinyjs urlshorteneR
 M0 <- new.env()
 source('R/models/model0.R', local = M0)
 source('R/models/model0_params.R', local = M0)
@@ -13,6 +13,7 @@ start.exp.default <- 1
 r0.default <- 2.8
 est.days <- 365
 
+#' @importFrom urlshorteneR isgd_LinksShorten
 server <- function(input, output, session) {
     model <- M0
     ##  ............................................................................
@@ -60,7 +61,7 @@ server <- function(input, output, session) {
         ))
     })
     onBookmarked(function(url) {
-        url <- isgd_LinksShorten(url)
+        url <- urlshorteneR::isgd_LinksShorten(url)
         showBookmarkUrlModal(url)
     })
 

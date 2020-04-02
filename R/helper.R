@@ -50,14 +50,12 @@ roundNonDateCols <- function(df){
 
 }
 
-#' Column Bind
-#'
-#' Same as rbind.fill in plyr, but with columns. Stolen from here:
-#' https://stackoverflow.com/questions/7962267/cbind-a-dataframe-with-an-empty-dataframe-cbind-fill
-#'
-#' @param ...
-#'
-#' @return Dataframe.
+# Column Bind
+#
+# Same as rbind.fill in plyr, but with columns. Stolen from here:
+# https://stackoverflow.com/questions/7962267/cbind-a-dataframe-with-an-empty-dataframe-cbind-fill
+
+#' @noRd
 cbind.fill <- function(...){
   nm <- list(...)
   nm <- lapply(nm, as.matrix)
@@ -85,6 +83,7 @@ cbind.fill <- function(...){
 #' It then returns a list with that day as well as the number susceptible, exposed,
 #' infected, and recovered on that day.
 #'
+#' @param model [TODO]
 #' @param N Numeric, number of people in the area.
 #' @param beta.vector Vector of numerics, should be the same length as num.days.
 #' @param num.days Numeric. Number of days to simulate.
