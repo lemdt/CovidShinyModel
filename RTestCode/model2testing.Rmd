@@ -1,0 +1,129 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+# read helper.R file
+setwd("C:/Users/jpeng3/Desktop/CovidShinyModel/COVIDModel/")
+source('helper.R')
+```
+
+# Parameters and Starting Conditions 
+
+```{r}
+# generate test cases based on parameters/starting conditions
+
+# transition probabilities
+p.g_g <- 0.1
+p.g_icu <- 0.2
+p.g_d <- 0.3
+p.g_m <- 0.4
+
+p.icu_g <- 0.5
+p.icu_icu <- 0.4
+p.icu_v <- 0.0
+p.icu_m <- 0.1
+
+p.v_icu <- 0.3
+p.v_v <- 0.3
+p.v_m <- 0.4
+
+trans.mat <- createTransition(p.g_g, p.g_icu, p.g_d, p.icu_g,
+                              p.icu_icu, p.icu_v, p.v_icu, p.v_v, 
+                              p.v_m, p.g_m, p.icu_m)
+
+# other params
+gamma_r <- 1/32
+gamma_h <- 1/10
+hosp.rate <- 0.5
+num.days <- 100
+beta <- 1 * gamma_r
+beta.vector <- rep(beta, num.days)
+
+# and starting conditions 
+S0 <- 38291
+I0 <- 1
+R0 <- 0 
+
+```
+
+# James Model
+
+```{r}
+SIR.df.james <- SIR(S0, I0, R0, beta.vector, gamma_r, gamma_h, 
+                hosp.rate, trans.mat, num.days)
+
+# compare select columns
+SIR.df.james <- SIR.df.james[,c('days', 'S', 'IR', 'IH', 'g', 
+                                'icu', 'vent', 'disc', 'death')]
+
+```
+
+# Ben Model 
+
+```{r}
+setwd("C:/Users/jpeng3/Desktop/HospitalSim/")
+source ("HospitalSimulationFunctions.R")
+```
+
+
+```{r}
+SIR.Model.Parameters <- data.frame(beta=beta, 
+                                   gamma=gamma_r, 
+                                   gamma_h=gamma_h, 
+                                   N=S0+I0, 
+                                   I0=I0, 
+                                   hospitalization.rate=hosp.rate)
+
+SIR.Model <- data.frame(S=SIR.Model.Parameters$N-SIR.Model.Parameters$I0, 
+                        IR=SIR.Model.Parameters$I0 * (1-SIR.Model.Parameters$hospitalization.rate),
+                        IH=SIR.Model.Parameters$I0 * SIR.Model.Parameters$hospitalization.rate,
+                        R=0, N=SIR.Model.Parameters$N, H=0,
+                        dS=0, dIR=0, dIH=0, dR=0, dN=0, dH=0)
+for (t in 2:num.days)
+{
+	SIR.Model=rbind(SIR.Model,SIR.model.update(SIR.Model[t-1,], SIR.Model.Parameters))
+}
+
+# set Markov Process parameters
+Markov.Hospital.T.Parameters <- data.frame(p_gd=p.g_d, 
+                                           p_gicu=p.g_icu, 
+                                           p_gm=p.g_m, 
+                                           p_icug=p.icu_g, 
+                                           p_icuv=p.icu_v, 
+                                           p_icum=p.icu_m, 
+                                           p_vicu=p.v_icu, 
+                                           p_vm=p.v_m)
+
+Markov.Model.T <- Create.Markov.T.Matrix(Markov.Hospital.T.Parameters)
+
+Markov.Hospital.Model <- data.frame(G=0,   ICU=0,  V=0,  DCH=0,  M=0,
+                                    dG=0, dICU=0, dV=0, dDCH=0, dM=0)
+
+for (t in 2:num.days)
+{
+	Markov.Hospital.Model<-rbind(Markov.Hospital.Model, Markov.Hospital.model.update(Markov.Hospital.Model[t-1,],SIR.Model$dH[t], Markov.Model.T))
+}
+
+SIR.df.ben <- cbind(SIR.Model[,c('S', 'IR', 'IH')],
+                    Markov.Hospital.Model[,c('G', 'ICU', 'V', 'DCH', 'M')])
+
+colnames(SIR.df.ben) <- c('S', 'IR', 'IH', 'g', 'icu', 'vent', 'disc', 'death')
+
+SIR.df.ben$days <- 1:num.days
+```
+
+
+# Round and Compare
+
+```{r}
+for (col in colnames(SIR.df.ben)){
+  SIR.df.ben[,col] <- round(SIR.df.ben[,col], 4)
+  SIR.df.james[,col] <- round(SIR.df.james[,col], 4)
+}
+
+nrow(merge(SIR.df.james, SIR.df.ben)) == num.days
+
+```
+
