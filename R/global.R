@@ -7,6 +7,6 @@ start_app <- function(){
   shinyApp(ui = ui, server = server)
 }
 
-.onAttach <- function(pkg, lib){
+.onAttach <- function(libname, pkgname){
   packageStartupMessage("Run covidshiny::start_app() to launch the app")
 }
