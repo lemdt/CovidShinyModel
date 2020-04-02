@@ -16,14 +16,14 @@ library(shinyWidgets)
 ##  ............................................................................
 
 incubation.period.input <- function(incubation.period){
-  input.return <- sliderInput('incubation.period', incubation.input.wording, min = 0, max = 20, step = 1, 
+  input.return <- sliderInput('incubation.period', incubation.input.wording, min = 0, max = 30, step = 1, 
                               value = incubation.period, width = '100%')
   
   return(input.return)
 }
 
 illness.length.input <- function(illness.length){
-  input.return <- sliderInput('illness.length', infectious.input.wording, min = 0, max = 20, step = 1, 
+  input.return <- sliderInput('illness.length', infectious.input.wording, min = 0, max = 30, step = 1, 
                               value = illness.length, width = '100%')
   
   return(input.return)
@@ -77,14 +77,14 @@ vent.after.icu.input <- function(vent.delay.time){
 }
 
 hosp.los.input <- function(hosp.los){
-  input.return <- sliderInput('hosp.los', hosp.los.wording, min = 1, max = 15, step = 1, 
+  input.return <- sliderInput('hosp.los', hosp.los.wording, min = 1, max = 30, step = 1, 
                               value = hosp.los, width = '100%')
   
   return(input.return)
 }
 
 hosp.los.input.model0 <- function(hosp.los){
-  input.return <- sliderInput('hosp.los', hosp.los.wording.model0, min = 1, max = 15, step = 1, 
+  input.return <- sliderInput('hosp.los', hosp.los.wording.model0, min = 1, max = 30, step = 1, 
                               value = hosp.los, width = '100%')
   
   return(input.return)
@@ -92,14 +92,14 @@ hosp.los.input.model0 <- function(hosp.los){
 
 
 icu.los.input <- function(icu.los){
-  input.return <- sliderInput('icu.los', icu.los.wording, min = 1, max = 15, step = 1,
+  input.return <- sliderInput('icu.los', icu.los.wording, min = 1, max = 30, step = 1,
                               value = icu.los, width = '100%')
   
   return(input.return)
 }
 
 vent.los.input <- function(vent.los){
-  input.return <-sliderInput('vent.los', vent.los.wording, min = 1, max = 15, step = 1, 
+  input.return <-sliderInput('vent.los', vent.los.wording, min = 1, max = 30, step = 1, 
                              value = vent.los, width = '100%')
   
   return(input.return)
