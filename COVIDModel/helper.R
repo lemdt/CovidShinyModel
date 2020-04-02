@@ -46,7 +46,7 @@ getBetaFromRe <- function(Re, gamma) {
 #' Round Non-Date Columns
 #'
 #' Helper function in the app that rounds any function that does 
-#' not have 'date' as the column name
+#' not have 'date' as the column name. 
 #'
 #' @param df Dataframe.
 #'
@@ -156,19 +156,20 @@ find.curr.estimates = function(N, beta.vector, num.days, num.actual,
 }
 
 
-#' Find best fit for Re
+#' Find Best Fit for Re
 #' 
 #' This takes in historical hospitalization data (day.vec and num_actual.vec). Given a fixed
 #' set of parameters, it finds the Re that gives the least square error with the data.  
 #' 
 #' The main inputs are day.vec and num_actual vec. Day.vec consists of indices 
-#' of the historical days relative to the 'set date.' For example, if the date is set as April 1, 2020, 
-#' and the user provides data from March 28, 29, and 31, then the day.vec = c(-4, -3, -1)
+#' of the historical days relative to the 'set date.' For example, if the date is set as 
+#' April 1, 2020, and the user provides data from March 28, 29, and 31, then the 
+#' day.vec = c(-4, -3, -1)
 #' 
 #' Num_actual.vec is a vector of the values of historical hospitalizations from those dates. 
 #' 
 #' The function returns a list with 'best.re' (The Re with the best fit) and 'best.vals' 
-#' (a vector of numerics with projected values of hospitalizations on the historical data
+#' (a vector of numerics with projected values of hospitalizations on the historical dates
 #' for which data was provided).
 #'
 #' @param N Numeric. Number of people in the area. 
@@ -178,7 +179,8 @@ find.curr.estimates = function(N, beta.vector, num.days, num.actual,
 #' @param num_actual.vec Vector of numerics. 
 #' @param params List of paramters for SEIR simulation. 
 #'
-#' @return List. 
+#' @return List with best Re and the projected number of hospitalizations on the historical 
+#' dates for which data was provided. 
 findBestRe <- function(N, start.exp, num.days, day.vec, num_actual.vec, params){
   
   # starting number of susceptible people
@@ -237,7 +239,7 @@ findBestRe <- function(N, start.exp, num.days, day.vec, num_actual.vec, params){
 }
 
 
-#' Creates a vector of beta values 
+#' Creates Vector of Beta Values 
 #' 
 #' This takes as input an intervention dataframe (int.table). The dataframe should have as 
 #' columns 'Day' number, new intervention metric (either New.Re or New.Double.Time) 
@@ -323,17 +325,16 @@ create.beta.vec <- function(int.table, gamma, usedouble){
 ##  ............................................................................
 
 
-#' Title
+#' Add Rows to the Fit Re Table 
+#' 
+#' Adds dates and hospitalizations to the table with historical data. 
 #'
-#' @param hist.data 
-#' @param date.hist 
-#' @param num.hospitalized.hist 
-#' @param curr.date 
+#' @param hist.data Dataframe with Date, Hospitalizations, and Day columns. 
+#' @param date.hist Date to add to table. 
+#' @param num.hospitalized.hist Hospitalization count to add to table.  
+#' @param curr.date The 'current' date set in the app. 
 #'
-#' @return
-#' @export
-#'
-#' @examples
+#' @return Dataframe with appended row. 
 add.to.hist.table <- function(hist.data, date.hist, num.hospitalized.hist, curr.date){
   new.hist <- rbind(hist.data,
                     list('Date' = as.character(date.hist), 
@@ -347,7 +348,17 @@ add.to.hist.table <- function(hist.data, date.hist, num.hospitalized.hist, curr.
   return(new.hist)
 }
 
-# bind to intervention table 
+
+#' Add Rows to Intervention Table 
+#' 
+#' Bind rows to the intervention table. 
+#'
+#' @param int.table Dataframe with Day, New.Re (or New.Double.Time), and Days.of.Smoothing 
+#' columns.
+#' @param params ReactiveValues list of parameters.
+#' @param usedouble Boolean. TRUE if doubling time is used in the app. 
+#'
+#' @return Dataframe with appended row. 
 bind.to.intervention <- function(int.table, params, usedouble){
   if (usedouble == TRUE){
     new.table <- rbind(int.table,
@@ -368,9 +379,16 @@ bind.to.intervention <- function(int.table, params, usedouble){
   return(new.table)
 }
 
-# create cases dataframe 
-create.cases.df <- function(sir.output.df){
-  df_temp <- sir.output.df
+
+#' Create Cases Dataframe
+#' 
+#' Returns a processed dataframe of cases for presentation in the app. 
+#'
+#' @param df Dataframe from the SEIR run. 
+#' 
+#' @return Dataframe.
+create.cases.df <- function(df){
+  df_temp <- df
   
   df_temp <- df_temp[df_temp$days.shift >= 0,]
   
@@ -385,9 +403,15 @@ create.cases.df <- function(sir.output.df){
   return(df_temp)
 }
 
-# create hospital dataframe 
-create.hosp.df <- function(sir.output.df){
-  df_temp <- sir.output.df
+#' Create Hospitalization Dataframe
+#' 
+#' Returns a processed dataframe of hospitalizations for presentation in the app. 
+#'
+#' @param df Dataframe from the SEIR run. 
+#' 
+#' @return Dataframe.
+create.hosp.df <- function(df){
+  df_temp <- df
   
   df_temp <- df_temp[df_temp$days.shift >= 0,]
   
@@ -398,9 +422,19 @@ create.hosp.df <- function(sir.output.df){
   return(df_temp)
 }
 
-# create resources dataframe
-create.res.df <- function(sir.output.df, hosp_cap, icu_cap, vent_cap){
-  df_temp <- sir.output.df
+
+#' Create Hospital Resource Dataframe
+#' 
+#' Returns a processed dataframe of hospital resources for presentation in the app.  
+#'
+#' @param df Dataframe from the SEIR run. 
+#' @param hosp_cap Numeric, hospital capacity. 
+#' @param icu_cap Numeric, ICU capacity.
+#' @param vent_cap Numeric, ventilator capacity.
+#'
+#' @return Dataframe.
+create.res.df <- function(df, hosp_cap, icu_cap, vent_cap){
+  df_temp <- df
   df_temp <- df_temp[df_temp$days.shift >= 0,]
   
   if (!is.null(hosp_cap)){
@@ -415,7 +449,17 @@ create.res.df <- function(sir.output.df, hosp_cap, icu_cap, vent_cap){
   
 }
 
-# format and create graphs 
+
+#' Graphing Helper
+#' 
+#' Graphing helper for the app. Returns a ggplot graph. 
+#'
+#' @param df.to.plot Dataframe with data to plot. 
+#' @param selected Vector of strings, representing the columns to plot. 
+#' @param plot.day Date selected to show a vertical line. 
+#' @param curr.date Date where to start the graph. 
+#'
+#' @return ggplot graph. 
 create.graph <- function(df.to.plot, selected, plot.day, curr.date){
   
   if (length(selected) != 0){
@@ -425,7 +469,7 @@ create.graph <- function(df.to.plot, selected, plot.day, curr.date){
     
     df_melt <- melt(df.to.plot, 'date')
     
-    graph = ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() + 
+    graph <- ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() + 
       geom_line() +  geom_vline(xintercept=curr.date) + theme(text = element_text(size=20)) + 
       geom_vline(xintercept=plot.day, color = 'red') + ylab('') + geom_hline(yintercept = 0)
     

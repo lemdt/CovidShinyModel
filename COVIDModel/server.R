@@ -422,7 +422,7 @@ shinyServer(function(input, output, session) {
     })
     
     
-    sir.output.df <- reactive({
+    seir.output.df <- reactive({
         
         # get current day
         curr.day  <- as.numeric(curr.day.list()['curr.day'])
@@ -451,7 +451,7 @@ shinyServer(function(input, output, session) {
             start.inf <- 0
             start.res <- 0
             
-            SIR.df = SEIR(S0 = start.susc,
+            seir.df = SEIR(S0 = start.susc,
                           E0 = start.exp.default,
                           I0 = start.inf, 
                           R0 = start.res,
@@ -461,8 +461,8 @@ shinyServer(function(input, output, session) {
                           params = params)
             
             # shift the number of days to account for day 0 in the model 
-            SIR.df$days.shift <- SIR.df$day - curr.day
-            SIR.df[SIR.df$days.shift == 0,]$hosp <- input$num_hospitalized
+            seir.df$days.shift <- seir.df$day - curr.day
+            seir.df[seir.df$days.shift == 0,]$hosp <- input$num_hospitalized
         }
         else {
             
@@ -473,7 +473,7 @@ shinyServer(function(input, output, session) {
             start.res <- 0 
             num.days <- input$proj_num_days
 
-            SIR.df <- SEIR(S0 = start.susc, 
+            seir.df <- SEIR(S0 = start.susc, 
                            E0 = start.exp,
                            I0 = start.inf, 
                            R0 = start.res,
@@ -482,12 +482,12 @@ shinyServer(function(input, output, session) {
                            influx = influx,
                            params = params)
             
-            SIR.df$days.shift <- SIR.df$day
+            seir.df$days.shift <- seir.df$day
         }
         
-        SIR.df$date <- SIR.df$days.shift + as.Date(input$curr_date)
+        seir.df$date <- seir.df$days.shift + as.Date(input$curr_date)
         
-        SIR.df
+        seir.df
     })
     
     
@@ -533,15 +533,15 @@ shinyServer(function(input, output, session) {
     ##  ............................................................................
     
     cases.df <- reactive({
-        create.cases.df(sir.output.df = sir.output.df())
+        create.cases.df(df = seir.output.df())
     })
     
     hospitalization.df <- reactive({
-        create.hosp.df(sir.output.df = sir.output.df())
+        create.hosp.df(df = seir.output.df())
     })
     
     resource.df <- reactive({
-        create.res.df(sir.output.df = sir.output.df(), 
+        create.res.df(df = seir.output.df(), 
                       hosp_cap = input$hosp_cap, 
                       icu_cap = input$icu_cap, 
                       vent_cap = input$vent_cap)
@@ -679,7 +679,7 @@ shinyServer(function(input, output, session) {
         
         if (input$input.metric == 'Hospitalizations'){
             curr.day <- curr.day.list()['curr.day']
-            curr.row <- sir.output.df()[sir.output.df()$day == curr.day,]
+            curr.row <- seir.output.df()[seir.output.df()$day == curr.day,]
             
             infected <- round(curr.row$I + curr.row$E)
             cases <- round(curr.row$I + curr.row$R + curr.row$E)
@@ -696,7 +696,7 @@ shinyServer(function(input, output, session) {
     # describing each timestep in words 
     output$description <- renderUI({
         
-        df_temp <- sir.output.df()
+        df_temp <- seir.output.df()
         select.row <- df_temp[df_temp$date == plot_day(),]
         select.date <- format(select.row$date, format="%B %d, %Y")
         select.day <- select.row$days.shift
@@ -764,7 +764,7 @@ shinyServer(function(input, output, session) {
             # TODO: this is for testing only, uncomment and 
             # remove bottom lines after testing is done
             # write.csv(data.frame(data), file, row.names = FALSE)
-            df.output <- sir.output.df()
+            df.output <- seir.output.df()
             
             # model specific dataframe downloads 
             # process.df.for.download function is in model1.R or model2.R
