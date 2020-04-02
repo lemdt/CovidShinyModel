@@ -1,0 +1,9 @@
+.Rhistory
+.RData
+.Rproj.user/*
+build.sh
+inst/doc
+.*
+!/.gitignore
+.Rproj.user
+
