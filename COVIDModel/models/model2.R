@@ -185,7 +185,7 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
     df.return$ICU.state + df.return$V.state
 
   df.return$R.orig <- df.return$R
-  df.return$R <- df.return$R + df.return$disc
+  df.return$R <- df.return$R + df.return$DCH.state
   df.return$hosp <- df.return$G.state + df.return$ICU.state + df.return$V.state
   df.return$icu <- df.return$ICU.state + df.return$V.state
   df.return$vent <- df.return$V.state
@@ -216,4 +216,29 @@ process.df.for.download <- function(df){
               'HOSP.report', 'ICU.report', 'VENT.report', 'DISCHARGE.report', 'MORTALITY.report')]
   
   return(df)
+}
+
+#' Process parameters for export
+#'
+#' @param params ReactiveValues list.
+#'
+#' @return List of processed parameters. 
+process.params.for.download <- function(params){
+  param.list <- list(
+    'Incubation Period' = params$incubation.period,
+    'Length of Infectiousness (days)' = params$illness.length, 
+    'Symptomatic to Hospitalization (days)' = params$inf.to.hosp, 
+    'percent hospitalized of all infections' = params$hosp.rate, 
+    'Transition Probability from G->G' = params$p.g_g,
+    'Transition Probability from G->icu' = params$p.g_icu,
+    'Transition Probability from G->discharge' = params$p.g_d, 
+    'Transition Probability from icu->G' = params$p.icu_g,
+    'Transition Probabiltiy from icu->icu' = params$p.icu_icu, 
+    'Transition Probability from icu->vent' = params$p.icu_v, 
+    'Transition Probability from vent->icu' = params$p.v_icu,
+    'Transition Probability from vent->vent' = params$p.v_v, 
+    'Transition Proabbility from vent->death' = params$p.v_m
+  )
+  
+  return(param.list)
 }

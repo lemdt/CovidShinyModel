@@ -6,9 +6,7 @@
 ##  General
 ##  ............................................................................
 
-app.title <- "COVID-19 Epidemic Modeling (Model 0 with Percentages - Testing)"
-
-about.link.wording <- "Learn more about this tool."
+app.title <- "COVID-19 Epidemic Modeling"
 
 about.wording <- "<h4><b>What does this tool do?</b></h4>
 The app projects numbers of <i> active cases, hospitalizations, ICU-use and 
@@ -88,70 +86,11 @@ re.warning.more.data <- "You need at least two timepoints of data to make a pred
 
 best.re.msg <- "<br><br><h4>The best estimate for Re is <b>%s</b>."
 
-params.save.msg <- "Save and Close"
-
 double.int.warning <- "You have already added an intervention on this date."
 
 ##  ............................................................................
-##  Datatable Messages
+##  Wording for Model Inputs 
 ##  ............................................................................
-
-re.blank.table <- "No historical data added."
-
-search.msg <- "Find in table:"
-
-##  ............................................................................
-## Headers/Instructions/Misc
-##  ............................................................................
-
-location.header <- '<h4><b>Location Information</b></h4>'
-
-int.header <- '<h4><b>Add Interventions</b></h4>'
-
-add.int.cb.wording <- 'Add Intervention'
-
-influx.header <- '<h4><b>Add Influx of Infections</b></h4>'
-
-influx.cb.wording <- 'Add Influx of Infected Individuals'
-
-use.double.wording <- 'Use doubling time instead of Re'
-
-settings.wording <- '<h4><b>Settings</b></h4>'
-
-cust.params.wording <- 'Customize Other Parameters'
-
-proj.header <- '<h3><b>Projections</b></h3>'
-
-download.link.wording <-"Download as CSV"
-
-estimate.re.header <- "<h4> Estimate Re based on historical hospitalizations</h4>
-Provide data from past dates to estimate the Re value.<br><br>"
-
-##  ............................................................................
-##  Wording for Inputs
-##  ............................................................................
-
-num.people.wording <- "Number of People in Area"
-
-input.metric.wording <- "Input Metric:"
-
-curr.date.wording <- "On Date:"
-
-proj.days.wording <- 'Number of Days to Project'
-
-hosp.input.wording <- "Estimate of current inpatients with COVID-19:"
-
-cases.input.wording <- "Estimate of number of cases of COVID-19:"
-
-prior.double.wording <- "Doubling Time (days) Before %s"
-
-prior.re.wording <- "Re Before %s"
-
-estimate.re.action.wording <- "Estimate Re prior to %s based on data."
-
-int.double.wording <- "New Doubling Time (days) After Interventions"
-
-int.re.wording <- "New Re After Intervention"
 
 incubation.input.wording <- "Latent period from infection to becoming infectious (days)"
 
@@ -177,22 +116,7 @@ icu.los.wording <- "ICU Length of Stay for Non-Ventilated Patients (days)"
 
 vent.los.wording <- "Average time on a ventilator (days)"
 
-int.date.wording <-  "Date Intervention is Implemented"
-
-int.smooth.wording <- "Smoothed over how many days?"
-
-save.int.wording <- "Save Intervention"
-
-avail.hosp.wording <- "Hospital Bed Availability"
-
-avail.icu.wording <- "ICU Space Availability"
-
 avail.vent.wording <- "Ventilator Availability"
-
-influx.date.wording <- "Date of Influx"
-
-influx.num.wording <-  "Number of Infected Entering Region"
-
 
 ##  ............................................................................
 ##  Wording for Inputs - Model 2 Specific
@@ -245,20 +169,3 @@ with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>"
 
 res.fut.wording <- "<h4>On %s, there will be <b>%s hospital beds available</b> in the region, 
 with <b>%s available ICU beds</b> and <b>%s available ventilators</b>.</h4>"
-
-
-##  ............................................................................
-##  Initialized Dataframes 
-##  ............................................................................
-
-historical.df.blank <- data.frame('Date' = character(0),
-                            'Hospitalizations' = numeric(0),
-                            'Day' = numeric(0))
-
-int.df.with.re <- data.frame('Day' = numeric(0),
-                             'New Re' = numeric(0), 
-                             'Days of Smoothing' =  numeric(0))
-
-int.df.with.double <- data.frame('Day' = numeric(0),
-                                'New Double Time' = numeric(0), 
-                                'Days of Smoothing' =  numeric(0))

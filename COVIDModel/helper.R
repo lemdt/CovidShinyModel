@@ -64,6 +64,23 @@ roundNonDateCols <- function(df){
   
 }
 
+#' Column Bind
+#' 
+#' Same as rbind.fill in plyr, but with columns. Stolen from here:
+#' https://stackoverflow.com/questions/7962267/cbind-a-dataframe-with-an-empty-dataframe-cbind-fill
+#'
+#' @param ... 
+#'
+#' @return Dataframe.
+cbind.fill <- function(...){
+  nm <- list(...) 
+  nm <- lapply(nm, as.matrix)
+  n <- max(sapply(nm, nrow)) 
+  do.call(cbind, lapply(nm, function (x) 
+    rbind(x, matrix(, n-nrow(x), ncol(x))))) 
+}
+
+
 
 ##  ............................................................................
 ##  Model Helpers  

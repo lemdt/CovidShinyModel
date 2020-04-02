@@ -70,7 +70,7 @@ parameters.modal <- function(params){
                         step = 0.001)
       ),
     footer = tagList(
-      save.parameter.action
+      actionButton("save", "Save and Close")
     )
   )
   

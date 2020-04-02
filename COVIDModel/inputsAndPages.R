@@ -106,7 +106,7 @@ vent.los.input <- function(vent.los){
   
 }
 
-save.parameter.action <- actionButton("save", params.save.msg)
+save.parameter.action <- actionButton("save", "Save and Close")
 
 ##  ............................................................................
 ##  Model 2 Parameter Inputs
@@ -138,7 +138,8 @@ predict.re.page <- function(curr.date){
     
     useShinyjs(),
     
-    HTML(estimate.re.header),
+    HTML("<h4> Estimate Re based on historical hospitalizations</h4>
+         Provide data from past dates to estimate the Re value.<br><br>"),
     
     splitLayout(
       

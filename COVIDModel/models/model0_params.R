@@ -41,7 +41,7 @@ parameters.modal <- function(params){
       vent.rate.input(params$vent.rate)
     ),
     footer = tagList(
-      save.parameter.action
+      actionButton("save", "Save and Close")
     )
   )
   

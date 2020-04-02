@@ -11,13 +11,13 @@ source('wording.R')
 # loading inputs
 source('inputsAndPages.R')
 
-
 # libraries
 library(shiny)
 library(ggplot2)
 library(shinyWidgets)
 library(data.table)
 library(DT)
+library(plyr)
 library(dplyr)
 library(shinyjs)
 
@@ -93,12 +93,12 @@ shinyServer(function(input, output, session) {
     output$prediction_fld <- renderUI({
         if (input$input.metric == 'Hospitalizations'){
             numericInput(inputId = 'num_hospitalized', 
-                         label = hosp.input.wording, 
+                         label = "Estimate of current inpatients with COVID-19:", 
                          value = 50)
         }
         else{
             numericInput(inputId = 'num_cases', 
-                         label = cases.input.wording, 
+                         label = "Estimate of number of cases of COVID-19:", 
                          value = 50)
         }
     })
@@ -113,7 +113,7 @@ shinyServer(function(input, output, session) {
         
         if (input$usedouble == TRUE){
             sliderInput(inputId = 'doubling_time', 
-                        label = sprintf(prior.double.wording, date.select), 
+                        label = sprintf("Doubling Time (days) Before %s", date.select), 
                         min = 1, 
                         max = 12, 
                         step = 1, 
@@ -123,12 +123,12 @@ shinyServer(function(input, output, session) {
             fluidPage(
                 fluidRow(
                     sliderInput(inputId = 'r0_prior', 
-                                label = sprintf(prior.re.wording, date.select), 
+                                label = sprintf("Re Before %s", date.select), 
                                 min = 0.1, 
                                 max = 7, 
                                 step = 0.1, 
                                 value = 2.8),
-                    actionLink('predict_re', sprintf(estimate.re.action.wording, date.select))
+                    actionLink('predict_re', sprintf("Estimate Re prior to %s based on data.", date.select))
                 )
             )
         }
@@ -137,7 +137,7 @@ shinyServer(function(input, output, session) {
     output$int_val <- renderUI({
         if (input$usedouble == TRUE){
             sliderInput(inputId = 'new_double', 
-                        label = int.double.wording, 
+                        label = "New Doubling Time (days) After Interventions", 
                         min = 0, 
                         max = 50, 
                         step = 1, 
@@ -145,7 +145,7 @@ shinyServer(function(input, output, session) {
         }
         else{
             sliderInput(inputId = 'r0_new', 
-                        label = int.re.wording, 
+                        label = "New Re After Intervention", 
                         min = 0.1, 
                         max = 6, 
                         step = 0.1,
@@ -156,6 +156,10 @@ shinyServer(function(input, output, session) {
     ##  ............................................................................
     ##  Estimation of Re 
     ##  ............................................................................
+    
+    historical.df.blank <- data.frame('Date' = character(0),
+                                      'Hospitalizations' = numeric(0),
+                                      'Day' = numeric(0))
     
     re.estimates <- reactiveValues(
         graph = NULL,
@@ -212,8 +216,8 @@ shinyServer(function(input, output, session) {
         datatable(hist.dt,
                   escape=F, selection = 'none',
                   options = list(pageLength = 10, language = list(
-                      zeroRecords = re.blank.table,
-                      search = search.msg), dom = 't'), rownames = FALSE)
+                      zeroRecords = "No historical data added.",
+                      search = "Find in table:"), dom = 't'), rownames = FALSE)
         
     })
     
@@ -277,6 +281,29 @@ shinyServer(function(input, output, session) {
     ##  Parameter selection 
     ##  ............................................................................
     
+    # Markov Model selection
+    observeEvent(input$model_select, {
+        if (input$model_select == TRUE){
+            source('models/model2.R')
+            source('models/model2_params.R')
+
+        }
+        else{
+            source('models/model0.R')
+            source('models/model0_params.R')
+        }
+
+        default.params.list <- reactiveValuesToList(default.params)
+        for (param in names(default.params.list)){
+            params[[param]] = as.numeric(default.params.list[param])
+        }
+        
+        # incredibly hacky way to deal with forcing the reactive graphs/tables to update
+        num_people <- input$num_people
+        updateNumericInput(session, "num_people", value = num_people + 1)
+        updateNumericInput(session, "num_people", value = num_people)
+    })
+    
     # initializing a set of parameters  
     params <- default.params
     
@@ -330,18 +357,30 @@ shinyServer(function(input, output, session) {
     ##  Interventions 
     ##  ............................................................................
     
+    # blank intervention dataframes
+    int.df.with.re <- data.frame('Day' = numeric(0),
+                                 'New Re' = numeric(0), 
+                                 'Days of Smoothing' =  numeric(0))
+    
+    int.df.with.double <- data.frame('Day' = numeric(0),
+                                     'New Double Time' = numeric(0), 
+                                     'Days of Smoothing' =  numeric(0))
+    
+    intervention.table <- reactiveVal(int.df.with.re)
+    
     output$intervention_ui <- renderUI({ 
         if (input$showint){
             
+            # date input differs based on whether Hospitalization or Cases are the input 
             if (input$input.metric == 'Hospitalizations'){
                 int.date.input <- dateInput(inputId = 'int_date', 
-                                            label = int.date.wording, 
+                                            label = "Date Intervention is Implemented", 
                                             min = input$curr_date - params$hosp.delay.time, 
                                             value = input$curr_date)
             }
             else{
                 int.date.input <- dateInput(inputId = 'int_date', 
-                                            label = int.date.wording, 
+                                            label = "Date Intervention is Implemented", 
                                             min = input$curr_date + 1, 
                                             value = input$curr_date + 1)
             }
@@ -351,12 +390,12 @@ shinyServer(function(input, output, session) {
                     int.date.input,
                     uiOutput(outputId = 'int_val'),
                     sliderInput('smooth.int', 
-                                label = int.smooth.wording, 
+                                label = "Smoothed over how many days?", 
                                 value = 0, 
                                 min = 0, 
                                 max = 30),
                     actionButton(inputId = 'add_intervention', 
-                                 label = save.int.wording)
+                                 label =  "Save Intervention")
                 )
             )
         }
@@ -397,8 +436,6 @@ shinyServer(function(input, output, session) {
     observeEvent(input$int_date, {
         params$int.new.num.days <- input$int_date - input$curr_date
     })
-    
-    intervention.table <- reactiveVal(int.df.with.re)
     
     observeEvent(input$usedouble, ignoreInit = TRUE, {
         if (input$usedouble == TRUE){
@@ -477,11 +514,11 @@ shinyServer(function(input, output, session) {
             fluidPage(
                 fluidRow(    
                     dateInput(inputId = 'influx_date', 
-                              label = influx.date.wording, 
+                              label = "Date of Influx", 
                               min = input$curr_date - params$hosp.delay.time, 
                               value = input$curr_date),
                     numericInput('num.influx', 
-                                 label = influx.num.wording, 
+                                 label =  "Number of Infected Entering Region", 
                                  value = 0)
                 )
             )
@@ -500,12 +537,13 @@ shinyServer(function(input, output, session) {
         # determines what 'day' we are on using the initialization
         curr.day  <- as.numeric(curr.day.list()['curr.day'])
         
+        # hacky way to deal with error at the startup 
         if (is.na(curr.day)){
             curr.day <- 365
             new.num.days <- 1000
         }
         
-        # setting doubling time
+        # creating intervention table to create a beta vector
         if (input$usedouble == FALSE){
             
             if (!is.null(input$r0_prior) & !is.null(params$int.new.r0)){
@@ -636,10 +674,10 @@ shinyServer(function(input, output, session) {
         else{
             fluidPage(
                 column(4, numericInput(inputId = 'hosp_cap', 
-                                       label = avail.hosp.wording, 
+                                       label = "Hospital Bed Availability", 
                                        value = params$hosp.avail)),
                 column(4,numericInput(inputId = 'icu_cap', 
-                                      label = avail.icu.wording, 
+                                      label = "ICU Space Availability", 
                                       value = params$icu.avail)),
                 column(4,numericInput(inputId = 'vent_cap', 
                                       label = avail.vent.wording , 
@@ -888,7 +926,7 @@ shinyServer(function(input, output, session) {
     ##  ............................................................................
     output$downloadData <- downloadHandler(
         filename <- function() {
-            paste(input$selected_graph, '-', Sys.Date(), '.csv', sep='')
+            paste('Projections', '-', Sys.Date(), '.csv', sep='')
         },
         content <- function(file) {
             if (input$selected_graph == 'Cases'){
@@ -909,8 +947,54 @@ shinyServer(function(input, output, session) {
             # model specific dataframe downloads 
             # process.df.for.download function is in model1.R or model2.R
             df.output <- process.df.for.download(df.output)
+
+            # process parameters 
+            gen.param.names <- c('Number of people in Area', 'Date') 
+            gen.param.vals <- c(input$num_people, input$curr_date)
             
-            write.csv(data.frame(df.output), file, row.names = FALSE)
+            # doubling time or Re 
+            if (input$usedouble == TRUE){
+                gen.param.names <- c(gen.param.names, 'Prior Doubling Time')
+                gen.param.vals <- c(gen.param.vals, input$doubling_time)
+            }
+            else{
+                gen.param.names <- c(gen.param.names, 'Prior Re')
+                gen.param.vals <- c(gen.param.vals, input$r0_prior)
+            }
+            
+            # hospitalizations or cases 
+            if (input$input.metric == 'Hospitalizations'){
+                gen.param.names <- c(gen.param.names, 'Initial Hospitalizations')
+                gen.param.vals <- c(gen.param.vals, input$num_hospitalized)
+            }
+            else{
+                gen.param.names <- c(gen.param.names, 'Initial Cases')
+                gen.param.vals <- c(gen.param.vals, input$num_cases)
+            }
+            
+            if (input$showinflux){
+                gen.param.names <- c(gen.param.names, 'Influx Date', 'Influx Number')
+                gen.param.vals <- c(gen.param.vals, input$influx.date, input$num_influx)
+            }
+            
+            params.list <- process.params.for.download(params)
+            
+            params.df <- data.frame(PARAMETERS = rep(NA, length(c(gen.param.names, names(params.list)))),
+                                    params = c(gen.param.names, names(params.list)),
+                                  values = c(gen.param.vals, unlist(params.list)),
+                                  INTERVENTIONS = rep(NA, length(c(gen.param.names, names(params.list)))))
+            
+
+            df.binded <- cbind.fill(df.output, params.df)
+            
+            if (nrow(intervention.table()) > 0){
+                df.binded <- cbind.fill(df.output, params.df, intervention.table())
+            }
+            else{
+                df.binded <- cbind.fill(df.output, params.df)
+            }
+            
+            write.csv(data.frame(df.binded), file, row.names = FALSE, na = '')
         }
     )
 }

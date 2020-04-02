@@ -32,7 +32,7 @@ shinyUI(function(req) {
                
                titlePanel(app.title),
                
-               actionLink('howtouse', about.link.wording),
+               actionLink('howtouse', "Learn more about this tool."),
                
                HTML('<br><br>'),
                
@@ -40,13 +40,13 @@ shinyUI(function(req) {
                  sidebarPanel(
                    
                    # Location Information
-                   HTML(location.header),
+                   HTML('<h4><b>Location Information</b></h4>'),
                    numericInput(inputId = 'num_people', 
-                                label = num.people.wording, 
+                                label = "Number of People in Area", 
                                 value = 883305),
                    
                    radioGroupButtons(inputId = 'input.metric', 
-                                     label = input.metric.wording, 
+                                     label = "Input Metric:", 
                                      choices = c('Hospitalizations', 'Cases'),
                                      justified = TRUE, 
                                      status = "primary"),
@@ -54,14 +54,14 @@ shinyUI(function(req) {
                    uiOutput(outputId = 'prediction_fld'),
                    
                    dateInput(inputId = 'curr_date', 
-                             label = curr.date.wording),
+                             label = "On Date:"),
                    
                    uiOutput(outputId = 'prior_val'),
                    
                    HTML('<br>'),
                    
                    materialSwitch(inputId = "usedouble", 
-                                  label = use.double.wording, 
+                                  label = 'Use doubling time instead of Re', 
                                   status = 'primary'),
 
                    
@@ -69,10 +69,10 @@ shinyUI(function(req) {
                    hr(),
                    
                    # Interventions
-                   HTML(int.header),
+                   HTML('<h4><b>Add Interventions</b></h4>'),
                    
                    checkboxInput(inputId = 'showint', 
-                                 label = add.int.cb.wording),
+                                 label = 'Add Intervention'),
                    
                    uiOutput(outputId = 'intervention_ui'),
                    
@@ -83,10 +83,10 @@ shinyUI(function(req) {
                    hr(),
                    
                    # Influx 
-                   HTML(influx.header),
+                   HTML('<h4><b>Add Influx of Infections</b></h4>'),
                    
                    checkboxInput(inputId = 'showinflux', 
-                                 label = influx.cb.wording),
+                                 label = 'Add Influx of Infected Individuals'),
                    
                    uiOutput(outputId = 'influx_ui'),
                    
@@ -94,28 +94,31 @@ shinyUI(function(req) {
                    hr(),
                    
                    # Other Settings
-                   HTML(settings.wording),
+                   HTML('<h4><b>Settings</b></h4>'),
+                   
+                   fluidRow(column(8, HTML('<b>Use Markov Model (beta)</b> <br>')), 
+                            column(4, switchInput(inputId = "model_select", value = FALSE))),
+                   
+                   HTML('<br>'),
                    
                    sliderInput(inputId = 'proj_num_days', 
-                               label = proj.days.wording, 
+                               label = 'Number of Days to Project', 
                                min = 10, 
                                max = 730, 
                                step = 5, 
                                value = 365),
                    
                    actionButton(inputId = 'parameters_modal',
-                                label = cust.params.wording),
+                                label = 'Customize Other Parameters'),
                    
-                   HTML(end.notes),
+                   bookmarkButton(),
                    
                    tags$script("$(document).on('click', '#int_table button', function () {
                   Shiny.onInputChange('lastClickId',this.id);
                                              Shiny.onInputChange('lastClick', Math.random())
                                              });"),
-                   hr(),
-                   
-                   # Bookmarks
-                   bookmarkButton()
+
+                   HTML(end.notes),
                  ),
                  
                  mainPanel(
@@ -129,7 +132,7 @@ shinyUI(function(req) {
                    wellPanel(
                      style = "background: white",
                      
-                     HTML(proj.header),
+                     HTML('<h3><b>Projections</b></h3>'),
                      radioGroupButtons(inputId = 'selected_graph', 
                                        label = '', 
                                        choices = c('Cases', 'Hospitalization', 'Hospital Resources'),
@@ -154,7 +157,7 @@ shinyUI(function(req) {
                        dataTableOutput(outputId = 'rendered.table'),
                        style = "font-size:110%"),
                      downloadButton(outputId = 'downloadData', 
-                                    label = download.link.wording),
+                                    label = "Download as CSV"),
                      HTML('<br><br>')
                    )
                  )

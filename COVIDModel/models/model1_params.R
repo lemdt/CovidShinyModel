@@ -45,7 +45,7 @@ parameters.modal <- function(params){
       icu.los.input(params$icu.los),
       vent.los.input(params$vent.los)),
     footer = tagList(
-      save.parameter.action
+      actionButton("save", "Save and Close")
     )
   )
   
