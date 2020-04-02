@@ -5,26 +5,41 @@ A beta version of the app is live <a href="https://jpspeng.shinyapps.io/COVIDMod
 
 ## Development Environment Setup (R)
 
-The shiny app is located in the folder /CovidModel. 
+To run the app locally, load up R or Rstudio and run:
 
-To run and test locally on your computer: 
-
-1) Install <a href="https://www.r-project.org/">R</a> and <a href="https://rstudio.com/products/rstudio/download/">R Studio</a>.
-
-2) Open R Studio and in the console, do the following to install the packages:
 ```
-reqs <- c('shiny', 'ggplot2', 'shinyWidgets', 'data.table', 'DT', 'dplyr', 'shinyjs')
-install.packages(reqs)
+remotes::install_github('karthik/CovidShinyModel')
+covidshiny::start_app()
 ```
-
-3) To run locally, open ui.R or server.R in R Studio and press "Run App" on the upper right hand corner. Or from the commandline run `shiny::runApp()`
 
 ## Repo Organization
+
+(James: the text for this section needs to be revised)
 
 The live "production" version of the app is on <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel/</a>. The code for the production version is in the [master branch](https://github.com/jpspeng/CovidShinyModel)
 
 Pre-release versions of the app are on <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel1Prerelease/</a> and <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel2Prerelease/</a>. (Model 1 currently uses a deterministic model while Model 2 uses a Markov model.) The code for these versions are in the <b>prerelease</b> branch.
 
+
+## Issues and bugs
+
+If you find any issues or problems, please post an [issue](https://github.com/karthik/CovidShinyModel/issues)
+
+
+## License
+ 
+The MIT License (MIT)
+
+Copyright (c) 2020 LEMMA
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+## Code of Conduct
 
 Please note that the 'CovidShinyModel' project is released with a
 [Contributor Code of Conduct](.github/CODE_OF_CONDUCT.md).
