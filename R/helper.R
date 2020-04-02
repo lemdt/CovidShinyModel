@@ -273,7 +273,7 @@ create.beta.vec <- function(int.table, gamma, usedouble){
   # processing intervention table
   int.table.temp <- int.table
   int.table.temp$beta <- apply(int.table.temp, 1, applygetBeta)
-  int.table.temp <- arrange(int.table.temp, Day)
+  int.table.temp <- dplyr::arrange(int.table.temp, Day)
   int.table.temp <- int.table.temp[!duplicated(int.table.temp$Day),]
 
   # rep.vec consists of the number of days the beta value will repeat
@@ -344,7 +344,7 @@ add.to.hist.table <- function(hist.data, date.hist, num.hospitalized.hist, curr.
                          'Day' = date.hist - curr.date
                     ))
 
-  new.hist <- arrange(new.hist, Day)
+  new.hist <- dplyr::arrange(new.hist, Day)
   new.hist$Date <- as.Date(as.character(new.hist$Date))
 
   return(new.hist)
@@ -377,7 +377,7 @@ bind.to.intervention <- function(int.table, params, usedouble){
                        ))
   }
 
-  new.table <- arrange(new.table, Day)
+  new.table <- dplyr::arrange(new.table, Day)
   return(new.table)
 }
 
