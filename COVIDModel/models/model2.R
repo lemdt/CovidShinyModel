@@ -215,5 +215,9 @@ process.df.for.download <- function(df){
               'newG', 'G.state', 'ICU.state', 'V.state', 'DCH.state', 'M.state', 
               'HOSP.report', 'ICU.report', 'VENT.report', 'DISCHARGE.report', 'MORTALITY.report')]
   
+  colnames(df) <- c('day', 'days.shift', 'date', 'S', 'E', 'I', 'IR', 'IH', 'R',
+                    'G_new', 'G_only', 'ICU_only', 'V_only', 'DCH', 'M', 
+                    'M5_hosp', 'M5_icut', 'M5_vent', 'M5_dch', 'M5_M')
+  
   return(df)
 }

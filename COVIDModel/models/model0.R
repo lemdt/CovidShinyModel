@@ -116,6 +116,9 @@ process.df.for.download <- function(df){
   df.return <- df.return[,c('day', 'days.shift', 'date', 'S', 'E', 'I', 'IR', 
                      'IH', 'R', 'HP', 'icu', 'vent', 'DC')]
   
+  colnames(df.return) <- c('day', 'days.shift', 'date', 'S', 'E', 'I', 'IR', 
+                           'IH', 'R', 'CP_hosp', 'CP_icut', 'CP_vent', 'C_dch')
+  
   return(df.return)
   
 }
