@@ -153,7 +153,7 @@ shinyServer(function(input, output, session) {
         hist.temp <- arrange(hist.temp, desc(Date))
         
         if (nrow(hist.temp) >= 2){
-            best.fit <- findBestRe(S0 = input$num_people, 
+            best.fit <- findBestRe(N = input$num_people, 
                                    start.exp = start.exp.default,
                                    num.days = est.days, 
                                    day.vec = hist.temp$Day, 
@@ -239,7 +239,7 @@ shinyServer(function(input, output, session) {
                                 ifelse(is.null(input$num_hospitalized), 50, input$num_hospitalized),
                              input$num_cases)
 
-        find.curr.estimates(S0 = input$num_people,
+        find.curr.estimates(N = input$num_people,
                             beta.vector = initial_beta_vector(), 
                             num.days = est.days, 
                             num.actual = num.actual,
