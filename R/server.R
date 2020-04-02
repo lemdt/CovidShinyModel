@@ -2,7 +2,7 @@ utils::globalVariables(c("about.page", "SEIR"))
 
 
 #' Server part
-#' @import shiny ggplot2 shinyWidgets DT shinyjs urlshorteneR
+#' @import shiny ggplot2 shinyWidgets urlshorteneR
 M0 <- new.env()
 source('R/models/model0.R', local = M0)
 source('R/models/model0_params.R', local = M0)
@@ -206,11 +206,11 @@ server <- function(input, output, session) {
         }
         hist.dt$Day <- NULL
 
-        datatable(hist.dt,
-                  escape=F, selection = 'none',
-                  options = list(pageLength = 10, language = list(
-                      zeroRecords = "No historical data added.",
-                      search = "Find in table:"), dom = 't'), rownames = FALSE)
+        DT::datatable(hist.dt,
+                      escape=F, selection = 'none',
+                      options = list(pageLength = 10, language = list(
+                        zeroRecords = "No historical data added.",
+                        search = "Find in table:"), dom = 't'), rownames = FALSE)
 
     })
 
@@ -249,7 +249,7 @@ server <- function(input, output, session) {
             re.estimates$best.estimate <- sprintf(best.re.msg,
                                                   best.fit$best.re)
 
-            show("predict.ui.toggle")
+            shinyjs::show("predict.ui.toggle")
 
         }
         else{
@@ -479,11 +479,11 @@ server <- function(input, output, session) {
 
         int.df$Day <- NULL
 
-        datatable(int.df,
-                  escape=F, selection = 'none',
-                  options = list(pageLength = 10, language = list(
-                      zeroRecords = "No interventions added.",
-                      search = 'Find in table:'), dom = 't'), rownames = FALSE)
+        DT::datatable(int.df,
+                      escape=F, selection = 'none',
+                      options = list(pageLength = 10, language = list(
+                        zeroRecords = "No interventions added.",
+                        search = 'Find in table:'), dom = 't'), rownames = FALSE)
 
     })
 
@@ -732,11 +732,11 @@ server <- function(input, output, session) {
 
         df.render$date <- format(df.render$date, format="%B %d, %Y")
 
-        datatable(data=df.render,
-                  escape=F, selection = 'single',
-                  options = list(pageLength = 10,
-                                 lengthChange = FALSE,
-                                 searching = FALSE), rownames = FALSE)
+        DT::datatable(data=df.render,
+                      escape=F, selection = 'single',
+                      options = list(pageLength = 10,
+                                     lengthChange = FALSE,
+                                     searching = FALSE), rownames = FALSE)
 
     })
 
@@ -770,14 +770,14 @@ server <- function(input, output, session) {
     observeEvent(input$plot_click, {
         plot_day(as.Date(round(input$plot_click$x), origin = "1970-01-01"))
 
-        proxy <- dataTableProxy(
+        proxy <- DT::dataTableProxy(
             'rendered.table',
             session = shiny::getDefaultReactiveDomain(),
             deferUntilFlush = TRUE
         )
 
-        selectRows(proxy, plot_day() - input$curr_date + 1)
-        selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
+        DT::selectRows(proxy, plot_day() - input$curr_date + 1)
+        DT::selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
 
     })
 
@@ -785,14 +785,14 @@ server <- function(input, output, session) {
         if (plot_day() != input$curr_date + input$proj_num_days){
             plot_day(plot_day() + 1)
 
-            proxy <- dataTableProxy(
+            proxy <- DT::dataTableProxy(
                 'rendered.table',
                 session = shiny::getDefaultReactiveDomain(),
                 deferUntilFlush = TRUE
             )
 
-            selectRows(proxy, plot_day() - input$curr_date + 1)
-            selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
+            DT::selectRows(proxy, plot_day() - input$curr_date + 1)
+            DT::selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
         }
 
     })
@@ -801,14 +801,14 @@ server <- function(input, output, session) {
         if (plot_day() != input$curr_date){
             plot_day(plot_day() - 1)
 
-            proxy <- dataTableProxy(
+            proxy <- DT::dataTableProxy(
                 'rendered.table',
                 session = shiny::getDefaultReactiveDomain(),
                 deferUntilFlush = TRUE
             )
 
-            selectRows(proxy, plot_day() - input$curr_date + 1)
-            selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
+            DT::selectRows(proxy, plot_day() - input$curr_date + 1)
+            DT::selectPage(proxy, ceiling((plot_day() - input$curr_date + 1) / 10))
         }
 
     })
