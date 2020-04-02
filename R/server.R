@@ -186,7 +186,7 @@ server <- function(input, output, session) {
         }
     })
 
-    output$input_hosp_dt <- renderDataTable({
+    output$input_hosp_dt <- DT::renderDataTable({
 
         hist.dt <- hist.data()
 
@@ -448,7 +448,7 @@ server <- function(input, output, session) {
         }
     })
 
-    output$int_table <- renderDataTable({
+    output$int_table <- DT::renderDataTable({
 
         int.df <- intervention.table()
 
@@ -714,7 +714,7 @@ server <- function(input, output, session) {
     ##  Table output
     ##  ............................................................................
 
-    output$rendered.table <- renderDataTable({
+    output$rendered.table <- DT::renderDataTable({
         if (input$selected_graph == 'Cases'){
             df.render <- cases.df()
         }

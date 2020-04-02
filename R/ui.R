@@ -67,7 +67,7 @@ ui <- function(req) {
 
                    uiOutput(outputId = 'intervention_ui'),
 
-                   dataTableOutput(outputId = 'int_table'),
+                   DT::dataTableOutput(outputId = 'int_table'),
 
                    HTML('<br>'),
 
@@ -145,7 +145,7 @@ ui <- function(req) {
                      HTML('<br><br>'),
 
                      div(
-                       dataTableOutput(outputId = 'rendered.table'),
+                       DT::dataTableOutput(outputId = 'rendered.table'),
                        style = "font-size:110%"),
                      downloadButton(outputId = 'downloadData',
                                     label = "Download as CSV"),
