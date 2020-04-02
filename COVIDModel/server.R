@@ -283,7 +283,7 @@ shinyServer(function(input, output, session) {
     ##  ............................................................................
     
     # Markov Model selection
-    observeEvent(input$model_select, {
+    observeEvent(input$model_select, ignoreInit = TRUE, {
         if (input$model_select == TRUE){
             source('models/model2.R')
             source('models/model2_params.R')
@@ -293,7 +293,7 @@ shinyServer(function(input, output, session) {
             source('models/model0.R')
             source('models/model0_params.R')
         }
-
+        
         default.params.list <- reactiveValuesToList(default.params)
         for (param in names(default.params.list)){
             params[[param]] = as.numeric(default.params.list[param])
