@@ -2,9 +2,6 @@
 ##  Model 0 Helper Code
 ##  ............................................................................
 
-# libraries 
-library(shiny)
-
 # default parameters for Model 0
 default.params <- reactiveValues(
   incubation.period = 5,
@@ -73,4 +70,24 @@ save.params <- function(params,input){
   params$vent.rate <- input$vent.rate
   
   return(params)
+}
+
+
+#' Process parameters for export
+#'
+#' @param params ReactiveValues list.
+#'
+#' @return List of processed parameters. 
+process.params.for.download <- function(params){
+  param.list <- list(
+    'Incubation Period' = params$incubation.period,
+    'Length of Infectiousness (days)' = params$illness.length, 
+    'Symptomatic to Hospitalization (days)' = params$inf.to.hosp, 
+    'Percent Hospitalized of all Infections' = params$hosp.rate, 
+    'Percent ICU Admitted of Those Hospitalized' = params$icu.rate, 
+    'Average Percent Ventilated of Those ICU Admitted' = params$vent.rate,
+    'Hospital Length of Stay (days)' = params$hosp.los
+  )
+  
+  return(param.list)
 }

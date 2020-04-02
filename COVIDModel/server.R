@@ -20,6 +20,7 @@ library(DT)
 library(plyr)
 library(dplyr)
 library(shinyjs)
+library(urlshorteneR)
 
 # start simulation from this number of exposures
 start.exp.default <- 1
@@ -72,7 +73,7 @@ shinyServer(function(input, output, session) {
         ))
     })
     onBookmarked(function(url) {
-        # url <- shorten_url_somehow(url)
+        url <- isgd_LinksShorten(url)
         showBookmarkUrlModal(url)
     })
     
@@ -156,11 +157,7 @@ shinyServer(function(input, output, session) {
     ##  ............................................................................
     ##  Estimation of Re 
     ##  ............................................................................
-    
-    historical.df.blank <- data.frame('Date' = character(0),
-                                      'Hospitalizations' = numeric(0),
-                                      'Day' = numeric(0))
-    
+
     re.estimates <- reactiveValues(
         graph = NULL,
         best.estimate = NULL
@@ -169,6 +166,10 @@ shinyServer(function(input, output, session) {
     observeEvent(input$predict_re, {
         showModal(predict.re.page(input$curr_date))
     })
+    
+    historical.df.blank <- data.frame('Date' = character(0),
+                                      'Hospitalizations' = numeric(0),
+                                      'Day' = numeric(0))
     
     hist.data <- reactiveVal(historical.df.blank)
     

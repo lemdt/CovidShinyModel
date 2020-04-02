@@ -2,9 +2,6 @@
 ##  Model 2 Helper Code
 ##  ............................................................................
 
-# libraries 
-library(shiny)
-
 # default parameters for Model 2
 default.params <- reactiveValues(
   incubation.period = 5,
@@ -106,4 +103,30 @@ save.params <- function(params,input){
   params$p.v_v = 1 - input$p.v_icu - input$p.v_m
   
   return(params)
+}
+
+
+#' Process parameters for export
+#'
+#' @param params ReactiveValues list.
+#'
+#' @return List of processed parameters. 
+process.params.for.download <- function(params){
+  param.list <- list(
+    'Incubation Period' = params$incubation.period,
+    'Length of Infectiousness (days)' = params$illness.length, 
+    'Symptomatic to Hospitalization (days)' = params$inf.to.hosp, 
+    'percent hospitalized of all infections' = params$hosp.rate, 
+    'Transition Probability from G->G' = params$p.g_g,
+    'Transition Probability from G->icu' = params$p.g_icu,
+    'Transition Probability from G->discharge' = params$p.g_d, 
+    'Transition Probability from icu->G' = params$p.icu_g,
+    'Transition Probabiltiy from icu->icu' = params$p.icu_icu, 
+    'Transition Probability from icu->vent' = params$p.icu_v, 
+    'Transition Probability from vent->icu' = params$p.v_icu,
+    'Transition Probability from vent->vent' = params$p.v_v, 
+    'Transition Proabbility from vent->death' = params$p.v_m
+  )
+  
+  return(param.list)
 }
