@@ -1,4 +1,4 @@
-#' @import DT shiny shinyWidgets
+#' @import shiny shinyWidgets
 ui <- function(req) {
   tagList(
 

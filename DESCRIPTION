@@ -14,12 +14,13 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports: 
-  shiny,
-  ggplot2,
-  shinyWidgets,
-  data.table,
-  DT,
-  dplyr,
-  shinyjs,
-  urlshorteneR
+    shiny,
+    ggplot2,
+    shinyWidgets,
+    data.table,
+    DT,
+    dplyr,
+    shinyjs,
+    urlshorteneR,
+    magrittr
 RoxygenNote: 7.1.0

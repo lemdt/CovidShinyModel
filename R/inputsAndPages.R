@@ -106,11 +106,11 @@ trans.prob.slider <- function(inputId, label, value, min = 0, max = 1, step = 0.
 ##  Modals
 ##  ............................................................................
 
-
+#' @importFrom magrittr %>%
 predict.re.page <- function(curr.date){
   return.page <-modalDialog(
 
-    useShinyjs(),
+    shinyjs::useShinyjs(),
 
     HTML("<h4> Estimate Re based on historical hospitalizations</h4>
          Provide data from past dates to estimate the Re value.<br><br>"),
@@ -152,7 +152,7 @@ predict.re.page <- function(curr.date){
           plotOutput('fit.plot')
         )
 
-    ) %>% hidden()
+    ) %>% shinyjs::hidden()
 
   )
 }
