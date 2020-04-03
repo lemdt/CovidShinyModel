@@ -45,6 +45,8 @@ parameters.page <- function(params) {
   params.page
 }
 
+
+# TODO: Convert this save function to ObserveEvent's (similar to Model 0 and Model 2)
 #' Save Parameters
 #'
 #' Saves parameters in the 'params' ReactiveVals.

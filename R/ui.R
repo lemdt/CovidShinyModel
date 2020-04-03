@@ -124,7 +124,6 @@ ui <- function(req) {
 
             HTML(end.notes)),
             tabPanel("Parameters", 
-                     HTML("<br><h4><b>Parameters</b></h4><br>"),
                      uiOutput("params_ui")))
           ),
 

@@ -25,6 +25,7 @@ default.params <- shiny::reactiveValues(
   vent.avail = 100
 )
 
+
 # modal to enter parameters that pops up after clicking on "Customize Other Parameters"
 parameters.page <- function(params) {
   params.page <- fluidPage(
@@ -38,33 +39,6 @@ parameters.page <- function(params) {
     )
 
   params.page
-}
-
-#' Save Parameters
-#'
-#' Saves parameters in the 'params' ReactiveVals.
-#'
-#' @param params ReactiveVals list.
-#' @param input List (from shiny's inputs).
-#'
-#' @return ReactiveVals list, with new set of saved parameters.
-save.params <- function(params, input) {
-  params$illness.length <- input$illness.length
-  params$gamma.r <- 1 / input$illness.length
-  params$inf.to.hosp <- input$hosp.after.inf
-  params$gamma.h <- 1 / input$hosp.after.inf
-  params$gamma <- ((1 - input$hosp.rate) * 1 / input$illness.length) +
-    (input$hosp.rate * 1 / input$hosp.after.inf)
-  params$incubation.period <- input$incubation.period
-  params$sigma <- 1 / input$incubation.period
-  params$hosp.los <- input$hosp.los
-  params$psi <- 1 / input$hosp.los
-
-  params$hosp.rate <- input$hosp.rate
-  params$icu.rate <- input$icu.rate
-  params$vent.rate <- input$vent.rate
-
-  return(params)
 }
 
 
