@@ -285,7 +285,11 @@ server <- function(input, output, session) {
                 Actual = hist.temp$Hospitalizations
             )
 
-            df.melt <- melt(df.graph, id.vars = 'Date')
+            df.melt <- tidyr::pivot_longer(
+              df.graph,
+              -Date,
+              names_to = "variable"
+            )
 
             re.estimates$graph <-
                 ggplot(df.melt, aes(

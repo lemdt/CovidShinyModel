@@ -11,7 +11,7 @@ utils::globalVariables(c("Day", "value", "variable", "Date"))
 #'
 #' @param doubling.time Numeric.
 #' @param gamma Numeric.
-#' @import ggplot2 shinyWidgets data.table
+#' @import ggplot2 shinyWidgets
 getBetaFromDoubling <- function(doubling.time, gamma) {
   g <- 2 ^ (1 / doubling.time) - 1
   beta <- g + gamma
@@ -507,17 +507,7 @@ create.graph <- function(df.to.plot, selected, plot.day, curr.date) {
 
     df.to.plot <- df.to.plot[, cols]
 
-    # [TODO: This melt needs to be removed because it is confusing]
-    # Causes this issue:
-    #   The melt generic in data.table has been passed a data.frame and will attempt to redirect to the relevant
-    # reshape2 method; please note that reshape2 is deprecated, and this redirection is now deprecated as
-    # well. To continue using melt methods from reshape2 while both libraries are attached, e.g. melt.list, you
-    # can prepend the namespace like reshape2::melt(df.to.plot). In the next version, this warning will become
-    # an error.
-    # Proposed solution: Use tidyr::pivot_longer() or something that is unambiguous.
-
-
-    df_melt <- melt(df.to.plot, 'date')
+    df_melt <- tidyr::pivot_longer(df.to.plot, -date, names_to = "variable")
 
     graph <-
       ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +
