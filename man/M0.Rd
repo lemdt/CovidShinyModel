@@ -5,7 +5,7 @@
 \alias{M0}
 \title{Server part}
 \format{
-An object of class \code{environment} of length 6.
+An object of class \code{environment} of length 5.
 }
 \usage{
 M0

@@ -2,7 +2,7 @@ utils::globalVariables("SEIR")
 
 
 #' Server part
-#' @import shiny ggplot2 shinyWidgets urlshorteneR
+#' @import shiny
 M0 <- new.env()
 source('R/models/model0.R', local = M0)
 source('R/models/model0_params.R', local = M0)
@@ -16,8 +16,6 @@ start.exp.default <- 1
 r0.default <- 2.8
 est.days <- 365
 
-#' @importFrom urlshorteneR isgd_LinksShorten
-#' @importFrom utils write.csv
 server <- function(input, output, session) {
     model <- M0
     ##  ............................................................................
@@ -285,17 +283,9 @@ server <- function(input, output, session) {
                 Actual = hist.temp$Hospitalizations
             )
 
-            df.melt <- melt(df.graph, id.vars = 'Date')
+            df.melt <- data.table::melt(df.graph, id.vars = 'Date')
 
-            re.estimates$graph <-
-                ggplot(df.melt, aes(
-                    x = Date,
-                    y = value,
-                    col = variable
-                )) +
-                geom_point() + geom_line() + theme(text = element_text(size =
-                                                                           20)) +
-                theme(legend.title = element_blank())
+            re.estimates$graph <- re_estimate_plot(df.melt)
 
             re.estimates$best.estimate <- sprintf(best.re.msg,
                                                   best.fit$best.re)
@@ -579,7 +569,7 @@ server <- function(input, output, session) {
         if (!params$int.new.num.days %in% intervention.table()$Day) {
             new.table <- bind.to.intervention(
                 int.table = intervention.table(),
-                params = params,
+                params = reactiveValuesToList(params),
                 usedouble = input$usedouble
             )
 
@@ -1178,7 +1168,7 @@ server <- function(input, output, session) {
 
         # TODO: this is for testing only, uncomment and
         # remove bottom lines after testing is done
-        # write.csv(data.frame(data), file, row.names = FALSE)
+        # utils::write.csv(data.frame(data), file, row.names = FALSE)
         df.output <- seir.output.df()
 
         # model specific dataframe downloads

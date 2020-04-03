@@ -11,7 +11,6 @@ utils::globalVariables(c("Day", "value", "variable", "Date"))
 #'
 #' @param doubling.time Numeric.
 #' @param gamma Numeric.
-#' @import ggplot2 shinyWidgets data.table
 getBetaFromDoubling <- function(doubling.time, gamma) {
   g <- 2 ^ (1 / doubling.time) - 1
   beta <- g + gamma
@@ -384,7 +383,7 @@ add.to.hist.table <-
 #'
 #' @param int.table Dataframe with Day, New.Re (or New.Double.Time), and Days.of.Smoothing
 #' columns.
-#' @param params ReactiveValues list of parameters.
+#' @param params List of parameters.
 #' @param usedouble Boolean. TRUE if doubling time is used in the app.
 #'
 #' @return Dataframe with appended row.
@@ -501,6 +500,7 @@ create.res.df <- function(df, hosp_cap, icu_cap, vent_cap) {
 #' @param curr.date Date where to start the graph.
 #'
 #' @return ggplot graph.
+#' @import ggplot2
 create.graph <- function(df.to.plot, selected, plot.day, curr.date) {
   if (length(selected) != 0) {
     cols <- c('date', selected)
@@ -517,7 +517,7 @@ create.graph <- function(df.to.plot, selected, plot.day, curr.date) {
     # Proposed solution: Use tidyr::pivot_longer() or something that is unambiguous.
 
 
-    df_melt <- melt(df.to.plot, 'date')
+    df_melt <- data.table::melt(df.to.plot, 'date')
 
     graph <-
       ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +
@@ -527,4 +527,19 @@ create.graph <- function(df.to.plot, selected, plot.day, curr.date) {
 
     return(graph)
   }
+}
+
+#' Plot for R_e estimate
+#' @param data Dataframe
+#' @import ggplot2
+re_estimate_plot <- function(data) {
+  ggplot(data, aes(
+    x = Date,
+    y = value,
+    col = variable
+  )) +
+    geom_point() +
+    geom_line() +
+    theme(text = element_text(size = 20)) +
+    theme(legend.title = element_blank())
 }

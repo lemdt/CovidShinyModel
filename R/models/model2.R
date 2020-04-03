@@ -250,7 +250,8 @@ process.df.for.download <- function(df) {
   #             'HOSP.report', 'ICU.report', 'VENT.report', 'DISCHARGE.report', 'MORTALITY.report')]
 
   df <-
-    df %>% dplyr::select(
+    dplyr::select(
+      df,
       day,
       days.shift,
       date,
