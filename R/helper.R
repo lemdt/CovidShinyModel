@@ -180,6 +180,7 @@ find.curr.estimates = function(model, N, beta.vector, num.days, num.actual,
 #' (a vector of numerics with projected values of hospitalizations on the historical dates
 #' for which data was provided).
 #'
+#' @param model [TODO]
 #' @param N Numeric. Number of people in the area.
 #' @param start.exp Numeric. Starting number of exposures.
 #' @param num.days Numeric. Number of days to simulate.
