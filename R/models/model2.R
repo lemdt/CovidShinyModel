@@ -31,13 +31,38 @@ createTransition <- function(p.g_g,
                              p.v_v,
                              p.v_m,
                              p.g_m = 0,
-                             p.icu_m = 0){
-
-  tmat <- matrix(c(p.g_g, p.g_icu, 0, p.g_d, p.g_m,
-                   p.icu_g, p.icu_icu, p.icu_v, 0, p.icu_m,
-                   0, p.v_icu, p.v_v, 0, p.v_m,
-                   0, 0, 0, 1, 0,
-                   0, 0, 0, 0, 1), nrow = 5, byrow = TRUE)
+                             p.icu_m = 0) {
+  tmat <- matrix(
+    c(
+      p.g_g,
+      p.g_icu,
+      0,
+      p.g_d,
+      p.g_m,
+      p.icu_g,
+      p.icu_icu,
+      p.icu_v,
+      0,
+      p.icu_m,
+      0,
+      p.v_icu,
+      p.v_v,
+      0,
+      p.v_m,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ),
+    nrow = 5,
+    byrow = TRUE
+  )
 
   return(tmat)
 }
@@ -57,20 +82,20 @@ createTransition <- function(p.g_g,
 #' @param trans.mat Matrix. For Markov simulation.
 #'
 #' @return Dataframe, with counts of each state.
-runMarkov <- function(new.g.vec, trans.mat){
-
+runMarkov <- function(new.g.vec, trans.mat) {
   # h, icu, vent, d, m
   df.final <- data.frame()
 
   step.vec <- c(0, 0, 0, 0, 0)
 
-  for (new.g in new.g.vec){
+  for (new.g in new.g.vec) {
     step.vec <- as.vector(step.vec %*% trans.mat)
     step.vec[1] <- step.vec[1] + new.g
     df.final <- rbind(df.final, step.vec)
   }
 
-  colnames(df.final) <- c('G.state', 'ICU.state', 'V.state', 'DCH.state', 'M.state')
+  colnames(df.final) <-
+    c('G.state', 'ICU.state', 'V.state', 'DCH.state', 'M.state')
   return(df.final)
 }
 
@@ -99,9 +124,14 @@ runMarkov <- function(new.g.vec, trans.mat){
 #'
 #' @return Dataframe, with susceptible counts, exposed counts, infected counts,
 #' hospitalization numbers, recovery numbers, and death numbers.
-SEIR <- function(S0, E0, I0, R0, beta.vector,
-                 num.days, influx, params) {
-
+SEIR <- function(S0,
+                 E0,
+                 I0,
+                 R0,
+                 beta.vector,
+                 num.days,
+                 influx,
+                 params) {
   # get parameters
   sigma <- params$sigma
   gamma.r <- params$gamma.r
@@ -118,23 +148,25 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
   p.v_m <- params$p.v_m
 
   # create transition matrix
-  trans.mat <- createTransition(p.g_g,
-                                p.g_icu,
-                                p.g_d,
-                                p.icu_g,
-                                p.icu_icu,
-                                p.icu_v,
-                                p.v_icu,
-                                p.v_v,
-                                p.v_m,
-                                p.g_m = 0,
-                                p.icu_m = 0)
+  trans.mat <- createTransition(
+    p.g_g,
+    p.g_icu,
+    p.g_d,
+    p.icu_g,
+    p.icu_icu,
+    p.icu_v,
+    p.v_icu,
+    p.v_v,
+    p.v_m,
+    p.g_m = 0,
+    p.icu_m = 0
+  )
 
   # non-hospitalized rate
   non.hosp.rate <- 1 - hosp.rate
 
   # initialize S, I, R, newG
-  S <- E<- IH <- IR <- R <- newG <- rep(NA_real_, num.days)
+  S <- E <- IH <- IR <- R <- newG <- rep(NA_real_, num.days)
   S[1] <- S0
   E[1] <- E0
   IR[1] <- I0 * non.hosp.rate
@@ -148,8 +180,8 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
   # run SIR model
   for (tt in 1:(num.days - 1)) {
     beta <- beta.vector[tt]
-    dS <- (-beta * S[tt] * (IR[tt] + IH[tt]))/N
-    dE <- beta * S[tt] * (IR[tt] + IH[tt])/ N - sigma * E[tt]
+    dS <- (-beta * S[tt] * (IR[tt] + IH[tt])) / N
+    dE <- beta * S[tt] * (IR[tt] + IH[tt]) / N - sigma * E[tt]
     dR <- gamma.r * IR[tt]
     dIR <- (sigma * E[tt] * non.hosp.rate) - dR
     dIH <- (sigma * E[tt] * hosp.rate) - (gamma.h * IH[tt])
@@ -161,21 +193,22 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
     R[tt + 1] <- R[tt] + dR
     newG[tt + 1] <- gamma.h * IH[tt]
 
-    if (influx[['day']] == tt-1){
+    if (influx[['day']] == tt - 1) {
       S[tt] <- S[tt] - influx[['num.influx']]
       E[tt] <- E[tt] + influx[['num.influx']]
     }
   }
 
   # create initial dataframe
-  df.return <- data.frame(day = 0:(num.days-1), S, E, IR, IH, R, newG)
+  df.return <-
+    data.frame(day = 0:(num.days - 1), S, E, IR, IH, R, newG)
 
   # run Markov
   markov.df <- runMarkov(new.g.vec = newG,
                          trans.mat = trans.mat)
 
   # add a day column
-  markov.df$day <- 0:(num.days-1)
+  markov.df$day <- 0:(num.days - 1)
 
   # merge original and Markov dataframes
   df.return <- merge(df.return, markov.df, by = 'day')
@@ -186,7 +219,8 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
 
   df.return$R.orig <- df.return$R
   df.return$R <- df.return$R + df.return$DCH.state
-  df.return$hosp <- df.return$G.state + df.return$ICU.state + df.return$V.state
+  df.return$hosp <-
+    df.return$G.state + df.return$ICU.state + df.return$V.state
   df.return$icu <- df.return$ICU.state + df.return$V.state
   df.return$vent <- df.return$V.state
 
@@ -202,8 +236,7 @@ SEIR <- function(S0, E0, I0, R0, beta.vector,
 #' @param df Dataframe.
 #'
 #' @return Dataframe.
-process.df.for.download <- function(df){
-
+process.df.for.download <- function(df) {
   df$R <- df$R.orig
   df$HOSP.report <- df$hosp
   df$ICU.report <- df$icu
@@ -211,6 +244,7 @@ process.df.for.download <- function(df){
   df$DISCHARGE.report <- df$DCH.state
   df$MORTALITY.report <- df$M.state
 
+  # This is the old code: Rewritten on line 252.
   # df <- df[,c('day', 'days.shift', 'date', 'S', 'E', 'I', 'IR', 'IH', 'R',
   #             'newG', 'G.state', 'ICU.state', 'V.state', 'DCH.state', 'M.state',
   #             'HOSP.report', 'ICU.report', 'VENT.report', 'DISCHARGE.report', 'MORTALITY.report')]
@@ -240,7 +274,7 @@ process.df.for.download <- function(df){
     )
 
 
-
+  # Line 252 makes this renaming redundant
   # colnames(df) <- c('day', 'days.shift', 'date', 'S', 'E', 'I', 'IR', 'IH', 'R',
   #                   'G_new', 'G_only', 'ICU_only', 'V_only', 'DCH', 'M',
   #                   'M5_hosp', 'M5_icut', 'M5_vent', 'M5_dch', 'M5_M')
