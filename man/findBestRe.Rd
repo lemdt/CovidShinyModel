@@ -4,9 +4,11 @@
 \alias{findBestRe}
 \title{Find Best Fit for Re}
 \usage{
-findBestRe(N, start.exp, num.days, day.vec, num_actual.vec, params)
+findBestRe(model, N, start.exp, num.days, day.vec, num_actual.vec, params)
 }
 \arguments{
+\item{model}{[TODO]}
+
 \item{N}{Numeric. Number of people in the area.}
 
 \item{start.exp}{Numeric. Starting number of exposures.}
