@@ -87,7 +87,7 @@ cbind.fill <- function(...) {
 #' It then returns a list with that day as well as the number susceptible, exposed,
 #' infected, and recovered on that day.
 #'
-#' @param model [TODO]
+#' @param seir_func The SEIR function to use
 #' @param N Numeric, number of people in the area.
 #' @param beta.vector Vector of numerics, should be the same length as num.days.
 #' @param num.days Numeric. Number of days to simulate.
@@ -99,7 +99,7 @@ cbind.fill <- function(...) {
 #'
 #' @return List with the day number match as well as counts for susceptible, exposed,
 #' infected and recovered.
-find.curr.estimates = function(model,
+find.curr.estimates = function(seir_func,
                                N,
                                beta.vector,
                                num.days,
@@ -112,7 +112,7 @@ find.curr.estimates = function(model,
   start.res <- 0
   start.inf <- 0
 
-  SEIR.df = model$SEIR(
+  SEIR.df = seir_func(
     S0 = start.susc,
     E0 = start.exp,
     I0 = start.inf,
@@ -186,7 +186,7 @@ find.curr.estimates = function(model,
 #' (a vector of numerics with projected values of hospitalizations on the historical dates
 #' for which data was provided).
 #'
-#' @param model [TODO]
+#' @param seir_func The SEIR function to use
 #' @param N Numeric. Number of people in the area.
 #' @param start.exp Numeric. Starting number of exposures.
 #' @param num.days Numeric. Number of days to simulate.
@@ -197,7 +197,7 @@ find.curr.estimates = function(model,
 #' @return List with best Re and the projected number of hospitalizations on the historical
 #' dates for which data was provided.
 findBestRe <-
-  function(model,
+  function(seir_func,
            N,
            start.exp,
            num.days,
@@ -217,7 +217,7 @@ findBestRe <-
     for (re in c(seq(1, 7, 0.1))) {
       beta <- getBetaFromRe(re, params$gamma)
 
-      SIR.df = model$SEIR(
+      SIR.df = seir_func(
         S0 = start.susc,
         E0 = start.exp,
         I0 = start.inf,

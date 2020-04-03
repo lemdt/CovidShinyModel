@@ -17,7 +17,11 @@ r0.default <- 2.8
 est.days <- 365
 
 server <- function(input, output, session) {
-    model <- M0
+    model <- reactiveVal(M0)
+
+    # initializing a set of parameters
+    params <- M0$default.params
+
     ##  ............................................................................
     ##  Bookmarking logic
     ##  ............................................................................
@@ -266,7 +270,7 @@ server <- function(input, output, session) {
 
         if (nrow(hist.temp) >= 2) {
             best.fit <- findBestRe(
-                model = model,
+                seir_func = model()$SEIR,
                 N = input$num_people,
                 start.exp = start.exp.default,
                 num.days = est.days,
@@ -317,14 +321,13 @@ server <- function(input, output, session) {
 
     # Markov Model selection
     observeEvent(input$model_select, ignoreInit = TRUE, {
-        model <<- if (input$model_select == TRUE) {
-            M2
+        if (input$model_select == TRUE) {
+            model(M2)
         } else {
-            M0
+            model(M0)
         }
 
-        default.params.list <-
-            reactiveValuesToList(model$default.params)
+        default.params.list <- reactiveValuesToList(model()$default.params)
         for (param in names(default.params.list)) {
             params[[param]] = as.numeric(default.params.list[param])
         }
@@ -334,9 +337,6 @@ server <- function(input, output, session) {
         updateNumericInput(session, "num_people", value = num_people + 1)
         updateNumericInput(session, "num_people", value = num_people)
     })
-
-    # initializing a set of parameters
-    params <- model$default.params
 
     output$params_ui <- renderUI({
 
@@ -349,7 +349,7 @@ server <- function(input, output, session) {
 
         fluidPage(
             HTML(sprintf("<br><h4><b>Parameters %s</b></h4><br>", name_append)),
-            model$parameters.page(params)
+            model()$parameters.page(params)
         )
     })
 
@@ -453,7 +453,7 @@ server <- function(input, output, session) {
         )
 
         find.curr.estimates(
-            model = model,
+            seir_func = model()$SEIR,
             N = input$num_people,
             beta.vector = initial_beta_vector(),
             num.days = est.days,
@@ -749,7 +749,7 @@ server <- function(input, output, session) {
             start.inf <- 0
             start.res <- 0
 
-            seir.df = model$SEIR(
+            seir.df = model()$SEIR(
                 S0 = start.susc,
                 E0 = start.exp.default,
                 I0 = start.inf,
@@ -774,7 +774,7 @@ server <- function(input, output, session) {
             start.res <- 0
             num.days <- input$proj_num_days
 
-            seir.df <- model$SEIR(
+            seir.df <- model()$SEIR(
                 S0 = start.susc,
                 E0 = start.exp,
                 I0 = start.inf,
@@ -1173,7 +1173,7 @@ server <- function(input, output, session) {
 
         # model specific dataframe downloads
         # process.df.for.download function is in model1.R or model2.R
-        df.output <- model$process.df.for.download(df.output)
+        df.output <- model()$process.df.for.download(df.output)
 
         # TODO: this is dirty. Should perhaps be parsed out into a function.
         # process parameters
@@ -1211,7 +1211,7 @@ server <- function(input, output, session) {
                   input$num_influx)
         }
 
-        params.list <- model$process.params.for.download(params)
+        params.list <- model()$process.params.for.download(params)
 
         params.df <-
             data.frame(
