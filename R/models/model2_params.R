@@ -31,9 +31,8 @@ default.params <- shiny::reactiveValues(
 )
 
 # modal to enter parameters that pops up after clicking on "Customize Other Parameters"
-parameters.modal <- function(params) {
-  params.page <- modalDialog(
-    fluidPage(
+parameters.page <- function(params) {
+  params.page <- fluidPage(
       incubation.period.input(params$incubation.period),
       hosp.rate.input(params$hosp.rate),
       illness.length.input(params$illness.length),
@@ -77,11 +76,9 @@ parameters.modal <- function(params) {
         max = 0.2,
         step = 0.001
       )
-    ),
-    footer = tagList(actionButton("save", "Save and Close"))
-  )
+    )
 
-  return(params.page)
+  params.page
 }
 
 #' Save Parameters

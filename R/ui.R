@@ -30,8 +30,10 @@ ui <- function(req) {
 
         sidebarLayout(
           sidebarPanel(
+            tabsetPanel(type = "tabs",
+                        tabPanel("Setting",
             # Location Information
-            HTML('<h4><b>Location Information</b></h4>'),
+            HTML('<br><h4><b>Location Information</b></h4>'),
             numericInput(
               inputId = 'num_people',
               label = "Number of People in Area",
@@ -111,9 +113,6 @@ ui <- function(req) {
               value = 365
             ),
 
-            actionButton(inputId = 'parameters_modal',
-                         label = 'Customize Other Parameters'),
-
             bookmarkButton(),
 
             tags$script(
@@ -123,7 +122,10 @@ ui <- function(req) {
                                              });"
             ),
 
-            HTML(end.notes),
+            HTML(end.notes)),
+            tabPanel("Parameters", 
+                     HTML("<br><h4><b>Parameters</b></h4><br>"),
+                     uiOutput("params_ui")))
           ),
 
           mainPanel(

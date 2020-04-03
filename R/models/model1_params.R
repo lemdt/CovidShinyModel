@@ -27,9 +27,8 @@ default.params <- reactiveValues(
 )
 
 # modal to enter parameters that pops up after clicking on "Customize Other Parameters"
-parameters.modal <- function(params) {
-  params.page <- modalDialog(
-    fluidPage(
+parameters.page <- function(params) {
+  params.page <- fluidPage(
       incubation.period.input(params$incubation.period),
       illness.length.input(params$illness.length),
       hosp.rate.input(params$hosp.rate),
@@ -41,11 +40,9 @@ parameters.modal <- function(params) {
       hosp.los.input(params$hosp.los),
       icu.los.input(params$icu.los),
       vent.los.input(params$vent.los)
-    ),
-    footer = tagList(actionButton("save", "Save and Close"))
-  )
+    )
 
-  return(params.page)
+  params.page
 }
 
 #' Save Parameters

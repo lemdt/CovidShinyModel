@@ -348,9 +348,8 @@ server <- function(input, output, session) {
     # initializing a set of parameters
     params <- model$default.params
 
-    # modal pop-up to update parameters
-    observeEvent(input$parameters_modal, {
-        showModal(model$parameters.modal(params))
+    output$params_ui <- renderUI({
+        model$parameters.page(params)
     })
 
     observeEvent(input$save, {
