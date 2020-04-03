@@ -1,4 +1,4 @@
-utils::globalVariables(c("about.page", "SEIR"))
+utils::globalVariables("SEIR")
 
 
 #' Server part
@@ -96,7 +96,7 @@ server <- function(input, output, session) {
 
     # modal pop-up helper screen
     observeEvent(input$howtouse, {
-        showModal(about.page)
+        showModal(modalDialog(HTML(about.wording), size = "l"))
     })
 
     ##  ............................................................................
@@ -349,14 +349,14 @@ server <- function(input, output, session) {
     params <- model$default.params
 
     output$params_ui <- renderUI({
-        
+
         if (input$model_select == TRUE){
             name_append <- '- Markov (Beta)'
         }
         else{
-            name_append <- '' 
+            name_append <- ''
         }
-        
+
         fluidPage(
             HTML(sprintf("<br><h4><b>Parameters %s</b></h4><br>", name_append)),
             model$parameters.page(params)
@@ -369,44 +369,44 @@ server <- function(input, output, session) {
         params$gamma <- ((1 - input$hosp.rate) * 1 / input$illness.length) +
             (input$hosp.rate * 1 / input$hosp.after.inf)
     })
-    
+
     observeEvent(input$hosp.after.inf,{
         params$inf.to.hosp <- input$hosp.after.inf
         params$gamma.h <- 1 / input$hosp.after.inf
         params$gamma <- ((1 - input$hosp.rate) * 1 / input$illness.length) +
             (input$hosp.rate * 1 / input$hosp.after.inf)
-        
+
     })
-    
+
     observeEvent(input$incubation.period,{
         params$incubation.period <- input$incubation.period
         params$sigma <- 1 / input$incubation.period
     })
-    
+
     observeEvent(input$hosp.los,{
         params$hosp.los <- input$hosp.los
         params$psi <- 1 / input$hosp.los
     })
-    
+
     observeEvent(input$hosp.rate, {
         params$hosp.rate <- input$hosp.rate
         params$gamma <- ((1 - input$hosp.rate) * 1 / input$illness.length) +
             (input$hosp.rate * 1 / input$hosp.after.inf)
     })
-    
+
     observeEvent(input$icu.rate, {
         params$icu.rate <- input$icu.rate
     })
-    
+
     observeEvent(input$vent.rate, {
         params$vent.rate <- input$vent.rate
     })
-    
+
     observeEvent(input$p.g_icu, {
         params$p.g_icu = input$p.g_icu
         params$p.g_g = 1 - input$p.g_d - input$p.g_icu
     })
-    
+
     observeEvent(input$p.g_d, {
         params$p.g_d = input$p.g_d
         params$p.g_g = 1 - input$p.g_d - input$p.g_icu
@@ -416,23 +416,23 @@ server <- function(input, output, session) {
         params$p.icu_g = input$p.icu_g
         params$p.icu_icu = 1 - input$p.icu_g - input$p.icu_v
     })
-    
+
     observeEvent(input$p.icu_v, {
         params$p.icu_v = input$p.icu_v
         params$p.icu_icu = 1 - input$p.icu_g - input$p.icu_v
     })
-    
+
     observeEvent(input$p.v_icu, {
         params$p.v_icu = input$p.v_icu
         params$p.v_v = 1 - input$p.v_icu - input$p.v_m
     })
-    
+
     observeEvent(input$p.v_m, {
         params$p.v_m = input$p.v_m
         params$p.v_v = 1 - input$p.v_icu - input$p.v_m
     })
 
-    
+
     ##  ............................................................................
     ##  Initialization
     ##  ............................................................................
