@@ -18,10 +18,10 @@ Imports:
     shiny,
     ggplot2,
     shinyWidgets,
-    data.table,
     DT,
     dplyr,
     shinyjs,
     urlshorteneR,
-    magrittr
+    magrittr,
+    tidyr
 RoxygenNote: 7.1.0
