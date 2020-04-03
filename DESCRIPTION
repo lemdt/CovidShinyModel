@@ -1,0 +1,27 @@
+Package: covidshiny
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.2.0.9999
+Authors@R: 
+    person(given = "James",
+           family = "Peng",
+           role = c("aut", "cre"),
+           email = "james.peng@ucsf.edu")
+Maintainer: James Peng <james.peng@ucsf.edu>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: MIT + file LICENSE
+URL: https://github.com/karthik/CovidShinyModel
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    shiny,
+    ggplot2,
+    shinyWidgets,
+    data.table,
+    DT,
+    dplyr,
+    shinyjs,
+    urlshorteneR,
+    magrittr
+RoxygenNote: 7.1.0
