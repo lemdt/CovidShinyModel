@@ -1,7 +1,7 @@
 # Covid-19 Epidemic Modeling with R Shiny
 
 <!-- badges: start -->
-[![R build status](https://github.com/karthik/CovidShinyModel/workflows/R-CMD-check/badge.svg)](https://github.com/karthik/CovidShinyModel)
+[![R build status](https://github.com/karthik/CovidShinyModel/workflows/R-CMD-check/badge.svg)](https://github.com/karthik/CovidShinyModel/actions)
 <!-- badges: end -->
 
 This is a shiny app that models the COVID-19 epidemic. This is based on the <a href="http://penn-chime.phl.io/">Penn Chime app</a> - all credit goes to the Penn Medicine and Code for Philly team for their idea. 
