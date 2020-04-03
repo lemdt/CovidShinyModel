@@ -227,13 +227,14 @@ server <- function(input, output, session) {
         hist.temp <- dplyr::arrange(hist.temp, dplyr::desc(Date))
 
         if (nrow(hist.temp) >= 2){
-            best.fit <- findBestRe(N = input$num_people,
+            best.fit <- findBestRe(model = model, 
+                                   N = input$num_people,
                                    start.exp = start.exp.default,
                                    num.days = est.days,
                                    day.vec = hist.temp$Day,
                                    num_actual.vec = hist.temp$Hospitalizations,
                                    params = params)
-
+            
             best.vals <- best.fit$best.vals
 
             df.graph <- data.frame(Date = hist.temp$Date,
