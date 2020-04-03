@@ -189,7 +189,7 @@ find.curr.estimates = function(model, N, beta.vector, num.days, num.actual,
 #'
 #' @return List with best Re and the projected number of hospitalizations on the historical
 #' dates for which data was provided.
-findBestRe <- function(N, start.exp, num.days, day.vec, num_actual.vec, params){
+findBestRe <- function(model, N, start.exp, num.days, day.vec, num_actual.vec, params){
 
   # starting number of susceptible people
   start.susc <- N - start.exp
@@ -204,14 +204,14 @@ findBestRe <- function(N, start.exp, num.days, day.vec, num_actual.vec, params){
   for (re in c(seq(1, 7, 0.1))){
     beta <- getBetaFromRe(re, params$gamma)
 
-    SIR.df = SEIR(S0 = start.susc,
-                  E0 = start.exp,
-                  I0 = start.inf,
-                  R0 = start.res,
-                  beta.vector = rep(beta, num.days),
-                  num.days = num.days,
-                  influx = list('day' = -1, num.influx = 0),
-                  params = params)
+    SIR.df = model$SEIR(S0 = start.susc,
+                        E0 = start.exp,
+                        I0 = start.inf,
+                        R0 = start.res,
+                        beta.vector = rep(beta, num.days),
+                        num.days = num.days,
+                        influx = list('day' = -1, num.influx = 0),
+                        params = params)
 
     SIR.df$diff_proj <- abs(SIR.df$hosp - num_actual.vec[1])
     hosp.numbers <- SIR.df$hosp
