@@ -2,11 +2,11 @@
 #'
 #' @import shiny
 #' @export
-start_app <- function(){
+start_app <- function() {
   enableBookmarking("url")
   shinyApp(ui = ui, server = server)
 }
 
-.onAttach <- function(libname, pkgname){
+.onAttach <- function(libname, pkgname) {
   packageStartupMessage("Run covidshiny::start_app() to launch the app")
 }

@@ -5,14 +5,14 @@
 # default parameters for Model 0
 default.params <- shiny::reactiveValues(
   incubation.period = 5,
-  sigma = 1/5,
+  sigma = 1 / 5,
   illness.length = 7,
-  gamma.r = 1/7,
+  gamma.r = 1 / 7,
   inf.to.hosp = 7,
-  gamma.h = 1/7,
-  gamma = 1/7,
+  gamma.h = 1 / 7,
+  gamma = 1 / 7,
   hosp.los = 10,
-  psi = 1/10,
+  psi = 1 / 10,
   hosp.rate = 0.06,
   icu.rate = 0.5,
   vent.rate = 0.85,
@@ -26,7 +26,7 @@ default.params <- shiny::reactiveValues(
 )
 
 # modal to enter parameters that pops up after clicking on "Customize Other Parameters"
-parameters.modal <- function(params){
+parameters.modal <- function(params) {
   params.page <- modalDialog(
     fluidPage(
       incubation.period.input(params$incubation.period),
@@ -37,9 +37,7 @@ parameters.modal <- function(params){
       icu.rate.input(params$icu.rate),
       vent.rate.input(params$vent.rate)
     ),
-    footer = tagList(
-      actionButton("save", "Save and Close")
-    )
+    footer = tagList(actionButton("save", "Save and Close"))
   )
 
   return(params.page)
@@ -53,15 +51,15 @@ parameters.modal <- function(params){
 #' @param input List (from shiny's inputs).
 #'
 #' @return ReactiveVals list, with new set of saved parameters.
-save.params <- function(params,input){
+save.params <- function(params, input) {
   params$illness.length <- input$illness.length
-  params$gamma.r <- 1/input$illness.length
+  params$gamma.r <- 1 / input$illness.length
   params$inf.to.hosp <- input$hosp.after.inf
-  params$gamma.h <- 1/input$hosp.after.inf
-  params$gamma <- ((1 - input$hosp.rate) * 1/input$illness.length) +
-    (input$hosp.rate * 1/input$hosp.after.inf)
+  params$gamma.h <- 1 / input$hosp.after.inf
+  params$gamma <- ((1 - input$hosp.rate) * 1 / input$illness.length) +
+    (input$hosp.rate * 1 / input$hosp.after.inf)
   params$incubation.period <- input$incubation.period
-  params$sigma <- 1/input$incubation.period
+  params$sigma <- 1 / input$incubation.period
   params$hosp.los <- input$hosp.los
   params$psi <- 1 / input$hosp.los
 
@@ -78,7 +76,7 @@ save.params <- function(params,input){
 #' @param params ReactiveValues list.
 #'
 #' @return List of processed parameters.
-process.params.for.download <- function(params){
+process.params.for.download <- function(params) {
   param.list <- list(
     'Incubation Period' = params$incubation.period,
     'Length of Infectiousness (days)' = params$illness.length,

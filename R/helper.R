@@ -13,8 +13,7 @@ utils::globalVariables(c("Day", "value", "variable", "Date"))
 #' @param gamma Numeric.
 #' @import ggplot2 shinyWidgets data.table
 getBetaFromDoubling <- function(doubling.time, gamma) {
-
-  g <- 2^(1/doubling.time) - 1
+  g <- 2 ^ (1 / doubling.time) - 1
   beta <- g + gamma
   return(beta)
 
@@ -28,7 +27,6 @@ getBetaFromDoubling <- function(doubling.time, gamma) {
 #'
 #' @return Numeric.
 getBetaFromRe <- function(Re, gamma) {
-
   beta <- Re * gamma
   return(beta)
 
@@ -43,13 +41,12 @@ getBetaFromRe <- function(Re, gamma) {
 #' @param df Dataframe.
 #'
 #' @return Dataframe.
-roundNonDateCols <- function(df){
-
+roundNonDateCols <- function(df) {
   df.new <- data.frame(df)
 
-  for (col in colnames(df.new)){
-    if (col != 'date'){
-      df.new[,col] <- round(df.new[,col])
+  for (col in colnames(df.new)) {
+    if (col != 'date') {
+      df.new[, col] <- round(df.new[, col])
     }
   }
   return(df.new)
@@ -62,12 +59,14 @@ roundNonDateCols <- function(df){
 # https://stackoverflow.com/questions/7962267/cbind-a-dataframe-with-an-empty-dataframe-cbind-fill
 
 #' @noRd
-cbind.fill <- function(...){
+cbind.fill <- function(...) {
   nm <- list(...)
   nm <- lapply(nm, as.matrix)
   n <- max(sapply(nm, nrow))
   do.call(cbind, lapply(nm, function (x)
-    rbind(x, matrix(, n-nrow(x), ncol(x)))))
+    rbind(x, matrix(
+      , n - nrow(x), ncol(x)
+    ))))
 }
 
 
@@ -101,38 +100,46 @@ cbind.fill <- function(...){
 #'
 #' @return List with the day number match as well as counts for susceptible, exposed,
 #' infected and recovered.
-find.curr.estimates = function(model, N, beta.vector, num.days, num.actual,
-                               metric, start.exp, params){
-
+find.curr.estimates = function(model,
+                               N,
+                               beta.vector,
+                               num.days,
+                               num.actual,
+                               metric,
+                               start.exp,
+                               params) {
   # starting number of susceptible people
   start.susc <- N - start.exp
   start.res <- 0
   start.inf <- 0
 
-  SEIR.df = model$SEIR(S0 = start.susc,
-                 E0 = start.exp,
-                 I0 = start.inf,
-                 R0 = start.res,
-                 beta.vector = beta.vector,
-                 num.days = num.days,
-                 influx = list('day' = -1, num.influx = 0),
-                 params = params)
+  SEIR.df = model$SEIR(
+    S0 = start.susc,
+    E0 = start.exp,
+    I0 = start.inf,
+    R0 = start.res,
+    beta.vector = beta.vector,
+    num.days = num.days,
+    influx = list('day' = -1, num.influx = 0),
+    params = params
+  )
 
   # if hospitalization is the input
-  if (metric == 'Hospitalizations'){
-
+  if (metric == 'Hospitalizations') {
     # find the difference between hospitalized column and the currently hospitalized number
     SEIR.df$diff_proj <- abs(SEIR.df$hosp - num.actual)
 
     # the # hospitalized will be achieved twice according to model
     # first as the hospitalizations go up, and second as the hospitalizations go down
     hosp.numbers <- SEIR.df$hosp
-    hosp.change <- hosp.numbers[2:length(hosp.numbers)] - hosp.numbers[1:length(hosp.numbers) - 1]
+    hosp.change <-
+      hosp.numbers[2:length(hosp.numbers)] - hosp.numbers[1:length(hosp.numbers) - 1]
     hosp.change <- c(0, hosp.change)
     SEIR.df$hosp.change <- hosp.change
 
-    curr.day.df <- SEIR.df[which(SEIR.df$hosp.change > 0),]
-    curr.day.df <- curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj, na.rm = TRUE),]
+    curr.day.df <- SEIR.df[which(SEIR.df$hosp.change > 0), ]
+    curr.day.df <-
+      curr.day.df[curr.day.df$diff_proj == min(curr.day.df$diff_proj, na.rm = TRUE), ]
 
     curr.day <- as.integer(curr.day.df$day)
     exposed.estimate <- as.integer(curr.day.df$E)
@@ -190,62 +197,68 @@ find.curr.estimates = function(model, N, beta.vector, num.days, num.actual,
 #'
 #' @return List with best Re and the projected number of hospitalizations on the historical
 #' dates for which data was provided.
-findBestRe <- function(model, N, start.exp, num.days, day.vec, num_actual.vec, params){
+findBestRe <-
+  function(model,
+           N,
+           start.exp,
+           num.days,
+           day.vec,
+           num_actual.vec,
+           params) {
+    # starting number of susceptible people
+    start.susc <- N - start.exp
+    start.inf <- 0
+    start.res <- 0
 
-  # starting number of susceptible people
-  start.susc <- N - start.exp
-  start.inf <- 0
-  start.res <- 0
+    # TODO: implement binary search maybe
+    min.sqrd.sum <- Inf
+    re_choice <- NA
+    vec.choice <- c()
 
-  # TODO: implement binary search maybe
-  min.sqrd.sum <- Inf
-  re_choice <- NA
-  vec.choice <- c()
+    for (re in c(seq(1, 7, 0.1))) {
+      beta <- getBetaFromRe(re, params$gamma)
 
-  for (re in c(seq(1, 7, 0.1))){
-    beta <- getBetaFromRe(re, params$gamma)
+      SIR.df = model$SEIR(
+        S0 = start.susc,
+        E0 = start.exp,
+        I0 = start.inf,
+        R0 = start.res,
+        beta.vector = rep(beta, num.days),
+        num.days = num.days,
+        influx = list('day' = -1, num.influx = 0),
+        params = params
+      )
 
-    SIR.df = model$SEIR(S0 = start.susc,
-                        E0 = start.exp,
-                        I0 = start.inf,
-                        R0 = start.res,
-                        beta.vector = rep(beta, num.days),
-                        num.days = num.days,
-                        influx = list('day' = -1, num.influx = 0),
-                        params = params)
+      SIR.df$diff_proj <- abs(SIR.df$hosp - num_actual.vec[1])
+      hosp.numbers <- SIR.df$hosp
+      hosp.change <- hosp.numbers[2:length(hosp.numbers)] -
+        hosp.numbers[1:length(hosp.numbers) - 1]
 
-    SIR.df$diff_proj <- abs(SIR.df$hosp - num_actual.vec[1])
-    hosp.numbers <- SIR.df$hosp
-    hosp.change <- hosp.numbers[2:length(hosp.numbers)] -
-      hosp.numbers[1:length(hosp.numbers) - 1]
+      hosp.change <- c(0, hosp.change)
+      SIR.df$hosp.change <- hosp.change
 
-    hosp.change <- c(0, hosp.change)
-    SIR.df$hosp.change <- hosp.change
+      curr.day.df <- SIR.df[SIR.df$hosp.change > 0, ]
+      curr.day <- curr.day.df[curr.day.df$diff_proj ==
+                                min(curr.day.df$diff_proj, na.rm = TRUE), ]$day - day.vec[1]
 
-    curr.day.df <- SIR.df[SIR.df$hosp.change > 0,]
-    curr.day <- curr.day.df[curr.day.df$diff_proj ==
-                              min(curr.day.df$diff_proj, na.rm = TRUE),]$day - day.vec[1]
+      compare.idx <- curr.day + day.vec
 
-    compare.idx <- curr.day + day.vec
+      compare.vec <- rev(SIR.df[SIR.df$day %in% compare.idx, ]$hosp)
 
-    compare.vec <- rev(SIR.df[SIR.df$day %in% compare.idx,]$hosp)
+      sqrd.sum <- sum((num_actual.vec - compare.vec) ** 2)
 
-    sqrd.sum <- sum((num_actual.vec - compare.vec) ** 2)
-
-    if (sqrd.sum < min.sqrd.sum){
-      re_choice <- re
-      min.sqrd.sum <- sqrd.sum
-      vec.choice <- compare.vec
+      if (sqrd.sum < min.sqrd.sum) {
+        re_choice <- re
+        min.sqrd.sum <- sqrd.sum
+        vec.choice <- compare.vec
+      }
     }
+
+    list.return <- list('best.re' = re_choice,
+                        'best.vals' = vec.choice)
+
+    return(list.return)
   }
-
-  list.return <- list(
-    'best.re' = re_choice,
-    'best.vals' = vec.choice
-  )
-
-  return(list.return)
-}
 
 
 #' Creates Vector of Beta Values
@@ -265,11 +278,10 @@ findBestRe <- function(model, N, start.exp, num.days, day.vec, num_actual.vec, p
 #' @param usedouble Boolean. TRUE if doubling time is used as the metric.
 #'
 #' @return Vector of beta values to use in the SEIR simulation.
-create.beta.vec <- function(int.table, gamma, usedouble){
-
+create.beta.vec <- function(int.table, gamma, usedouble) {
   # inner helper function
-  applygetBeta <- function(x){
-    if (usedouble == FALSE){
+  applygetBeta <- function(x) {
+    if (usedouble == FALSE) {
       return(getBetaFromRe(as.numeric(x['New.Re']), gamma))
     }
     else{
@@ -281,35 +293,36 @@ create.beta.vec <- function(int.table, gamma, usedouble){
   int.table.temp <- int.table
   int.table.temp$beta <- apply(int.table.temp, 1, applygetBeta)
   int.table.temp <- dplyr::arrange(int.table.temp, Day)
-  int.table.temp <- int.table.temp[!duplicated(int.table.temp$Day),]
+  int.table.temp <- int.table.temp[!duplicated(int.table.temp$Day), ]
 
   # rep.vec consists of the number of days the beta value will repeat
   day.vec <- int.table.temp$Day
-  rep.vec <- day.vec[2:length(day.vec)] - day.vec[1:length(day.vec) - 1]
+  rep.vec <-
+    day.vec[2:length(day.vec)] - day.vec[1:length(day.vec) - 1]
   betas <- int.table.temp$beta[1:length(day.vec) - 1]
   smooth.vec <- int.table.temp$Days.of.Smoothing
 
   beta.vec <- c()
 
-  for (i in 1:length(rep.vec)){
+  for (i in 1:length(rep.vec)) {
     beta <- betas[i]
     reps <- rep.vec[i]
     smooth.days <- smooth.vec[i]
     actual.smooth.days <- min(reps, smooth.days)
 
     # dealing with smoothing
-    if (smooth.days > 0){
-      beta.last <- betas[i-1]
+    if (smooth.days > 0) {
+      beta.last <- betas[i - 1]
       beta.diff <- beta - beta.last
       beta.step <- beta.diff / smooth.days
 
-      if (beta.step != 0){
-        smooth.seq <- seq(beta.last+beta.step, beta, beta.step)
+      if (beta.step != 0) {
+        smooth.seq <- seq(beta.last + beta.step, beta, beta.step)
         smooth.seq <- smooth.seq[1:actual.smooth.days]
 
         # deals with case where smoothing doesn't finish in one
         # intervention before another is applied
-        if (smooth.days > reps){
+        if (smooth.days > reps) {
           betas[i] <- smooth.seq[actual.smooth.days]
         }
 
@@ -344,18 +357,25 @@ create.beta.vec <- function(int.table, gamma, usedouble){
 #' @param curr.date The 'current' date set in the app.
 #'
 #' @return Dataframe with appended row.
-add.to.hist.table <- function(hist.data, date.hist, num.hospitalized.hist, curr.date){
-  new.hist <- rbind(hist.data,
-                    list('Date' = as.character(date.hist),
-                         'Hospitalizations' = num.hospitalized.hist,
-                         'Day' = date.hist - curr.date
-                    ))
+add.to.hist.table <-
+  function(hist.data,
+           date.hist,
+           num.hospitalized.hist,
+           curr.date) {
+    new.hist <- rbind(
+      hist.data,
+      list(
+        'Date' = as.character(date.hist),
+        'Hospitalizations' = num.hospitalized.hist,
+        'Day' = date.hist - curr.date
+      )
+    )
 
-  new.hist <- dplyr::arrange(new.hist, Day)
-  new.hist$Date <- as.Date(as.character(new.hist$Date))
+    new.hist <- dplyr::arrange(new.hist, Day)
+    new.hist$Date <- as.Date(as.character(new.hist$Date))
 
-  return(new.hist)
-}
+    return(new.hist)
+  }
 
 
 #' Add Rows to Intervention Table
@@ -368,20 +388,26 @@ add.to.hist.table <- function(hist.data, date.hist, num.hospitalized.hist, curr.
 #' @param usedouble Boolean. TRUE if doubling time is used in the app.
 #'
 #' @return Dataframe with appended row.
-bind.to.intervention <- function(int.table, params, usedouble){
-  if (usedouble == TRUE){
-    new.table <- rbind(int.table,
-                       list('Day' = params$int.new.num.days ,
-                            'New.Double.Time'= params$int.new.double,
-                            'Days.of.Smoothing' = params$int.smooth.days
-                       ))
+bind.to.intervention <- function(int.table, params, usedouble) {
+  if (usedouble == TRUE) {
+    new.table <- rbind(
+      int.table,
+      list(
+        'Day' = params$int.new.num.days ,
+        'New.Double.Time' = params$int.new.double,
+        'Days.of.Smoothing' = params$int.smooth.days
+      )
+    )
   }
   else{
-    new.table <- rbind(int.table,
-                       list('Day' = params$int.new.num.days,
-                            'New.Re' = params$int.new.r0,
-                            'Days.of.Smoothing' = params$int.smooth.days
-                       ))
+    new.table <- rbind(
+      int.table,
+      list(
+        'Day' = params$int.new.num.days,
+        'New.Re' = params$int.new.r0,
+        'Days.of.Smoothing' = params$int.smooth.days
+      )
+    )
   }
 
   new.table <- dplyr::arrange(new.table, Day)
@@ -396,17 +422,19 @@ bind.to.intervention <- function(int.table, params, usedouble){
 #' @param df Dataframe from the SEIR run.
 #'
 #' @return Dataframe.
-create.cases.df <- function(df){
+create.cases.df <- function(df) {
   df_temp <- df
 
-  df_temp <- df_temp[df_temp$days.shift >= 0,]
+  df_temp <- df_temp[df_temp$days.shift >= 0, ]
 
   df_temp$Cases <- df_temp$I + df_temp$R + df_temp$E
   df_temp$Active <- df_temp$I + df_temp$E
   df_temp$Resolved <- df_temp$R
 
-  df_temp <- df_temp[,c('date', 'days.shift', 'Cases', 'Active', 'Resolved')]
-  colnames(df_temp) <- c('date', 'day', 'Cases', 'Active', 'Resolved')
+  df_temp <-
+    df_temp[, c('date', 'days.shift', 'Cases', 'Active', 'Resolved')]
+  colnames(df_temp) <-
+    c('date', 'day', 'Cases', 'Active', 'Resolved')
   df_temp <- roundNonDateCols(df_temp)
 
   return(df_temp)
@@ -419,13 +447,15 @@ create.cases.df <- function(df){
 #' @param df Dataframe from the SEIR run.
 #'
 #' @return Dataframe.
-create.hosp.df <- function(df){
+create.hosp.df <- function(df) {
   df_temp <- df
 
-  df_temp <- df_temp[df_temp$days.shift >= 0,]
+  df_temp <- df_temp[df_temp$days.shift >= 0, ]
 
-  df_temp <- df_temp[,c('date', 'days.shift', 'hosp', 'icu', 'vent')]
-  colnames(df_temp) <- c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
+  df_temp <-
+    df_temp[, c('date', 'days.shift', 'hosp', 'icu', 'vent')]
+  colnames(df_temp) <-
+    c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
   df_temp <- roundNonDateCols(df_temp)
 
   return(df_temp)
@@ -442,18 +472,20 @@ create.hosp.df <- function(df){
 #' @param vent_cap Numeric, ventilator capacity.
 #'
 #' @return Dataframe.
-create.res.df <- function(df, hosp_cap, icu_cap, vent_cap){
+create.res.df <- function(df, hosp_cap, icu_cap, vent_cap) {
   df_temp <- df
-  df_temp <- df_temp[df_temp$days.shift >= 0,]
+  df_temp <- df_temp[df_temp$days.shift >= 0, ]
 
-  if (!is.null(hosp_cap)){
+  if (!is.null(hosp_cap)) {
     df_temp$hosp <- hosp_cap - df_temp$hosp
     df_temp$icu <- icu_cap - df_temp$icu
     df_temp$vent <- vent_cap - df_temp$vent
   }
 
-  df_temp <- df_temp[,c('date', 'days.shift', 'hosp', 'icu', 'vent')]
-  colnames(df_temp) <- c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
+  df_temp <-
+    df_temp[, c('date', 'days.shift', 'hosp', 'icu', 'vent')]
+  colnames(df_temp) <-
+    c('date', 'day', 'Hospital', 'ICU', 'Ventilator')
   df_temp <- roundNonDateCols(df_temp)
 
 }
@@ -469,18 +501,29 @@ create.res.df <- function(df, hosp_cap, icu_cap, vent_cap){
 #' @param curr.date Date where to start the graph.
 #'
 #' @return ggplot graph.
-create.graph <- function(df.to.plot, selected, plot.day, curr.date){
-
-  if (length(selected) != 0){
+create.graph <- function(df.to.plot, selected, plot.day, curr.date) {
+  if (length(selected) != 0) {
     cols <- c('date', selected)
 
-    df.to.plot <- df.to.plot[,cols]
+    df.to.plot <- df.to.plot[, cols]
+
+    # [TODO: This melt needs to be removed because it is confusing]
+    # Causes this issue:
+    #   The melt generic in data.table has been passed a data.frame and will attempt to redirect to the relevant
+    # reshape2 method; please note that reshape2 is deprecated, and this redirection is now deprecated as
+    # well. To continue using melt methods from reshape2 while both libraries are attached, e.g. melt.list, you
+    # can prepend the namespace like reshape2::melt(df.to.plot). In the next version, this warning will become
+    # an error.
+    # Proposed solution: Use tidyr::pivot_longer() or something that is unambiguous.
+
 
     df_melt <- melt(df.to.plot, 'date')
 
-    graph <- ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +
-      geom_line() +  geom_vline(xintercept=curr.date) + theme(text = element_text(size=20)) +
-      geom_vline(xintercept=plot.day, color = 'red') + ylab('') + geom_hline(yintercept = 0)
+    graph <-
+      ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +
+      geom_line() +  geom_vline(xintercept = curr.date) + theme(text = element_text(size =
+                                                                                      20)) +
+      geom_vline(xintercept = plot.day, color = 'red') + ylab('') + geom_hline(yintercept = 0)
 
     return(graph)
   }
