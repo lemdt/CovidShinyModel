@@ -1,7 +1,7 @@
 Package: covidshiny
 Type: Package
 Title: What the Package Does (Title Case)
-Version: 0.1.0.9999
+Version: 0.2.0.9999
 Authors@R: 
     person(given = "James",
            family = "Peng",
