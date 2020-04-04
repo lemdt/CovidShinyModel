@@ -1,7 +1,7 @@
 # Covid-19 Epidemic Modeling with R Shiny
 
 <!-- badges: start -->
-[![R build status](https://github.com/karthik/CovidShinyModel/workflows/R-CMD-check/badge.svg)](https://github.com/karthik/CovidShinyModel/actions)
+[![R build status](https://github.com/lemdt/CovidShinyModel/workflows/R-CMD-check/badge.svg)](https://github.com/lemdt/CovidShinyModel/actions)
 <!-- badges: end -->
 
 This is a shiny app that models the COVID-19 epidemic. This is based on the <a href="http://penn-chime.phl.io/">Penn Chime app</a> - all credit goes to the Penn Medicine and Code for Philly team for their idea. 
@@ -13,7 +13,7 @@ A beta version of the app is live <a href="https://jpspeng.shinyapps.io/COVIDMod
 To run the app locally, load up R or Rstudio and run:
 
 ```
-remotes::install_github('karthik/CovidShinyModel')
+remotes::install_github('lemdt/CovidShinyModel')
 covidshiny::start_app()
 ```
 
@@ -28,7 +28,7 @@ Pre-release versions of the app are on <a href="https://jpspeng.shinyapps.io/COV
 
 ## Issues and bugs
 
-If you find any issues or problems, please post an [issue](https://github.com/karthik/CovidShinyModel/issues)
+If you find any issues or problems, please post an [issue](https://github.com/lemdt/CovidShinyModel/issues)
 
 
 ## License
