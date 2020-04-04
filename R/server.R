@@ -332,7 +332,7 @@ server <- function(input, output, session) {
 
         fluidPage(
             HTML(sprintf("<br><h4><b>Parameters %s</b></h4><br>", name_append)),
-            model()$parameters.page(params)
+            isolate(model())$parameters.page(params)
         )
     })
 
@@ -433,7 +433,7 @@ server <- function(input, output, session) {
 
     curr.day.list <- reactive({
         find.curr.estimates(
-            seir_func = model()$SEIR,
+            seir_func = isolate(model())$SEIR,
             N = input$num_people,
             beta.vector = initial_beta_vector(),
             num.days = est.days,
@@ -729,7 +729,7 @@ server <- function(input, output, session) {
             start.inf <- 0
             start.res <- 0
 
-            seir.df = model()$SEIR(
+            seir.df = isolate(model())$SEIR(
                 S0 = start.susc,
                 E0 = start.exp.default,
                 I0 = start.inf,
@@ -754,7 +754,7 @@ server <- function(input, output, session) {
             start.res <- 0
             num.days <- input$proj_num_days
 
-            seir.df <- model()$SEIR(
+            seir.df <- isolate(model())$SEIR(
                 S0 = start.susc,
                 E0 = start.exp,
                 I0 = start.inf,
