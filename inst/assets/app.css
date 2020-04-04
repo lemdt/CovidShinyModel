@@ -11,3 +11,7 @@ hr {
 #rendered\.table {
   font-size: 1.1em;
 }
+
+#freeze-section .form-group {
+  display: inline-block;
+}

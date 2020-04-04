@@ -4,7 +4,7 @@
 \alias{create.graph}
 \title{Graphing Helper}
 \usage{
-create.graph(df.to.plot, selected, plot.day, curr.date)
+create.graph(df.to.plot, selected, plot.day, curr.date, frozen_data = NULL)
 }
 \arguments{
 \item{df.to.plot}{Dataframe with data to plot.}
@@ -14,6 +14,8 @@ create.graph(df.to.plot, selected, plot.day, curr.date)
 \item{plot.day}{Date selected to show a vertical line.}
 
 \item{curr.date}{Date where to start the graph.}
+
+\item{frozen_data}{Melted dataframe of previous frozen projections}
 }
 \value{
 ggplot graph.

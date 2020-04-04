@@ -498,11 +498,12 @@ create.res.df <- function(df, hosp_cap, icu_cap, vent_cap) {
 #' @param selected Vector of strings, representing the columns to plot.
 #' @param plot.day Date selected to show a vertical line.
 #' @param curr.date Date where to start the graph.
+#' @param frozen_data Melted dataframe of previous frozen projections
 #'
 #' @return ggplot graph.
 #' @import ggplot2
-create.graph <- function(df.to.plot, selected, plot.day, curr.date) {
-  if (length(selected) != 0) {
+create.graph <- function(df.to.plot, selected, plot.day, curr.date, frozen_data = NULL) {
+  if (length(selected) > 0) {
     cols <- c('date', selected)
 
     df.to.plot <- df.to.plot[, cols]
@@ -518,6 +519,10 @@ create.graph <- function(df.to.plot, selected, plot.day, curr.date) {
 
 
     df_melt <- data.table::melt(df.to.plot, 'date')
+
+    if (!is.null(frozen_data)) {
+      df_melt <- rbind(df_melt, frozen_data)
+    }
 
     graph <-
       ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +

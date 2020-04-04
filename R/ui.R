@@ -2,6 +2,8 @@
 ui <- function(req) {
   fluidPage(
     tags$head(tags$link(href = "covidshiny/app.css", rel="stylesheet", type="text/css")),
+    shinyjs::useShinyjs(),
+    shinyalert::useShinyalert(),
 
     tags$br(),
 
@@ -211,6 +213,12 @@ ui <- function(req) {
             status = "primary"
           ),
           uiOutput(outputId = 'plot_output'),
+          div(
+            id = "freeze-section",
+            textInput("freeze_name", "Save projection", "", placeholder = "Projection name"),
+            actionButton("freeze_btn", "Save"),
+            actionButton("freeze_reset", "Clear")
+          ),
           tags$br(),
           fluidRow(
             align = 'center',

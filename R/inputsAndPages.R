@@ -217,8 +217,6 @@ trans.prob.slider <-
 
 predict.re.page <- function(curr.date) {
   return.page <- modalDialog(
-    shinyjs::useShinyjs(),
-
     HTML(
       "<h4> Estimate Re based on historical hospitalizations</h4>
          Provide data from past dates to estimate the Re value.<br><br>"

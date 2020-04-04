@@ -22,6 +22,8 @@ server <- function(input, output, session) {
     # initializing a set of parameters
     params <- M0$default.params
 
+    frozen_lines <- reactiveVal(NULL)
+
     ##  ............................................................................
     ##  Bookmarking logic
     ##  ............................................................................
@@ -183,7 +185,7 @@ server <- function(input, output, session) {
 
         DT::datatable(
             hist.dt,
-            escape = F,
+            escape = FALSE,
             selection = 'none',
             options = list(
                 pageLength = 10,
@@ -534,7 +536,7 @@ server <- function(input, output, session) {
 
         DT::datatable(
             int.df,
-            escape = F,
+            escape = FALSE,
             selection = 'none',
             options = list(
                 pageLength = 10,
@@ -821,22 +823,35 @@ server <- function(input, output, session) {
     ##  Table output
     ##  ............................................................................
 
-    output$rendered.table <- DT::renderDataTable({
+    selected_graph_data <- reactive({
         if (input$selected_graph == 'Cases') {
-            df.render <- cases.df()
+            cases.df()
         }
         else if (input$selected_graph == 'Hospitalization') {
-            df.render <- hospitalization.df()
+            hospitalization.df()
         }
-        else{
-            df.render <- resource.df()
+        else {
+            resource.df()
         }
+    })
 
+    selected_graph_variables <- reactive({
+        if (input$selected_graph == "Cases") {
+            selected <- input$selected_cases
+        } else if (input$selected_graph == "Hospitalization") {
+            selected <- input$selected_hosp
+        } else {
+            selected <- input$selected_res
+        }
+    })
+
+    output$rendered.table <- DT::renderDataTable({
+        df.render <- selected_graph_data()
         df.render$date <- format(df.render$date, format = "%B %d, %Y")
 
         DT::datatable(
             data = df.render,
-            escape = F,
+            escape = FALSE,
             selection = 'single',
             options = list(
                 pageLength = 10,
@@ -850,17 +865,7 @@ server <- function(input, output, session) {
 
     observeEvent(input$rendered.table_row_last_clicked, {
         row.id <- input$rendered.table_row_last_clicked
-
-        if (input$selected_graph == 'Cases') {
-            df.table = cases.df()
-        }
-        else if (input$selected_graph == 'Hospitalization') {
-            df.table = hospitalization.df()
-        }
-        else{
-            df.table = resource.df()
-        }
-
+        df.table <- selected_graph_data()
         select.date <- df.table[row.id, 'date']
         plot_day(select.date)
     })
@@ -931,7 +936,8 @@ server <- function(input, output, session) {
             df.to.plot = hospitalization.df(),
             selected = input$selected_hosp,
             plot.day = plot_day(),
-            curr.date = input$curr_date
+            curr.date = input$curr_date,
+            frozen_data = frozen_lines()
         )
     })
 
@@ -941,7 +947,8 @@ server <- function(input, output, session) {
             df.to.plot = resource.df(),
             selected = input$selected_res,
             plot.day = plot_day(),
-            curr.date = input$curr_date
+            curr.date = input$curr_date,
+            frozen_data = frozen_lines()
         )
     })
 
@@ -950,10 +957,57 @@ server <- function(input, output, session) {
             df.to.plot = cases.df(),
             selected = input$selected_cases,
             plot.day = plot_day(),
-            curr.date = input$curr_date
+            curr.date = input$curr_date,
+            frozen_data = frozen_lines()
         )
     })
 
+    observe({
+        shinyjs::toggleState("freeze_reset", condition = !is.null(frozen_lines()))
+    })
+
+    observe({
+        shinyjs::toggleState("freeze_btn", condition = nzchar(trimws(input$freeze_name)))
+    })
+
+    observe({
+        input$selected_graph
+        input$selected_cases
+        input$selected_hosp
+        input$selected_res
+        input$freeze_reset
+        frozen_lines(NULL)
+    })
+
+    observe({
+        show_freeze <-
+            (input$selected_graph == "Cases" && length(input$selected_cases) == 1) ||
+            (input$selected_graph == "Hospitalization" && length(input$selected_hosp) == 1) ||
+            (input$selected_graph == "Hospital Resources" && length(input$selected_res) == 1)
+        shinyjs::toggle("freeze-section", condition = show_freeze)
+    })
+
+    observeEvent(input$freeze_btn, {
+        name <- trimws(input$freeze_name)
+        selected <- selected_graph_variables()
+        if (name == selected) {
+            shinyalert::shinyalert("Can't use the same name as the selected variable.", type = "error")
+            return()
+        }
+        if (name %in% unique(frozen_lines()$variable)) {
+            shinyalert::shinyalert("Can't use the same name twice.", type = "error")
+            return()
+        }
+        cols <- c("date", selected)
+        new_data <- selected_graph_data()[, cols]
+        names(new_data)[2] <- name
+        new_data <- data.table::melt(new_data, "date")
+        if (is.null(frozen_lines())) {
+            frozen_lines(new_data)
+        } else {
+            frozen_lines(dplyr::full_join(frozen_lines(), new_data))
+        }
+    })
 
     ##  ............................................................................
     ##  Natural Language Outputs
@@ -1071,15 +1125,7 @@ server <- function(input, output, session) {
         paste('Projections', '-', Sys.Date(), '.csv', sep = '')
     },
     content <- function(file) {
-        if (input$selected_graph == 'Cases') {
-            data <- cases.df()
-        }
-        else if (input$selected_graph == 'Hospitalization') {
-            data <- hospitalization.df()
-        }
-        else{
-            data <- resource.df()
-        }
+        data <- selected_graph_data()
 
         # TODO: this is for testing only, uncomment and
         # remove bottom lines after testing is done
