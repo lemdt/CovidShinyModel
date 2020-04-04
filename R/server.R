@@ -105,35 +105,14 @@ server <- function(input, output, session) {
     ##  Selection of R0 or Doubling Time
     ##  ............................................................................
 
-    output$prior_val <- renderUI({
+    observeEvent(input$curr_date, {
         date.select <- format(input$curr_date, format = "%B %d")
-
-        if (input$usedouble == TRUE) {
-            sliderInput(
-                inputId = 'doubling_time',
-                label = sprintf("Doubling Time (days) Before %s", date.select),
-                min = 1,
-                max = 12,
-                step = 1,
-                value = 6
-            )
-        }
-        else{
-            fluidPage(fluidRow(
-                sliderInput(
-                    inputId = 'r0_prior',
-                    label = sprintf("Re Before %s", date.select),
-                    min = 0.1,
-                    max = 7,
-                    step = 0.1,
-                    value = 2.8
-                ),
-                actionLink(
-                    'predict_re',
-                    sprintf("Estimate Re prior to %s based on data.", date.select)
-                )
-            ))
-        }
+        updateSliderInput(session, 'doubling_time',
+                          label = sprintf("Doubling Time (days) Before %s", date.select))
+        updateSliderInput(session, 'r0_prior',
+                          label = sprintf("Re Before %s", date.select))
+        updateActionButton(session, "predict_re",
+                           label = sprintf("Estimate Re prior to %s based on data.", date.select))
     })
 
     output$int_val <- renderUI({
@@ -658,7 +637,7 @@ server <- function(input, output, session) {
 
         # creating intervention table to create a beta vector
         if (input$usedouble == FALSE) {
-            if (!is.null(input$r0_prior) & !is.null(params$int.new.r0)) {
+            if (!is.null(input$r0_prior) && !is.null(params$int.new.r0)) {
                 int.table.temp <- rbind(int.table.temp,
                                         list(
                                             Day = c(

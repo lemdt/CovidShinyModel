@@ -56,7 +56,32 @@ ui <- function(req) {
 
             dateInput(inputId = 'curr_date', label = "On Date:"),
 
-            uiOutput(outputId = 'prior_val'),
+            conditionalPanel(
+              "input.usedouble == true",
+              sliderInput(
+                inputId = 'doubling_time',
+                label = "Doubling Time (days) Before ...",
+                min = 1,
+                max = 12,
+                step = 1,
+                value = 6
+              )
+            ),
+            conditionalPanel(
+              "input.usedouble == false",
+              sliderInput(
+                inputId = 'r0_prior',
+                label = "Re Before ...",
+                min = 0.1,
+                max = 7,
+                step = 0.1,
+                value = 2.8
+              ),
+              actionLink(
+                'predict_re',
+                "Estimate Re prior to ... based on data."
+              )
+            ),
 
             tags$br(),
 
