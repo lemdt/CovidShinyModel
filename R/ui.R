@@ -98,7 +98,43 @@ ui <- function(req) {
 
             checkboxInput(inputId = 'showint', label = 'Add Intervention'),
 
-            uiOutput(outputId = 'intervention_ui'),
+            conditionalPanel(
+              "input.showint == true",
+              dateInput(
+                inputId = 'int_date',
+                label = "Date Intervention is Implemented"
+              ),
+              conditionalPanel(
+                "input.usedouble == true",
+                sliderInput(
+                  inputId = 'new_double',
+                  label = "New Doubling Time (days) After Interventions",
+                  min = 0,
+                  max = 50,
+                  step = 1,
+                  value = 6
+                )
+              ),
+              conditionalPanel(
+                "input.usedouble == false",
+                sliderInput(
+                  inputId = 'r0_new',
+                  label = "New Re After Intervention",
+                  min = 0.1,
+                  max = 6,
+                  step = 0.1,
+                  value = 2.8
+                )
+              ),
+              sliderInput(
+                'smooth.int',
+                label = "Smoothed over how many days?",
+                value = 0,
+                min = 0,
+                max = 30
+              ),
+              actionButton(inputId = 'add_intervention', label =  "Save Intervention")
+            ),
 
             DT::dataTableOutput(outputId = 'int_table'),
 

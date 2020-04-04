@@ -115,29 +115,6 @@ server <- function(input, output, session) {
                            label = sprintf("Estimate Re prior to %s based on data.", date.select))
     })
 
-    output$int_val <- renderUI({
-        if (input$usedouble == TRUE) {
-            sliderInput(
-                inputId = 'new_double',
-                label = "New Doubling Time (days) After Interventions",
-                min = 0,
-                max = 50,
-                step = 1,
-                value = 6
-            )
-        }
-        else{
-            sliderInput(
-                inputId = 'r0_new',
-                label = "New Re After Intervention",
-                min = 0.1,
-                max = 6,
-                step = 0.1,
-                value = 2.8
-            )
-        }
-    })
-
     ##  ............................................................................
     ##  Estimation of Re
     ##  ............................................................................
@@ -443,40 +420,15 @@ server <- function(input, output, session) {
 
     intervention.table <- reactiveVal(int.df.with.re)
 
-    output$intervention_ui <- renderUI({
-        if (input$showint) {
-            # date input differs based on whether Hospitalization or Cases are the input
-            if (input$metric == 'Hospitalizations') {
-                int.date.input <- dateInput(
-                    inputId = 'int_date',
-                    label = "Date Intervention is Implemented",
-                    min = input$curr_date - params$hosp.delay.time,
-                    value = input$curr_date
-                )
-            }
-            else{
-                int.date.input <- dateInput(
-                    inputId = 'int_date',
-                    label = "Date Intervention is Implemented",
-                    min = input$curr_date + 1,
-                    value = input$curr_date + 1
-                )
-            }
-
-            fluidPage(fluidRow(
-                int.date.input,
-                uiOutput(outputId = 'int_val'),
-                sliderInput(
-                    'smooth.int',
-                    label = "Smoothed over how many days?",
-                    value = 0,
-                    min = 0,
-                    max = 30
-                ),
-                actionButton(inputId = 'add_intervention',
-                             label =  "Save Intervention")
-            ))
+    observe({
+        if (input$metric == 'Hospitalizations') {
+            min <- input$curr_date - params$hosp.delay.time
+            val <- input$curr_date
+        } else {
+            min <- input$curr_date + 1
+            val <- input$curr_date + 1
         }
+        updateDateInput(session, "int_date", min = min, value = val)
     })
 
     observeEvent(input$showint, {
