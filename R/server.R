@@ -422,7 +422,11 @@ server <- function(input, output, session) {
 
     observe({
         if (input$metric == 'Hospitalizations') {
-            min <- input$curr_date - params$hosp.delay.time
+            if (is.null(params$hosp.delay.time)) {
+                min <- input$curr_date
+            } else {
+                min <- input$curr_date - params$hosp.delay.time
+            }
             val <- input$curr_date
         } else {
             min <- input$curr_date + 1
