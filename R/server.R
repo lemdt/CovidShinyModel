@@ -98,24 +98,7 @@ server <- function(input, output, session) {
 
     # modal pop-up helper screen
     observeEvent(input$howtouse, {
-        showModal(modalDialog(HTML(about.wording), size = "l"))
-    })
-
-    ##  ............................................................................
-    ##  Prediction Field (Currently Only Hospitalizations and Cases)
-    ##  ............................................................................
-
-    output$prediction_fld <- renderUI({
-        if (input$input.metric == 'Hospitalizations') {
-            numericInput(inputId = 'num_hospitalized',
-                         label = "Estimate of current inpatients with COVID-19:",
-                         value = 50)
-        }
-        else{
-            numericInput(inputId = 'num_cases',
-                         label = "Estimate of number of cases of COVID-19:",
-                         value = 50)
-        }
+        showModal(modalDialog(HTML(about.wording), size = "l", easyClose = TRUE))
     })
 
     ##  ............................................................................
@@ -440,25 +423,22 @@ server <- function(input, output, session) {
         initial.beta.vector
     })
 
+    num_actual <- reactive({
+        if (input$metric == 'Hospitalizations') {
+            input$num_hospitalized
+        } else {
+            input$num_cases
+        }
+    })
 
     curr.day.list <- reactive({
-        num.actual <- ifelse(
-            is.null(input$num_cases),
-            ifelse(
-                is.null(input$num_hospitalized),
-                50,
-                input$num_hospitalized
-            ),
-            input$num_cases
-        )
-
         find.curr.estimates(
             seir_func = model()$SEIR,
             N = input$num_people,
             beta.vector = initial_beta_vector(),
             num.days = est.days,
-            num.actual = num.actual,
-            metric = input$input.metric,
+            num.actual = num_actual(),
+            metric = input$metric,
             start.exp = start.exp.default,
             params = params
         )
@@ -487,7 +467,7 @@ server <- function(input, output, session) {
     output$intervention_ui <- renderUI({
         if (input$showint) {
             # date input differs based on whether Hospitalization or Cases are the input
-            if (input$input.metric == 'Hospitalizations') {
+            if (input$metric == 'Hospitalizations') {
                 int.date.input <- dateInput(
                     inputId = 'int_date',
                     label = "Date Intervention is Implemented",
@@ -738,7 +718,7 @@ server <- function(input, output, session) {
             }
         }
 
-        if (input$input.metric == 'Hospitalizations') {
+        if (input$metric == 'Hospitalizations') {
             # run the same model as initialization model but run extra days
             new.num.days <- input$proj_num_days + curr.day
             new.num.days <-
@@ -1048,7 +1028,7 @@ server <- function(input, output, session) {
     output$infected_ct <- renderUI({
         curr.date <- format(input$curr_date, format = "%B %d, %Y")
 
-        if (input$input.metric == 'Hospitalizations') {
+        if (input$metric == 'Hospitalizations') {
             curr.day <- curr.day.list()['curr.day']
             curr.row <-
                 seir.output.df()[seir.output.df()$day == curr.day, ]
@@ -1192,15 +1172,8 @@ server <- function(input, output, session) {
         }
 
         # hospitalizations or cases
-        if (input$input.metric == 'Hospitalizations') {
-            gen.param.names <- c(gen.param.names, 'Initial Hospitalizations')
-            gen.param.vals <-
-                c(gen.param.vals, input$num_hospitalized)
-        }
-        else{
-            gen.param.names <- c(gen.param.names, 'Initial Cases')
-            gen.param.vals <- c(gen.param.vals, input$num_cases)
-        }
+        gen.param.names <- c(gen.param.names, paste('Initial', input$metric))
+        gen.param.vals <- c(gen.param.vals, num_actual())
 
         if (input$showinflux) {
             gen.param.names <-

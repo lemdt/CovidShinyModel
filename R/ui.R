@@ -30,14 +30,29 @@ ui <- function(req) {
             ),
 
             shinyWidgets::radioGroupButtons(
-              inputId = 'input.metric',
+              inputId = 'metric',
               label = "Input Metric:",
               choices = c('Hospitalizations', 'Cases'),
               justified = TRUE,
               status = "primary"
             ),
 
-            uiOutput(outputId = 'prediction_fld'),
+            conditionalPanel(
+              "input.metric == 'Hospitalizations'",
+              numericInput(
+                inputId = 'num_hospitalized',
+                label = "Estimate of current inpatients with COVID-19:",
+                value = 50
+              )
+            ),
+            conditionalPanel(
+              "input.metric != 'Hospitalizations'",
+              numericInput(
+                inputId = 'num_cases',
+                label = "Estimate of number of cases of COVID-19:",
+                value = 50
+              )
+            ),
 
             dateInput(inputId = 'curr_date', label = "On Date:"),
 
