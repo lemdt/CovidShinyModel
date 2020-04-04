@@ -31,9 +31,8 @@ default.params <- shiny::reactiveValues(
 )
 
 # modal to enter parameters that pops up after clicking on "Customize Other Parameters"
-parameters.modal <- function(params) {
-  params.page <- modalDialog(
-    fluidPage(
+parameters.page <- function(params) {
+  params.page <- fluidPage(
       incubation.period.input(params$incubation.period),
       hosp.rate.input(params$hosp.rate),
       illness.length.input(params$illness.length),
@@ -77,42 +76,9 @@ parameters.modal <- function(params) {
         max = 0.2,
         step = 0.001
       )
-    ),
-    footer = tagList(actionButton("save", "Save and Close"))
-  )
+    )
 
-  return(params.page)
-}
-
-#' Save Parameters
-#'
-#' Saves parameters in the 'params' ReactiveVals.
-#'
-#' @param params ReactiveVals list.
-#' @param input List (from shiny's inputs).
-#'
-#' @return ReactiveVals list, with new set of saved parameters.
-save.params <- function(params, input) {
-  params$illness.length = input$illness.length
-  params$gamma.r = 1 / input$illness.length
-  params$inf.to.hosp = input$hosp.after.inf
-  params$gamma.h = 1 / input$hosp.after.inf
-  params$gamma = ((1 - input$hosp.rate) * 1 / input$illness.length) +
-    (input$hosp.rate * 1 / input$hosp.after.inf)
-  params$hosp.rate = input$hosp.rate
-  params$incubation.period = input$incubation.period
-  params$sigma = 1 / input$incubation.period
-  params$p.g_icu = input$p.g_icu
-  params$p.g_d = input$p.g_d
-  params$p.g_g = 1 - input$p.g_d - input$p.g_icu
-  params$p.icu_g = input$p.icu_g
-  params$p.icu_v = input$p.icu_v
-  params$p.icu_icu = 1 - input$p.icu_g - input$p.icu_v
-  params$p.v_icu = input$p.v_icu
-  params$p.v_m = input$p.v_m
-  params$p.v_v = 1 - input$p.v_icu - input$p.v_m
-
-  return(params)
+  params.page
 }
 
 

@@ -3,8 +3,3 @@
 export(start_app)
 import(ggplot2)
 import(shiny)
-import(shinyWidgets)
-import(urlshorteneR)
-importFrom(magrittr,"%>%")
-importFrom(urlshorteneR,isgd_LinksShorten)
-importFrom(utils,write.csv)

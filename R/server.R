@@ -1,8 +1,8 @@
-utils::globalVariables(c("about.page", "SEIR"))
+utils::globalVariables("SEIR")
 
 
 #' Server part
-#' @import shiny ggplot2 shinyWidgets urlshorteneR
+#' @import shiny
 M0 <- new.env()
 source('R/models/model0.R', local = M0)
 source('R/models/model0_params.R', local = M0)
@@ -16,10 +16,14 @@ start.exp.default <- 1
 r0.default <- 2.8
 est.days <- 365
 
-#' @importFrom urlshorteneR isgd_LinksShorten
-#' @importFrom utils write.csv
 server <- function(input, output, session) {
-    model <- M0
+    model <- reactiveVal(M0)
+
+    # initializing a set of parameters
+    params <- M0$default.params
+
+    frozen_lines <- reactiveVal(NULL)
+
     ##  ............................................................................
     ##  Bookmarking logic
     ##  ............................................................................
@@ -96,82 +100,21 @@ server <- function(input, output, session) {
 
     # modal pop-up helper screen
     observeEvent(input$howtouse, {
-        showModal(about.page)
-    })
-
-    ##  ............................................................................
-    ##  Prediction Field (Currently Only Hospitalizations and Cases)
-    ##  ............................................................................
-
-    output$prediction_fld <- renderUI({
-        if (input$input.metric == 'Hospitalizations') {
-            numericInput(inputId = 'num_hospitalized',
-                         label = "Estimate of current inpatients with COVID-19:",
-                         value = 50)
-        }
-        else{
-            numericInput(inputId = 'num_cases',
-                         label = "Estimate of number of cases of COVID-19:",
-                         value = 50)
-        }
+        showModal(modalDialog(HTML(about.wording), size = "l", easyClose = TRUE))
     })
 
     ##  ............................................................................
     ##  Selection of R0 or Doubling Time
     ##  ............................................................................
 
-    output$prior_val <- renderUI({
+    observeEvent(input$curr_date, {
         date.select <- format(input$curr_date, format = "%B %d")
-
-        if (input$usedouble == TRUE) {
-            sliderInput(
-                inputId = 'doubling_time',
-                label = sprintf("Doubling Time (days) Before %s", date.select),
-                min = 1,
-                max = 12,
-                step = 1,
-                value = 6
-            )
-        }
-        else{
-            fluidPage(fluidRow(
-                sliderInput(
-                    inputId = 'r0_prior',
-                    label = sprintf("Re Before %s", date.select),
-                    min = 0.1,
-                    max = 7,
-                    step = 0.1,
-                    value = 2.8
-                ),
-                actionLink(
-                    'predict_re',
-                    sprintf("Estimate Re prior to %s based on data.", date.select)
-                )
-            ))
-        }
-    })
-
-    output$int_val <- renderUI({
-        if (input$usedouble == TRUE) {
-            sliderInput(
-                inputId = 'new_double',
-                label = "New Doubling Time (days) After Interventions",
-                min = 0,
-                max = 50,
-                step = 1,
-                value = 6
-            )
-        }
-        else{
-            sliderInput(
-                inputId = 'r0_new',
-                label = "New Re After Intervention",
-                min = 0.1,
-                max = 6,
-                step = 0.1,
-                value = 2.8
-            )
-        }
+        updateSliderInput(session, 'doubling_time',
+                          label = sprintf("Doubling Time (days) Before %s", date.select))
+        updateSliderInput(session, 'r0_prior',
+                          label = sprintf("Re Before %s", date.select))
+        updateActionButton(session, "predict_re",
+                           label = sprintf("Estimate Re prior to %s based on data.", date.select))
     })
 
     ##  ............................................................................
@@ -242,7 +185,7 @@ server <- function(input, output, session) {
 
         DT::datatable(
             hist.dt,
-            escape = F,
+            escape = FALSE,
             selection = 'none',
             options = list(
                 pageLength = 10,
@@ -268,7 +211,7 @@ server <- function(input, output, session) {
 
         if (nrow(hist.temp) >= 2) {
             best.fit <- findBestRe(
-                model = model,
+                seir_func = model()$SEIR,
                 N = input$num_people,
                 start.exp = start.exp.default,
                 num.days = est.days,
@@ -291,15 +234,7 @@ server <- function(input, output, session) {
               names_to = "variable"
             )
 
-            re.estimates$graph <-
-                ggplot(df.melt, aes(
-                    x = Date,
-                    y = value,
-                    col = variable
-                )) +
-                geom_point() + geom_line() + theme(text = element_text(size =
-                                                                           20)) +
-                theme(legend.title = element_blank())
+            re.estimates$graph <- re_estimate_plot(df.melt)
 
             re.estimates$best.estimate <- sprintf(best.re.msg,
                                                   best.fit$best.re)
@@ -331,14 +266,13 @@ server <- function(input, output, session) {
 
     # Markov Model selection
     observeEvent(input$model_select, ignoreInit = TRUE, {
-        model <<- if (input$model_select == TRUE) {
-            M2
+        if (input$model_select == TRUE) {
+            model(M2)
         } else {
-            M0
+            model(M0)
         }
 
-        default.params.list <-
-            reactiveValuesToList(model$default.params)
+        default.params.list <- reactiveValuesToList(model()$default.params)
         for (param in names(default.params.list)) {
             params[[param]] = as.numeric(default.params.list[param])
         }
@@ -349,17 +283,88 @@ server <- function(input, output, session) {
         updateNumericInput(session, "num_people", value = num_people)
     })
 
-    # initializing a set of parameters
-    params <- model$default.params
+    output$params_ui <- renderUI({
 
-    # modal pop-up to update parameters
-    observeEvent(input$parameters_modal, {
-        showModal(model$parameters.modal(params))
+        if (input$model_select == TRUE){
+            name_append <- '- Markov (Beta)'
+        }
+        else{
+            name_append <- ''
+        }
+
+        fluidPage(
+            HTML(sprintf("<br><h4><b>Parameters %s</b></h4><br>", name_append)),
+            isolate(model())$parameters.page(params)
+        )
     })
 
-    observeEvent(input$save, {
-        params <- model$save.params(params, input)
-        removeModal()
+    observeEvent(input$illness.length,{
+        params$illness.length <- input$illness.length
+        params$gamma.r <- 1 / input$illness.length
+        params$gamma <- ((1 - input$hosp.rate) * 1 / input$illness.length) +
+            (input$hosp.rate * 1 / input$hosp.after.inf)
+    })
+
+    observeEvent(input$hosp.after.inf,{
+        params$inf.to.hosp <- input$hosp.after.inf
+        params$gamma.h <- 1 / input$hosp.after.inf
+        params$gamma <- ((1 - input$hosp.rate) * 1 / input$illness.length) +
+            (input$hosp.rate * 1 / input$hosp.after.inf)
+
+    })
+
+    observeEvent(input$incubation.period,{
+        params$incubation.period <- input$incubation.period
+        params$sigma <- 1 / input$incubation.period
+    })
+
+    observeEvent(input$hosp.los,{
+        params$hosp.los <- input$hosp.los
+        params$psi <- 1 / input$hosp.los
+    })
+
+    observeEvent(input$hosp.rate, {
+        params$hosp.rate <- input$hosp.rate
+        params$gamma <- ((1 - input$hosp.rate) * 1 / input$illness.length) +
+            (input$hosp.rate * 1 / input$hosp.after.inf)
+    })
+
+    observeEvent(input$icu.rate, {
+        params$icu.rate <- input$icu.rate
+    })
+
+    observeEvent(input$vent.rate, {
+        params$vent.rate <- input$vent.rate
+    })
+
+    observeEvent(input$p.g_icu, {
+        params$p.g_icu = input$p.g_icu
+        params$p.g_g = 1 - input$p.g_d - input$p.g_icu
+    })
+
+    observeEvent(input$p.g_d, {
+        params$p.g_d = input$p.g_d
+        params$p.g_g = 1 - input$p.g_d - input$p.g_icu
+    })
+
+    observeEvent(input$p.icu_g, {
+        params$p.icu_g = input$p.icu_g
+        params$p.icu_icu = 1 - input$p.icu_g - input$p.icu_v
+    })
+
+    observeEvent(input$p.icu_v, {
+        params$p.icu_v = input$p.icu_v
+        params$p.icu_icu = 1 - input$p.icu_g - input$p.icu_v
+    })
+
+    observeEvent(input$p.v_icu, {
+        params$p.v_icu = input$p.v_icu
+        params$p.v_v = 1 - input$p.v_icu - input$p.v_m
+    })
+
+    observeEvent(input$p.v_m, {
+        params$p.v_m = input$p.v_m
+        params$p.v_v = 1 - input$p.v_icu - input$p.v_m
     })
 
 
@@ -380,25 +385,22 @@ server <- function(input, output, session) {
         initial.beta.vector
     })
 
+    num_actual <- reactive({
+        if (input$metric == 'Hospitalizations') {
+            input$num_hospitalized
+        } else {
+            input$num_cases
+        }
+    })
 
     curr.day.list <- reactive({
-        num.actual <- ifelse(
-            is.null(input$num_cases),
-            ifelse(
-                is.null(input$num_hospitalized),
-                50,
-                input$num_hospitalized
-            ),
-            input$num_cases
-        )
-
         find.curr.estimates(
-            model = model,
+            seir_func = isolate(model())$SEIR,
             N = input$num_people,
             beta.vector = initial_beta_vector(),
             num.days = est.days,
-            num.actual = num.actual,
-            metric = input$input.metric,
+            num.actual = num_actual(),
+            metric = input$metric,
             start.exp = start.exp.default,
             params = params
         )
@@ -424,40 +426,19 @@ server <- function(input, output, session) {
 
     intervention.table <- reactiveVal(int.df.with.re)
 
-    output$intervention_ui <- renderUI({
-        if (input$showint) {
-            # date input differs based on whether Hospitalization or Cases are the input
-            if (input$input.metric == 'Hospitalizations') {
-                int.date.input <- dateInput(
-                    inputId = 'int_date',
-                    label = "Date Intervention is Implemented",
-                    min = input$curr_date - params$hosp.delay.time,
-                    value = input$curr_date
-                )
+    observe({
+        if (input$metric == 'Hospitalizations') {
+            if (is.null(params$hosp.delay.time)) {
+                min <- input$curr_date
+            } else {
+                min <- input$curr_date - params$hosp.delay.time
             }
-            else{
-                int.date.input <- dateInput(
-                    inputId = 'int_date',
-                    label = "Date Intervention is Implemented",
-                    min = input$curr_date + 1,
-                    value = input$curr_date + 1
-                )
-            }
-
-            fluidPage(fluidRow(
-                int.date.input,
-                uiOutput(outputId = 'int_val'),
-                sliderInput(
-                    'smooth.int',
-                    label = "Smoothed over how many days?",
-                    value = 0,
-                    min = 0,
-                    max = 30
-                ),
-                actionButton(inputId = 'add_intervention',
-                             label =  "Save Intervention")
-            ))
+            val <- input$curr_date
+        } else {
+            min <- input$curr_date + 1
+            val <- input$curr_date + 1
         }
+        updateDateInput(session, "int_date", min = min, value = val)
     })
 
     observeEvent(input$showint, {
@@ -509,7 +490,7 @@ server <- function(input, output, session) {
         if (!params$int.new.num.days %in% intervention.table()$Day) {
             new.table <- bind.to.intervention(
                 int.table = intervention.table(),
-                params = params,
+                params = reactiveValuesToList(params),
                 usedouble = input$usedouble
             )
 
@@ -559,7 +540,7 @@ server <- function(input, output, session) {
 
         DT::datatable(
             int.df,
-            escape = F,
+            escape = FALSE,
             selection = 'none',
             options = list(
                 pageLength = 10,
@@ -618,7 +599,7 @@ server <- function(input, output, session) {
 
         # creating intervention table to create a beta vector
         if (input$usedouble == FALSE) {
-            if (!is.null(input$r0_prior) & !is.null(params$int.new.r0)) {
+            if (!is.null(input$r0_prior) && !is.null(params$int.new.r0)) {
                 int.table.temp <- rbind(int.table.temp,
                                         list(
                                             Day = c(
@@ -678,7 +659,7 @@ server <- function(input, output, session) {
             }
         }
 
-        if (input$input.metric == 'Hospitalizations') {
+        if (input$metric == 'Hospitalizations') {
             # run the same model as initialization model but run extra days
             new.num.days <- input$proj_num_days + curr.day
             new.num.days <-
@@ -689,7 +670,7 @@ server <- function(input, output, session) {
             start.inf <- 0
             start.res <- 0
 
-            seir.df = model$SEIR(
+            seir.df = isolate(model())$SEIR(
                 S0 = start.susc,
                 E0 = start.exp.default,
                 I0 = start.inf,
@@ -714,7 +695,7 @@ server <- function(input, output, session) {
             start.res <- 0
             num.days <- input$proj_num_days
 
-            seir.df <- model$SEIR(
+            seir.df <- isolate(model())$SEIR(
                 S0 = start.susc,
                 E0 = start.exp,
                 I0 = start.inf,
@@ -846,22 +827,35 @@ server <- function(input, output, session) {
     ##  Table output
     ##  ............................................................................
 
-    output$rendered.table <- DT::renderDataTable({
+    selected_graph_data <- reactive({
         if (input$selected_graph == 'Cases') {
-            df.render <- cases.df()
+            cases.df()
         }
         else if (input$selected_graph == 'Hospitalization') {
-            df.render <- hospitalization.df()
+            hospitalization.df()
         }
-        else{
-            df.render <- resource.df()
+        else {
+            resource.df()
         }
+    })
 
+    selected_graph_variables <- reactive({
+        if (input$selected_graph == "Cases") {
+            selected <- input$selected_cases
+        } else if (input$selected_graph == "Hospitalization") {
+            selected <- input$selected_hosp
+        } else {
+            selected <- input$selected_res
+        }
+    })
+
+    output$rendered.table <- DT::renderDataTable({
+        df.render <- selected_graph_data()
         df.render$date <- format(df.render$date, format = "%B %d, %Y")
 
         DT::datatable(
             data = df.render,
-            escape = F,
+            escape = FALSE,
             selection = 'single',
             options = list(
                 pageLength = 10,
@@ -875,17 +869,7 @@ server <- function(input, output, session) {
 
     observeEvent(input$rendered.table_row_last_clicked, {
         row.id <- input$rendered.table_row_last_clicked
-
-        if (input$selected_graph == 'Cases') {
-            df.table = cases.df()
-        }
-        else if (input$selected_graph == 'Hospitalization') {
-            df.table = hospitalization.df()
-        }
-        else{
-            df.table = resource.df()
-        }
-
+        df.table <- selected_graph_data()
         select.date <- df.table[row.id, 'date']
         plot_day(select.date)
     })
@@ -956,7 +940,8 @@ server <- function(input, output, session) {
             df.to.plot = hospitalization.df(),
             selected = input$selected_hosp,
             plot.day = plot_day(),
-            curr.date = input$curr_date
+            curr.date = input$curr_date,
+            frozen_data = frozen_lines()
         )
     })
 
@@ -966,7 +951,8 @@ server <- function(input, output, session) {
             df.to.plot = resource.df(),
             selected = input$selected_res,
             plot.day = plot_day(),
-            curr.date = input$curr_date
+            curr.date = input$curr_date,
+            frozen_data = frozen_lines()
         )
     })
 
@@ -975,10 +961,57 @@ server <- function(input, output, session) {
             df.to.plot = cases.df(),
             selected = input$selected_cases,
             plot.day = plot_day(),
-            curr.date = input$curr_date
+            curr.date = input$curr_date,
+            frozen_data = frozen_lines()
         )
     })
 
+    observe({
+        shinyjs::toggleState("freeze_reset", condition = !is.null(frozen_lines()))
+    })
+
+    observe({
+        shinyjs::toggleState("freeze_btn", condition = nzchar(trimws(input$freeze_name)))
+    })
+
+    observe({
+        input$selected_graph
+        input$selected_cases
+        input$selected_hosp
+        input$selected_res
+        input$freeze_reset
+        frozen_lines(NULL)
+    })
+
+    observe({
+        show_freeze <-
+            (input$selected_graph == "Cases" && length(input$selected_cases) == 1) ||
+            (input$selected_graph == "Hospitalization" && length(input$selected_hosp) == 1) ||
+            (input$selected_graph == "Hospital Resources" && length(input$selected_res) == 1)
+        shinyjs::toggle("freeze-section", condition = show_freeze)
+    })
+
+    observeEvent(input$freeze_btn, {
+        name <- trimws(input$freeze_name)
+        selected <- selected_graph_variables()
+        if (name == selected) {
+            shinyalert::shinyalert("Can't use the same name as the selected variable.", type = "error")
+            return()
+        }
+        if (name %in% unique(frozen_lines()$variable)) {
+            shinyalert::shinyalert("Can't use the same name twice.", type = "error")
+            return()
+        }
+        cols <- c("date", selected)
+        new_data <- selected_graph_data()[, cols]
+        names(new_data)[2] <- name
+        new_data <- tidyr::pivot_longer(new_data, -date, names_to = "variable")
+        if (is.null(frozen_lines())) {
+            frozen_lines(new_data)
+        } else {
+            frozen_lines(dplyr::full_join(frozen_lines(), new_data))
+        }
+    })
 
     ##  ............................................................................
     ##  Natural Language Outputs
@@ -988,7 +1021,7 @@ server <- function(input, output, session) {
     output$infected_ct <- renderUI({
         curr.date <- format(input$curr_date, format = "%B %d, %Y")
 
-        if (input$input.metric == 'Hospitalizations') {
+        if (input$metric == 'Hospitalizations') {
             curr.day <- curr.day.list()['curr.day']
             curr.row <-
                 seir.output.df()[seir.output.df()$day == curr.day, ]
@@ -1096,24 +1129,16 @@ server <- function(input, output, session) {
         paste('Projections', '-', Sys.Date(), '.csv', sep = '')
     },
     content <- function(file) {
-        if (input$selected_graph == 'Cases') {
-            data <- cases.df()
-        }
-        else if (input$selected_graph == 'Hospitalization') {
-            data <- hospitalization.df()
-        }
-        else{
-            data <- resource.df()
-        }
+        data <- selected_graph_data()
 
         # TODO: this is for testing only, uncomment and
         # remove bottom lines after testing is done
-        # write.csv(data.frame(data), file, row.names = FALSE)
+        # utils::write.csv(data.frame(data), file, row.names = FALSE)
         df.output <- seir.output.df()
 
         # model specific dataframe downloads
         # process.df.for.download function is in model1.R or model2.R
-        df.output <- model$process.df.for.download(df.output)
+        df.output <- model()$process.df.for.download(df.output)
 
         # TODO: this is dirty. Should perhaps be parsed out into a function.
         # process parameters
@@ -1132,15 +1157,8 @@ server <- function(input, output, session) {
         }
 
         # hospitalizations or cases
-        if (input$input.metric == 'Hospitalizations') {
-            gen.param.names <- c(gen.param.names, 'Initial Hospitalizations')
-            gen.param.vals <-
-                c(gen.param.vals, input$num_hospitalized)
-        }
-        else{
-            gen.param.names <- c(gen.param.names, 'Initial Cases')
-            gen.param.vals <- c(gen.param.vals, input$num_cases)
-        }
+        gen.param.names <- c(gen.param.names, paste('Initial', input$metric))
+        gen.param.vals <- c(gen.param.vals, num_actual())
 
         if (input$showinflux) {
             gen.param.names <-
@@ -1151,7 +1169,7 @@ server <- function(input, output, session) {
                   input$num_influx)
         }
 
-        params.list <- model$process.params.for.download(params)
+        params.list <- model()$process.params.for.download(params)
 
         params.df <-
             data.frame(

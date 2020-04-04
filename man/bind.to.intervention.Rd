@@ -10,7 +10,7 @@ bind.to.intervention(int.table, params, usedouble)
 \item{int.table}{Dataframe with Day, New.Re (or New.Double.Time), and Days.of.Smoothing
 columns.}
 
-\item{params}{ReactiveValues list of parameters.}
+\item{params}{List of parameters.}
 
 \item{usedouble}{Boolean. TRUE if doubling time is used in the app.}
 }

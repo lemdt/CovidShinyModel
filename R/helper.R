@@ -11,7 +11,6 @@ utils::globalVariables(c("Day", "value", "variable", "Date"))
 #'
 #' @param doubling.time Numeric.
 #' @param gamma Numeric.
-#' @import ggplot2 shinyWidgets
 getBetaFromDoubling <- function(doubling.time, gamma) {
   g <- 2 ^ (1 / doubling.time) - 1
   beta <- g + gamma
@@ -88,7 +87,7 @@ cbind.fill <- function(...) {
 #' It then returns a list with that day as well as the number susceptible, exposed,
 #' infected, and recovered on that day.
 #'
-#' @param model [TODO]
+#' @param seir_func The SEIR function to use
 #' @param N Numeric, number of people in the area.
 #' @param beta.vector Vector of numerics, should be the same length as num.days.
 #' @param num.days Numeric. Number of days to simulate.
@@ -100,7 +99,7 @@ cbind.fill <- function(...) {
 #'
 #' @return List with the day number match as well as counts for susceptible, exposed,
 #' infected and recovered.
-find.curr.estimates = function(model,
+find.curr.estimates = function(seir_func,
                                N,
                                beta.vector,
                                num.days,
@@ -113,7 +112,7 @@ find.curr.estimates = function(model,
   start.res <- 0
   start.inf <- 0
 
-  SEIR.df = model$SEIR(
+  SEIR.df = seir_func(
     S0 = start.susc,
     E0 = start.exp,
     I0 = start.inf,
@@ -187,7 +186,7 @@ find.curr.estimates = function(model,
 #' (a vector of numerics with projected values of hospitalizations on the historical dates
 #' for which data was provided).
 #'
-#' @param model [TODO]
+#' @param seir_func The SEIR function to use
 #' @param N Numeric. Number of people in the area.
 #' @param start.exp Numeric. Starting number of exposures.
 #' @param num.days Numeric. Number of days to simulate.
@@ -198,7 +197,7 @@ find.curr.estimates = function(model,
 #' @return List with best Re and the projected number of hospitalizations on the historical
 #' dates for which data was provided.
 findBestRe <-
-  function(model,
+  function(seir_func,
            N,
            start.exp,
            num.days,
@@ -218,7 +217,7 @@ findBestRe <-
     for (re in c(seq(1, 7, 0.1))) {
       beta <- getBetaFromRe(re, params$gamma)
 
-      SIR.df = model$SEIR(
+      SIR.df = seir_func(
         S0 = start.susc,
         E0 = start.exp,
         I0 = start.inf,
@@ -384,7 +383,7 @@ add.to.hist.table <-
 #'
 #' @param int.table Dataframe with Day, New.Re (or New.Double.Time), and Days.of.Smoothing
 #' columns.
-#' @param params ReactiveValues list of parameters.
+#' @param params List of parameters.
 #' @param usedouble Boolean. TRUE if doubling time is used in the app.
 #'
 #' @return Dataframe with appended row.
@@ -499,15 +498,21 @@ create.res.df <- function(df, hosp_cap, icu_cap, vent_cap) {
 #' @param selected Vector of strings, representing the columns to plot.
 #' @param plot.day Date selected to show a vertical line.
 #' @param curr.date Date where to start the graph.
+#' @param frozen_data Melted dataframe of previous frozen projections
 #'
 #' @return ggplot graph.
-create.graph <- function(df.to.plot, selected, plot.day, curr.date) {
-  if (length(selected) != 0) {
+#' @import ggplot2
+create.graph <- function(df.to.plot, selected, plot.day, curr.date, frozen_data = NULL) {
+  if (length(selected) > 0) {
     cols <- c('date', selected)
 
     df.to.plot <- df.to.plot[, cols]
 
     df_melt <- tidyr::pivot_longer(df.to.plot, -date, names_to = "variable")
+    
+    if (!is.null(frozen_data)) {
+      df_melt <- rbind(df_melt, frozen_data)
+    }
 
     graph <-
       ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +
@@ -517,4 +522,19 @@ create.graph <- function(df.to.plot, selected, plot.day, curr.date) {
 
     return(graph)
   }
+}
+
+#' Plot for R_e estimate
+#' @param data Dataframe
+#' @import ggplot2
+re_estimate_plot <- function(data) {
+  ggplot(data, aes(
+    x = Date,
+    y = value,
+    col = variable
+  )) +
+    geom_point() +
+    geom_line() +
+    theme(text = element_text(size = 20)) +
+    theme(legend.title = element_blank())
 }

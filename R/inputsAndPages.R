@@ -215,11 +215,8 @@ trans.prob.slider <-
 ##  Modals
 ##  ............................................................................
 
-#' @importFrom magrittr %>%
 predict.re.page <- function(curr.date) {
   return.page <- modalDialog(
-    shinyjs::useShinyjs(),
-
     HTML(
       "<h4> Estimate Re based on historical hospitalizations</h4>
          Provide data from past dates to estimate the Re value.<br><br>"
@@ -259,11 +256,13 @@ predict.re.page <- function(curr.date) {
     actionButton(inputId = 'run.fit',
                  label = 'Estimate Re'),
 
-    div(id = "predict.ui.toggle",
-        fluidPage(
-          uiOutput('best.re'),
-          plotOutput('fit.plot')
-        )) %>% shinyjs::hidden()
+    shinyjs::hidden(
+      div(id = "predict.ui.toggle",
+          fluidPage(
+            uiOutput('best.re'),
+            plotOutput('fit.plot')
+          ))
+    )
 
   )
 }

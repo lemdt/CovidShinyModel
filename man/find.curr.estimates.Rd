@@ -5,7 +5,7 @@
 \title{Find 'Current' Information}
 \usage{
 find.curr.estimates(
-  model,
+  seir_func,
   N,
   beta.vector,
   num.days,
@@ -16,7 +16,7 @@ find.curr.estimates(
 )
 }
 \arguments{
-\item{model}{[TODO]}
+\item{seir_func}{The SEIR function to use}
 
 \item{N}{Numeric, number of people in the area.}
 
