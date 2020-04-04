@@ -1005,7 +1005,7 @@ server <- function(input, output, session) {
         cols <- c("date", selected)
         new_data <- selected_graph_data()[, cols]
         names(new_data)[2] <- name
-        new_data <- data.table::melt(new_data, "date")
+        new_data <- tidyr::pivot_longer(new_data, -date, names_to = "variable")
         if (is.null(frozen_lines())) {
             frozen_lines(new_data)
         } else {
