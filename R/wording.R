@@ -69,7 +69,7 @@ Under the 'Add Interventions' section, you can add and save changes in Re over
 different timepoints, which will change the projections in the graphs.
 "
 
-what.is.lemma <- '<font size="5">LEMMA (Local Epidemic Modeling for Management & Action) is designed to provide local projections of 
+what.is.lemma <- '<font size="4.5">LEMMA (Local Epidemic Modeling for Management & Action) is designed to provide local projections of 
 the SARS-CoV-2 (COVID-19) epidemic to aid in the planning and management of hospital resources under various scenarios. 
 Daily projections are made for hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and 
 resolved cases. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized 
