@@ -2,7 +2,7 @@
 ui <- function(req) {
   navbarPage(title = "LEMMA - Local Epidemic Modeling for Management & Action",
              tabPanel("Projections", 
-                      fluidPage(theme = shinythemes::shinytheme("flatly"),
+                      fluidPage(theme = shinythemes::shinytheme("sandstone"),
                         tags$head(tags$link(href = "covidshiny/app.css", rel="stylesheet", type="text/css")),
                         shinyjs::useShinyjs(),
                         shinyalert::useShinyalert(),
@@ -170,7 +170,7 @@ ui <- function(req) {
                             
                             # Projections
                             wellPanel(
-                              style = "background: white",
+                              style = "background: white; border-color: #d1d1d1",
                               
                               h3(strong("Projections")),
                               shinyWidgets::radioGroupButtons(
@@ -255,7 +255,6 @@ ui <- function(req) {
                               
                               DT::dataTableOutput(outputId = 'rendered.table'),
                               downloadButton(outputId = 'downloadData', label = "Download as CSV"),
-                              tags$br(), tags$br()
                             )
                           )
                         )
@@ -264,6 +263,7 @@ ui <- function(req) {
              tabPanel("About", 
                       wellPanel(h3(strong("About LEMMA")),
                                 HTML(what.is.lemma))
-             )
+             ),
+             tags$br(), tags$br()
   )
 }
