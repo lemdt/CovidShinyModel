@@ -674,8 +674,19 @@ server <- function(input, output, session) {
 
             # shift the number of days to account for day 0 in the model
             seir.df$days.shift <- seir.df$day - curr.day
-            seir.df[seir.df$days.shift == 0, ]$hosp <-
-                input$num_hospitalized
+            
+            # Note: this will cause an error if Model 2 is run because icu.rate and vent.rate 
+            # are not available
+            #
+            # TODO: this is very hack-y.... And may not give a good alignment for projections 
+            # at days.shift>0
+            num.hosp.input <- input$num_hospitalized
+            num.icu.orig <- num.hosp.input * params$icu.rate
+            num.vent.orig <- num.icu.orig * params$vent.rate 
+            
+            seir.df[seir.df$days.shift == 0,]$hosp <- num.hosp.input
+            seir.df[seir.df$days.shift == 0,]$icu <- num.icu.orig
+            seir.df[seir.df$days.shift == 0,]$vent <- num.vent.orig
         }
         else {
             num.cases <-
