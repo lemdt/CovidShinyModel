@@ -210,7 +210,7 @@ ui <- function(req) {
                                 )
                               ),
                               div(
-                                column(4, 
+                                column(5, 
                                        checkboxGroupInput(
                                          inputId = 'selected_lines',
                                          label = 'Selected',
@@ -219,7 +219,7 @@ ui <- function(req) {
                                          inline = TRUE
                                        )
                                 ),
-                                column(8, 
+                                column(7, 
                                        div(
                                          id = "freeze-section",
                                          textInput("freeze_name",label = NULL, value = "", placeholder = "Projection name"),
