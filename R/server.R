@@ -538,17 +538,18 @@ server <- function(input, output, session) {
 
     output$influx_ui <- renderUI({
         if (input$showinflux) {
-            fluidPage(fluidRow(
+            div(
                 dateInput(
                     inputId = 'influx_date',
                     label = "Date of Influx",
-                    min = input$curr_date - params$hosp.delay.time,
+                    min = input$curr_date,
                     value = input$curr_date
                 ),
                 numericInput('num.influx',
                              label =  "Number of Infected Entering Region",
                              value = 0)
-            ))
+                
+            )
         }
 
     })

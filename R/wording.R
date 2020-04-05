@@ -118,7 +118,7 @@ incubation.input.wording <-
   "Number of Days from Infection to Becoming Infectious (Latent Period)"
 
 infectious.input.wording <-
-  "For Non-Hospitalized, Number of Days from Infection to No Longer Infectious"
+  "Duration of infectiousness (days)"
 
 per.hosp.wording <- "Percent of Infected that are Hospitalized"
 
@@ -129,7 +129,7 @@ per.vent.wording <-
   "Percent of COVID-19 Patients in the ICU who are Currently Ventilated"
 
 inf.to.hosp.wording <-
-  "For Hospitalized, Number of Days from Infection to Hospitalization"
+  "Time from onset of infectiousness to hospitalization (days)"
 
 hosp.to.icu.wording <-
   "Number of days from hospitalization to ICU Admission"
