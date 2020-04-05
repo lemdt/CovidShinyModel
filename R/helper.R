@@ -505,26 +505,28 @@ create.res.df <- function(df, hosp_cap, icu_cap, vent_cap) {
 #' @return ggplot graph.
 #' @import ggplot2
 create.graph <- function(df.to.plot, selected, plot.day, curr.date, frozen_data = NULL) {
-  if (length(selected) > 0 & selected[1] %in% colnames(df.to.plot)) {
-    cols <- c('date', selected)
-
-    df.to.plot <- df.to.plot[, cols]
-
-    df_melt <- tidyr::pivot_longer(df.to.plot, -date, names_to = "variable")
-    
-    if (!is.null(frozen_data)) {
-      df_melt$variable <- ''
-      df_melt <- rbind(frozen_data, df_melt)
-      df_melt <- df_melt[!duplicated(df_melt[,c('date', 'value')]),]
+  if (length(selected) > 0) {
+    if (selected[1] %in% colnames(df.to.plot)){
+      cols <- c('date', selected)
+      
+      df.to.plot <- df.to.plot[, cols]
+      
+      df_melt <- tidyr::pivot_longer(df.to.plot, -date, names_to = "variable")
+      
+      if (!is.null(frozen_data)) {
+        df_melt$variable <- ''
+        df_melt <- rbind(frozen_data, df_melt)
+        df_melt <- df_melt[!duplicated(df_melt[,c('date', 'value')]),]
+      }
+      
+      graph <-
+        ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +
+        geom_line() +  geom_vline(xintercept = curr.date) + theme(text = element_text(size =
+                                                                                        20)) +
+        geom_vline(xintercept = plot.day, color = 'red') + ylab('') + geom_hline(yintercept = 0)
+      
+      return(graph)
     }
-
-    graph <-
-      ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +
-      geom_line() +  geom_vline(xintercept = curr.date) + theme(text = element_text(size =
-                                                                                      20)) +
-      geom_vline(xintercept = plot.day, color = 'red') + ylab('') + geom_hline(yintercept = 0)
-
-    return(graph)
   }
 }
 
