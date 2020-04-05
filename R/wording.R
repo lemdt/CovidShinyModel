@@ -6,7 +6,7 @@
 ##  General
 ##  ............................................................................
 
-app.title <- "COVID-19 Epidemic Modeling"
+app.title <- "LEMMA - Local Epidemic Modeling for Management & Action"
 
 about.wording <- "<h4><b>What does this tool do?</b></h4>
 The app projects numbers of <i> active cases, hospitalizations, ICU-use and
@@ -69,10 +69,29 @@ Under the 'Add Interventions' section, you can add and save changes in Re over
 different timepoints, which will change the projections in the graphs.
 "
 
-end.notes <-
-  '<br><br><b>Notes</b>: This app is a modified version of the <a href="http://penn-chime.phl.io/">Penn Chime app</a>.
-This is a beta version - the projections may or may not be accurate.
-<br><br> The code for this tool is on <a href="https://github.com/jpspeng/CovidShinyModel">Github</a>.'
+what.is.lemma <- '<font size="5">LEMMA (Local Epidemic Modeling for Management & Action) is designed to provide local projections of 
+the SARS-CoV-2 (COVID-19) epidemic to aid in the planning and management of hospital resources under various scenarios. 
+Daily projections are made for hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and 
+resolved cases. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized 
+using local epidemic data on the number of hospitalizations. <b><a href="">View the documentation here.</a></b>
+<br><br>
+The code for this tool is on <a href="https://github.com/lemdt/CovidShinyModel">Github</a>.
+<br><br>
+LEMMA is a collaborative effort between experts in Medicine, Public Health, and Data Science.<br><br>
+<b>Key contributors include:</b>
+<ul>
+  <li>Maya L. Petersen, MD PhD, Associate Professor of Epidemiology & Biostatistics, UC Berkeley</li>
+  <li>Joshua Schwab, MS, Research Programmer, UC Berkeley</li>
+  <li>James Peng, MS, Data Scientist, UC San Francisco</li>
+  <li>Laura B. Balzer, PhD, Assistant Professor of Biostatistics, UMass Amherst</li>
+  <li>Ben Olding, XX, YY, ZZZ</li>
+  <li>Randy True, XX, YY, ZZZ</li>
+  <li>Karthik Ram, XX, YY, ZZZ</li>
+  <li>Vivek Jain, MD, Associate Professor of Medicine, UC San Francisco & San Francisco General Hospital</li>
+  <li>Elvin Geng, MD, Professor of Medicine, Washington University in St. Louis</li>
+  <li>Diane V. Havlir, MD, Professor of Medicine, UC San Francisco & San Francisco General Hospital</li>
+</ul></font>'
+
 
 
 ##  ............................................................................

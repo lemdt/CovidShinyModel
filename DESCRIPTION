@@ -24,5 +24,6 @@ Imports:
     shinyjs,
     urlshorteneR,
     magrittr,
+    shinythemes,
     tidyr
 RoxygenNote: 7.1.0
