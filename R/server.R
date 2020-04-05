@@ -264,36 +264,31 @@ server <- function(input, output, session) {
     ##  Parameter selection
     ##  ............................................................................
 
+    # For the release, we are removing the Markov Model switch for now. 
+    # This is currently a beta feature only for internal use. 
     # Markov Model selection
-    observeEvent(input$model_select, ignoreInit = TRUE, {
-        if (input$model_select == TRUE) {
-            model(M2)
-        } else {
-            model(M0)
-        }
-
-        default.params.list <- reactiveValuesToList(model()$default.params)
-        for (param in names(default.params.list)) {
-            params[[param]] = as.numeric(default.params.list[param])
-        }
-
-        # incredibly hacky way to deal with forcing the reactive graphs/tables to update
-        num_people <- input$num_people
-        updateNumericInput(session, "num_people", value = num_people + 1)
-        updateNumericInput(session, "num_people", value = num_people)
-    })
+    # observeEvent(input$model_select, ignoreInit = TRUE, {
+    #     if (input$model_select == TRUE) {
+    #         model(M2)
+    #     } else {
+    #         model(M0)
+    #     }
+    # 
+    #     default.params.list <- reactiveValuesToList(model()$default.params)
+    #     for (param in names(default.params.list)) {
+    #         params[[param]] = as.numeric(default.params.list[param])
+    #     }
+    # 
+    #     # incredibly hacky way to deal with forcing the reactive graphs/tables to update
+    #     num_people <- input$num_people
+    #     updateNumericInput(session, "num_people", value = num_people + 1)
+    #     updateNumericInput(session, "num_people", value = num_people)
+    # })
 
     output$params_ui <- renderUI({
 
-        if (input$model_select == TRUE){
-            name_append <- '- Markov (Beta)'
-        }
-        else{
-            name_append <- ''
-        }
-
-        fluidPage(
-            HTML(sprintf("<br><h4><b>Parameters %s</b></h4><br>", name_append)),
+        div(
+            HTML("<br><h4><b>Parameters</b></h4><br>"),
             isolate(model())$parameters.page(params)
         )
     })
