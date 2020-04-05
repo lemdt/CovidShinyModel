@@ -681,75 +681,6 @@ server <- function(input, output, session) {
     ##  Plot Outputs
     ##  ............................................................................
 
-    # UI depends on what graph is selected
-    output$plot_output <- renderUI({
-        if (input$selected_graph == 'Cases') {
-            div(
-                checkboxGroupInput(
-                    inputId = 'selected_cases',
-                    label = 'Selected',
-                    choices = c('Active Cases', 'Resolved Cases', 'Total Cases'),
-                    selected = c('Active Cases', 'Resolved Cases', 'Total Cases'),
-                    inline = TRUE
-                ),
-                plotOutput(outputId = 'cases.plot',
-                           click = "plot_click")
-            )
-        }
-        else if (input$selected_graph == 'Hospitalization') {
-            div(
-                checkboxGroupInput(
-                    inputId = 'selected_hosp',
-                    label = 'Selected',
-                    choices = c('Hospital', 'ICU', 'Ventilator'),
-                    selected =  c('Hospital', 'ICU', 'Ventilator'),
-                    inline = TRUE
-                ),
-                plotOutput(outputId = 'hospitalization.plot',
-                           click = "plot_click")
-            )
-        }
-        else{
-            div(
-                column(
-                    4,
-                    numericInput(
-                        inputId = 'hosp_cap',
-                        label = "Hospital Bed Availability",
-                        value = params$hosp.avail
-                    )
-                ),
-                column(
-                    4,
-                    numericInput(
-                        inputId = 'icu_cap',
-                        label = "ICU Space Availability",
-                        value = params$icu.avail
-                    )
-                ),
-                column(
-                    4,
-                    numericInput(
-                        inputId = 'vent_cap',
-                        label = avail.vent.wording ,
-                        value = params$vent.avail
-                    )
-                ),
-                div(
-                    checkboxGroupInput(
-                        inputId = 'selected_res',
-                        label = 'Selected',
-                        choices = c('Hospital', 'ICU', 'Ventilator'),
-                        selected =  c('Hospital', 'ICU', 'Ventilator'),
-                        inline = TRUE
-                    )
-                ),
-                plotOutput(outputId = 'resource.plot',
-                           click = "plot_click")
-            )
-        }
-    })
-
     observeEvent(input$hosp_cap, {
         params$hosp.avail <- input$hosp_cap
     })
@@ -761,8 +692,44 @@ server <- function(input, output, session) {
     observeEvent(input$vent_cap, {
         params$vent.avail <- input$vent_cap
     })
+    
+    observeEvent(input$selected_graph, ignoreInit = TRUE,{
+        if (input$selected_graph == "Hospital Resources"){
 
+            updateNumericInput(session,
+                               inputId = "hosp_cap", 
+                               value = params$hosp_cap)
+            
+            updateNumericInput(session,
+                               inputId = "icu_cap", 
+                               value = params$icu_cap)
+            
+            updateNumericInput(session,
+                               inputId = "vent_cap", 
+                               value = params$vent_cap)
+            updateCheckboxGroupInput(session, 
+                                     inputId = "selected_lines",
+                                     choices = c('Hospital', 'ICU', 'Ventilator'),
+                                     selected =  c('Hospital', 'ICU', 'Ventilator'),
+                                     inline = TRUE)
+        }
+        else if (input$selected_graph == "Hospitalization"){
 
+            updateCheckboxGroupInput(session, 
+                                     inputId = "selected_lines",
+                                     choices = c('Hospital', 'ICU', 'Ventilator'),
+                                     selected =  c('Hospital', 'ICU', 'Ventilator'),
+                                     inline = TRUE)
+        }
+        else{
+            updateCheckboxGroupInput(session, 
+                                     inputId = "selected_lines",
+                                     choices = c('Total Cases', 'Active Cases', 'Resolved Cases'),
+                                     selected =  c('Total Cases', 'Active Cases', 'Resolved Cases'),
+                                     inline = TRUE)
+        }
+        
+    })
     ##  ............................................................................
     ##  Dataframes for Visualization and Downloading
     ##  ............................................................................
@@ -797,16 +764,6 @@ server <- function(input, output, session) {
         }
         else {
             resource.df()
-        }
-    })
-
-    selected_graph_variables <- reactive({
-        if (input$selected_graph == "Cases") {
-            selected <- input$selected_cases
-        } else if (input$selected_graph == "Hospitalization") {
-            selected <- input$selected_hosp
-        } else {
-            selected <- input$selected_res
         }
     })
 
@@ -896,35 +853,34 @@ server <- function(input, output, session) {
     })
 
 
-    output$hospitalization.plot <- renderPlot({
-        create.graph(
-            df.to.plot = hospitalization.df(),
-            selected = input$selected_hosp,
-            plot.day = plot_day(),
-            curr.date = input$curr_date,
-            frozen_data = frozen_lines()
-        )
-    })
-
-
-    output$resource.plot <- renderPlot({
-        create.graph(
-            df.to.plot = resource.df(),
-            selected = input$selected_res,
-            plot.day = plot_day(),
-            curr.date = input$curr_date,
-            frozen_data = frozen_lines()
-        )
-    })
-
-    output$cases.plot <- renderPlot({
-        create.graph(
-            df.to.plot = cases.df(),
-            selected = input$selected_cases,
-            plot.day = plot_day(),
-            curr.date = input$curr_date,
-            frozen_data = frozen_lines()
-        )
+    output$rendered_plot <- renderPlot({
+        if (input$selected_graph == 'Hospitalization'){
+            create.graph(
+                df.to.plot = hospitalization.df(),
+                selected = input$selected_lines,
+                plot.day = plot_day(),
+                curr.date = input$curr_date,
+                frozen_data = frozen_lines()
+            )
+        }
+        else if (input$selected_graph == 'Hospital Resources'){
+            create.graph(
+                df.to.plot = resource.df(),
+                selected = input$selected_lines,
+                plot.day = plot_day(),
+                curr.date = input$curr_date,
+                frozen_data = frozen_lines()
+            )
+        }
+        else{
+            create.graph(
+                df.to.plot = cases.df(),
+                selected = input$selected_lines,
+                plot.day = plot_day(),
+                curr.date = input$curr_date,
+                frozen_data = frozen_lines()
+            )
+        }
     })
 
     observe({
@@ -937,24 +893,20 @@ server <- function(input, output, session) {
 
     observe({
         input$selected_graph
-        input$selected_cases
-        input$selected_hosp
-        input$selected_res
+        input$selected_lines
         input$freeze_reset
         frozen_lines(NULL)
     })
 
     observe({
         show_freeze <-
-            (input$selected_graph == "Cases" && length(input$selected_cases) == 1) ||
-            (input$selected_graph == "Hospitalization" && length(input$selected_hosp) == 1) ||
-            (input$selected_graph == "Hospital Resources" && length(input$selected_res) == 1)
+            length(input$selected_lines) == 1
         shinyjs::toggle("freeze-section", condition = show_freeze)
     })
 
     observeEvent(input$freeze_btn, {
         name <- trimws(input$freeze_name)
-        selected <- selected_graph_variables()
+        selected <- input$selected_lines
         if (name == selected) {
             shinyalert::shinyalert("Can't use the same name as the selected variable.", type = "error")
             return()

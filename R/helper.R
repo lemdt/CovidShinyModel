@@ -505,7 +505,7 @@ create.res.df <- function(df, hosp_cap, icu_cap, vent_cap) {
 #' @return ggplot graph.
 #' @import ggplot2
 create.graph <- function(df.to.plot, selected, plot.day, curr.date, frozen_data = NULL) {
-  if (length(selected) > 0) {
+  if (length(selected) > 0 & selected[1] %in% colnames(df.to.plot)) {
     cols <- c('date', selected)
 
     df.to.plot <- df.to.plot[, cols]
@@ -513,7 +513,9 @@ create.graph <- function(df.to.plot, selected, plot.day, curr.date, frozen_data 
     df_melt <- tidyr::pivot_longer(df.to.plot, -date, names_to = "variable")
     
     if (!is.null(frozen_data)) {
-      df_melt <- rbind(df_melt, frozen_data)
+      df_melt$variable <- ''
+      df_melt <- rbind(frozen_data, df_melt)
+      df_melt <- df_melt[!duplicated(df_melt[,c('date', 'value')]),]
     }
 
     graph <-
