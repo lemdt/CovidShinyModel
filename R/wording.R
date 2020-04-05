@@ -123,10 +123,10 @@ infectious.input.wording <-
 per.hosp.wording <- "Percent of Infected that are Hospitalized"
 
 per.icu.wording <-
-  "Percent of All Hospitalized That are Currently in the ICU"
+  "Percent of Hospitalized COVID-19 Patients That are Currently in the ICU"
 
 per.vent.wording <-
-  "Percent of All ICU Patients that are Currently Ventilated"
+  "Percent of COVID-19 Patients in the ICU who are Currently Ventilated"
 
 inf.to.hosp.wording <-
   "For Hospitalized, Number of Days from Infection to Hospitalization"

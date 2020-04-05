@@ -13,12 +13,12 @@ ui <- function(req) {
                             tabsetPanel(
                               type = "tabs",
                               tabPanel(
-                                "Setting",
+                                "Model Inputs",
                                 
                                 tags$br(),
                                 
                                 # Location Information
-                                h4(strong("Location Information")),
+                                h4(strong("Model Inputs")),
                                 
                                 numericInput(
                                   inputId = 'num_people',
@@ -26,29 +26,10 @@ ui <- function(req) {
                                   value = 883305
                                 ),
                                 
-                                shinyWidgets::radioGroupButtons(
-                                  inputId = 'metric',
-                                  label = "Input Metric:",
-                                  choices = c('Hospitalizations', 'Cases'),
-                                  justified = TRUE,
-                                  status = "primary"
-                                ),
-                                
-                                conditionalPanel(
-                                  "input.metric == 'Hospitalizations'",
-                                  numericInput(
-                                    inputId = 'num_hospitalized',
-                                    label = "Estimate of current inpatients with COVID-19:",
-                                    value = 50
-                                  )
-                                ),
-                                conditionalPanel(
-                                  "input.metric != 'Hospitalizations'",
-                                  numericInput(
-                                    inputId = 'num_cases',
-                                    label = "Estimate of number of cases of COVID-19:",
-                                    value = 50
-                                  )
+                                numericInput(
+                                  inputId = 'num_hospitalized',
+                                  label = "Estimate of current inpatients with COVID-19:",
+                                  value = 50
                                 ),
                                 
                                 dateInput(inputId = 'curr_date', label = "On Date:"),
@@ -73,10 +54,6 @@ ui <- function(req) {
                                     max = 7,
                                     step = 0.1,
                                     value = 2.8
-                                  ),
-                                  actionLink(
-                                    'predict_re',
-                                    "Estimate Re prior to ... based on data."
                                   )
                                 ),
                                 
@@ -84,7 +61,7 @@ ui <- function(req) {
                                 
                                 shinyWidgets::materialSwitch(
                                   inputId = "usedouble",
-                                  label = 'Use doubling time instead of Re',
+                                  label = 'Use doubling time instead',
                                   status = 'primary'
                                 ),
                                 
@@ -147,8 +124,6 @@ ui <- function(req) {
                                 tags$hr(),
                                 
                                 # Other Settings
-                                h4(strong("Settings")),
-                                
                                 # For the release, we are removing the Markov Model switch for now. 
                                 # This is currently a beta feature only for internal use. 
                                 # fluidRow(
@@ -162,15 +137,13 @@ ui <- function(req) {
                                 #   )
                                 # ),
                                 
-                                tags$br(),
-                                
                                 sliderInput(
                                   inputId = 'proj_num_days',
                                   label = 'Number of Days to Project',
                                   min = 10,
-                                  max = 730,
-                                  step = 5,
-                                  value = 365
+                                  max = 365,
+                                  step = 1,
+                                  value = 100
                                 ),
                                 
                                 bookmarkButton(),
@@ -203,7 +176,7 @@ ui <- function(req) {
                               shinyWidgets::radioGroupButtons(
                                 inputId = 'selected_graph',
                                 label = '',
-                                choices = c('Cases', 'Hospitalization', 'Hospital Resources'),
+                                choices = c('Hospitalization', 'Hospital Resources', 'Cases'),
                                 justified = TRUE,
                                 status = "primary"
                               ),

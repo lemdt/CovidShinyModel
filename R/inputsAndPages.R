@@ -3,7 +3,7 @@ incubation.period.input <- function(incubation.period) {
     sliderInput(
       'incubation.period',
       incubation.input.wording,
-      min = 0,
+      min = 1,
       max = 30,
       step = 1,
       value = incubation.period,
@@ -18,7 +18,7 @@ illness.length.input <- function(illness.length) {
     sliderInput(
       'illness.length',
       infectious.input.wording,
-      min = 0,
+      min = 1,
       max = 30,
       step = 1,
       value = illness.length,
@@ -82,7 +82,7 @@ hosp.after.inf.input <- function(hosp.delay.time) {
     sliderInput(
       'hosp.after.inf',
       inf.to.hosp.wording,
-      min = 0,
+      min = 1,
       max = 30,
       step = 1,
       value = hosp.delay.time,

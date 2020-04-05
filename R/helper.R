@@ -432,10 +432,12 @@ create.cases.df <- function(df) {
 
   df_temp <-
     df_temp[, c('date', 'days.shift', 'Cases', 'Active', 'Resolved')]
-  colnames(df_temp) <-
-    c('date', 'day', 'Cases', 'Active', 'Resolved')
+  
   df_temp <- roundNonDateCols(df_temp)
 
+  colnames(df_temp) <-
+    c('date', 'day', 'Total Cases', 'Active Cases', 'Resolved Cases')
+  
   return(df_temp)
 }
 

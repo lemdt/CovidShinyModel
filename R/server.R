@@ -50,7 +50,6 @@ server <- function(input, output, session) {
             "goleft",
             "goright",
             "showint",
-            "predict_re",
             "howtouse",
             "lastClick",
             "lastClickId"
@@ -112,9 +111,7 @@ server <- function(input, output, session) {
         updateSliderInput(session, 'doubling_time',
                           label = sprintf("Doubling Time (days) Before %s", date.select))
         updateSliderInput(session, 'r0_prior',
-                          label = sprintf("Re Before %s", date.select))
-        updateActionButton(session, "predict_re",
-                           label = sprintf("Estimate Re prior to %s based on data.", date.select))
+                          label = sprintf("Basic reproductive number R0 before %s", date.select))
     })
 
     ##  ............................................................................
@@ -124,9 +121,6 @@ server <- function(input, output, session) {
     re.estimates <- reactiveValues(graph = NULL,
                                    best.estimate = NULL)
 
-    observeEvent(input$predict_re, {
-        showModal(predict.re.page(input$curr_date))
-    })
 
     historical.df.blank <- data.frame(
         'Date' = character(0),
@@ -380,22 +374,14 @@ server <- function(input, output, session) {
         initial.beta.vector
     })
 
-    num_actual <- reactive({
-        if (input$metric == 'Hospitalizations') {
-            input$num_hospitalized
-        } else {
-            input$num_cases
-        }
-    })
-
     curr.day.list <- reactive({
         find.curr.estimates(
             seir_func = isolate(model())$SEIR,
             N = input$num_people,
             beta.vector = initial_beta_vector(),
             num.days = est.days,
-            num.actual = num_actual(),
-            metric = input$metric,
+            num.actual = input$num_hospitalized,
+            metric = "Hospitalizations",
             start.exp = start.exp.default,
             params = params
         )
@@ -422,13 +408,8 @@ server <- function(input, output, session) {
     intervention.table <- reactiveVal(int.df.with.re)
 
     observe({
-        if (input$metric == 'Hospitalizations') {
-            min <- input$curr_date
-            val <- input$curr_date
-        } else {
-            min <- input$curr_date + 1
-            val <- input$curr_date + 1
-        }
+        min <- input$curr_date
+        val <- input$curr_date
         updateDateInput(session, "int_date", min = min, value = val)
     })
 
@@ -650,66 +631,43 @@ server <- function(input, output, session) {
             }
         }
 
-        if (input$metric == 'Hospitalizations') {
-            # run the same model as initialization model but run extra days
-            new.num.days <- input$proj_num_days + curr.day
-            new.num.days <-
-                ifelse(is.na(new.num.days), 365, new.num.days)
-
-            # starting conditions
-            start.susc <- input$num_people - start.exp.default
-            start.inf <- 0
-            start.res <- 0
-
-            seir.df = isolate(model())$SEIR(
-                S0 = start.susc,
-                E0 = start.exp.default,
-                I0 = start.inf,
-                R0 = start.res,
-                beta.vector = beta.vector(),
-                num.days = new.num.days,
-                influx = influx,
-                params = params
-            )
-
-            # shift the number of days to account for day 0 in the model
-            seir.df$days.shift <- seir.df$day - curr.day
-            
-            # Note: this will cause an error if Model 2 is run because icu.rate and vent.rate 
-            # are not available
-            #
-            # TODO: this is very hack-y.... And may not give a good alignment for projections 
-            # at days.shift>0
-            num.hosp.input <- input$num_hospitalized
-            num.icu.orig <- num.hosp.input * params$icu.rate
-            num.vent.orig <- num.icu.orig * params$vent.rate 
-            
-            seir.df[seir.df$days.shift == 0,]$hosp <- num.hosp.input
-            seir.df[seir.df$days.shift == 0,]$icu <- num.icu.orig
-            seir.df[seir.df$days.shift == 0,]$vent <- num.vent.orig
-        }
-        else {
-            num.cases <-
-                ifelse(length(input$num_cases) != 0, input$num_cases, 0)
-            start.susc <- input$num_people - num.cases
-            start.exp <- 0
-            start.inf <- num.cases
-            start.res <- 0
-            num.days <- input$proj_num_days
-
-            seir.df <- isolate(model())$SEIR(
-                S0 = start.susc,
-                E0 = start.exp,
-                I0 = start.inf,
-                R0 = start.res,
-                beta.vector = beta.vector(),
-                num.days = num.days,
-                influx = influx,
-                params = params
-            )
-
-            seir.df$days.shift <- seir.df$day
-        }
+        # run the same model as initialization model but run extra days
+        new.num.days <- input$proj_num_days + curr.day
+        new.num.days <-
+            ifelse(is.na(new.num.days), 365, new.num.days)
+        
+        # starting conditions
+        start.susc <- input$num_people - start.exp.default
+        start.inf <- 0
+        start.res <- 0
+        
+        seir.df = isolate(model())$SEIR(
+            S0 = start.susc,
+            E0 = start.exp.default,
+            I0 = start.inf,
+            R0 = start.res,
+            beta.vector = beta.vector(),
+            num.days = new.num.days,
+            influx = influx,
+            params = params
+        )
+        
+        # shift the number of days to account for day 0 in the model
+        seir.df$days.shift <- seir.df$day - curr.day
+        
+        # Note: this will cause an error if Model 2 is run because icu.rate and vent.rate 
+        # are not available
+        #
+        # TODO: this is very hack-y.... And may not give a good alignment for projections 
+        # at days.shift>0
+        num.hosp.input <- input$num_hospitalized
+        num.icu.orig <- num.hosp.input * params$icu.rate
+        num.vent.orig <- num.icu.orig * params$vent.rate 
+        
+        seir.df[seir.df$days.shift == 0,]$hosp <- num.hosp.input
+        seir.df[seir.df$days.shift == 0,]$icu <- num.icu.orig
+        seir.df[seir.df$days.shift == 0,]$vent <- num.vent.orig
+        
 
         seir.df$date <-
             seir.df$days.shift + as.Date(input$curr_date)
@@ -729,8 +687,8 @@ server <- function(input, output, session) {
                 checkboxGroupInput(
                     inputId = 'selected_cases',
                     label = 'Selected',
-                    choices = c('Active', 'Resolved', 'Cases'),
-                    selected = c('Active', 'Resolved', 'Cases'),
+                    choices = c('Active Cases', 'Resolved Cases', 'Total Cases'),
+                    selected = c('Active Cases', 'Resolved Cases', 'Total Cases'),
                     inline = TRUE
                 ),
                 plotOutput(outputId = 'cases.plot',
@@ -1023,26 +981,14 @@ server <- function(input, output, session) {
     output$infected_ct <- renderUI({
         curr.date <- format(input$curr_date, format = "%B %d, %Y")
 
-        if (input$metric == 'Hospitalizations') {
-            curr.day <- curr.day.list()['curr.day']
-            curr.row <-
-                seir.output.df()[seir.output.df()$day == curr.day, ]
-
-            infected <- round(curr.row$I + curr.row$E)
-            cases <- round(curr.row$I + curr.row$R + curr.row$E)
-
-            HTML(sprintf(curr.inf.est.wording, curr.date, cases, infected))
-        }
-        else{
-            infected <- input$num_cases
-            cases <- input$num_cases
-            HTML(sprintf(
-                curr.inf.known.wording,
-                curr.date,
-                infected,
-                cases
-            ))
-        }
+        curr.day <- curr.day.list()['curr.day']
+        curr.row <-
+            seir.output.df()[seir.output.df()$day == curr.day, ]
+        
+        infected <- round(curr.row$I + curr.row$E)
+        cases <- round(curr.row$I + curr.row$R + curr.row$E)
+        
+        HTML(sprintf(curr.inf.est.wording, curr.date, cases, infected))
     })
 
     # describing each timestep in words
@@ -1160,7 +1106,7 @@ server <- function(input, output, session) {
 
         # hospitalizations or cases
         gen.param.names <- c(gen.param.names, paste('Initial', input$metric))
-        gen.param.vals <- c(gen.param.vals, num_actual())
+        gen.param.vals <- c(gen.param.vals, input$num_hospitalized)
 
         if (input$showinflux) {
             gen.param.names <-
