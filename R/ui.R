@@ -182,66 +182,46 @@ ui <- function(req) {
                               ),
                               conditionalPanel(
                                 "input.selected_graph == 'Hospital Resources'",
-                                div(
-                                  column(
-                                    4,
+                                  splitLayout(
                                     numericInput(
                                       inputId = 'hosp_cap',
                                       label = "Hospital Bed Availability",
                                       value = 1000
-                                    )
-                                  ),
-                                  column(
-                                    4,
+                                    ),
                                     numericInput(
                                       inputId = 'icu_cap',
                                       label = "ICU Space Availability",
                                       value = 200
-                                    )
-                                  ),
-                                  column(
-                                    4,
+                                    ),
                                     numericInput(
                                       inputId = 'vent_cap',
                                       label = avail.vent.wording ,
                                       value = 100
                                     )
                                   )
-                                )
                               ),
-                              div(
-                                column(5, 
+              
+                              splitLayout(
                                        checkboxGroupInput(
                                          inputId = 'selected_lines',
                                          label = 'Selected',
                                          choices = c('Hospital', 'ICU', 'Ventilator'),
                                          selected =  c('Hospital', 'ICU', 'Ventilator'),
-                                         inline = TRUE
-                                       )
-                                ),
-                                column(7, 
+                                         inline = TRUE),
                                        div(
                                          id = "freeze-section",
                                          textInput("freeze_name",label = NULL, value = "", placeholder = "Projection name"),
                                          actionButton("freeze_btn", "Freeze"),
                                          actionButton("freeze_reset", "Clear")
                                        )
-                                )
                                 ),
                               plotOutput(outputId = 'rendered_plot',
                                          click = "plot_click"
                               ),
                               
-                              tags$br(),tags$br(),tags$br(),tags$br(),
+                              tags$br(),
                               
-                              # TODO: for some reason the Hospital Resources tab spacing is off. 
-                              # This is to create some more padding. 
-                              conditionalPanel(
-                                "input.selected_graph == 'Hospital Resources'",
-                                
-                                tags$br(),tags$br(),tags$br(),tags$br(),tags$br()
-                                
-                              ),
+
                               fluidRow(
                                 align = 'center',
                                 column(
