@@ -8,6 +8,14 @@ hr {
   border-top: 1px solid #000000;
 }
 
+.navbar-nav {
+  font-size: 18px;
+}
+
+.navbar-brand {
+  font-size: 24px; 
+}
+
 #rendered\.table {
   font-size: 1.1em;
 }

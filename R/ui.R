@@ -1,6 +1,6 @@
 #' @import shiny
 ui <- function(req) {
-  navbarPage("LEMMA - Local Epidemic Modeling for Management & Action",
+  navbarPage(title = "LEMMA - Local Epidemic Modeling for Management & Action",
              tabPanel("Projections", 
                       fluidPage(theme = shinythemes::shinytheme("flatly"),
                         tags$head(tags$link(href = "covidshiny/app.css", rel="stylesheet", type="text/css")),
@@ -115,7 +115,7 @@ ui <- function(req) {
                                 tags$hr(),
                                 
                                 # Influx
-                                h4(strong("Add Influx of Infections")),
+                                h4(strong("Infected Individuals Entering the Area")),
                                 
                                 checkboxInput(inputId = 'showinflux', label = 'Add Influx of Infected Individuals'),
                                 

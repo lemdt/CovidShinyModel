@@ -684,7 +684,7 @@ server <- function(input, output, session) {
     # UI depends on what graph is selected
     output$plot_output <- renderUI({
         if (input$selected_graph == 'Cases') {
-            fluidPage(
+            div(
                 checkboxGroupInput(
                     inputId = 'selected_cases',
                     label = 'Selected',
@@ -697,7 +697,7 @@ server <- function(input, output, session) {
             )
         }
         else if (input$selected_graph == 'Hospitalization') {
-            fluidPage(
+            div(
                 checkboxGroupInput(
                     inputId = 'selected_hosp',
                     label = 'Selected',
@@ -710,7 +710,7 @@ server <- function(input, output, session) {
             )
         }
         else{
-            fluidPage(
+            div(
                 column(
                     4,
                     numericInput(
@@ -735,7 +735,7 @@ server <- function(input, output, session) {
                         value = params$vent.avail
                     )
                 ),
-                fluidPage(
+                div(
                     checkboxGroupInput(
                         inputId = 'selected_res',
                         label = 'Selected',
