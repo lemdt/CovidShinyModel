@@ -149,16 +149,18 @@ ui <- function(req) {
                                 # Other Settings
                                 h4(strong("Settings")),
                                 
-                                fluidRow(
-                                  column(
-                                    8,
-                                    strong("Use Markov Model (beta)")
-                                  ),
-                                  column(
-                                    4,
-                                    shinyWidgets::switchInput(inputId = "model_select", value = FALSE)
-                                  )
-                                ),
+                                # For the release, we are removing the Markov Model switch for now. 
+                                # This is currently a beta feature only for internal use. 
+                                # fluidRow(
+                                #   column(
+                                #     8,
+                                #     strong("Use Markov Model (beta)")
+                                #   ),
+                                #   column(
+                                #     4,
+                                #     shinyWidgets::switchInput(inputId = "model_select", value = FALSE)
+                                #   )
+                                # ),
                                 
                                 tags$br(),
                                 
