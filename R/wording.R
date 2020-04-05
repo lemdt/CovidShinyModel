@@ -73,7 +73,7 @@ what.is.lemma <- '<font size="4">LEMMA (Local Epidemic Modeling for Management &
 the SARS-CoV-2 (COVID-19) epidemic to aid in the planning and management of hospital resources under various scenarios. 
 Daily projections are made for hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and 
 resolved cases. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized 
-using local epidemic data on the number of hospitalizations. <b><a href="">View the documentation here.</a></b>
+using local epidemic data on the number of hospitalizations. <b><a href="https://lemma.gitbook.io/lemma/-M48KVCMAiSk20b1_LWH/">View the documentation here.</a></b>
 <br><br>
 The code for this tool is on <a href="https://github.com/lemdt/CovidShinyModel">Github</a>.
 <br><br>
