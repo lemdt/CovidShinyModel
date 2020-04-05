@@ -591,8 +591,7 @@ server <- function(input, output, session) {
         # creating intervention table to create a beta vector
         if (input$usedouble == FALSE) {
             if (!is.null(input$r0_prior) && !is.null(params$int.new.r0)) {
-                int.table.temp <- rbind(int.table.temp,
-                                        list(
+                int.table.temp <- rbind(list(
                                             Day = c(
                                                 params$int.new.num.days,
                                                 -curr.day,
@@ -600,21 +599,21 @@ server <- function(input, output, session) {
                                             ),
                                             New.Re = c(params$int.new.r0, input$r0_prior, NA),
                                             Days.of.Smoothing = c(params$int.smooth.days, 0, 0)
-                                        ))
+                                        ),
+                                        int.table.temp)
             }
             else{
-                int.table.temp <- rbind(int.table.temp,
-                                        list(
+                int.table.temp <- rbind(list(
                                             Day = c(-curr.day, input$proj_num_days),
                                             New.Re = c(r0.default, NA),
                                             Days.of.Smoothing = c(0, 0)
-                                        ))
+                                        ),
+                                        int.table.temp)
             }
 
         }
         else{
             int.table.temp <- rbind(
-                int.table.temp,
                 list(
                     Day = c(
                         params$int.new.num.days,
@@ -623,7 +622,8 @@ server <- function(input, output, session) {
                     ),
                     New.Double.Time = c(params$int.new.double, input$doubling_time, NA),
                     Days.of.Smoothing = c(params$int.smooth.days, 0, 0)
-                )
+                ),
+                int.table.temp
             )
         }
 
