@@ -1,6 +1,7 @@
 body {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
+  font-family: Roboto;
 }
 
 hr {
@@ -22,8 +23,4 @@ hr {
 
 #freeze-section .form-group {
   display: inline-block;
-}
-
-body {
-  font-family: Roboto;
 }
