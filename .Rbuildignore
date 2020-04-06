@@ -4,3 +4,6 @@
 ^LICENSE\.md$
 ^app\.R$
 ^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
