@@ -73,12 +73,13 @@
 <!-- badges: start -->
 
 <p>LEMMA (Local Epidemic Modeling for Management &amp; Action) is a tool designed to accept local and regional information about the SARS-CoV-2 (COVID-19) epidemic and provide relevant projections about epidemic trajectory to inform strategic planning and resource management. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized using local epidemic data on the number of hospitalizations. Outputs include daily number hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and resolved cases.</p>
+<p>Development of the app is ongoing, and a live, stable version is currently unavailable (as of April 6, 2020). To use the app, you can run locally or use the pre-release development version in the âResources and Documentationâ section below.</p>
 <div id="development-environment-setup-r" class="section level2">
 <h2 class="hasAnchor">
 <a href="#development-environment-setup-r" class="anchor"></a>Development Environment Setup (R)</h2>
 <p>To run the app locally, load up R or Rstudio and run:</p>
-<pre><code><a href="https://remotes.r-lib.org/reference/install_github.html">remotes::install_github('lemdt/CovidShinyModel')
-covidshiny::start_app()</a></code></pre>
+<div class="sourceCode" id="cb1"><pre class="sourceCode coffee"><code class="sourceCode coffee"><span id="cb1-1"><a href="#cb1-1"></a>remotes<span class="kw">::</span>install_github<span class="kw">(</span><span class="st">'lemdt/CovidShinyModel'</span><span class="kw">)</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>covidshiny<span class="kw">::</span>start_app<span class="kw">()</span></span></code></pre></div>
 </div>
 <div id="resources-and-documentation" class="section level2">
 <h2 class="hasAnchor">
@@ -110,7 +111,7 @@ covidshiny::start_app()</a></code></pre>
 <tr class="odd">
 <td align="left">Package documentation</td>
 <td align="left"><a href="https://lemdt.github.io/CovidShinyModel/" class="uri">https://lemdt.github.io/CovidShinyModel/</a></td>
-<td align="left">N/A</td>
+<td align="left">master</td>
 </tr>
 </tbody>
 </table>
