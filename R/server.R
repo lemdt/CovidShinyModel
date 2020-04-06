@@ -540,24 +540,11 @@ server <- function(input, output, session) {
     ##  Influx of Infections
     ##  ............................................................................
 
-    output$influx_ui <- renderUI({
-        if (input$showinflux) {
-            div(
-                dateInput(
-                    inputId = 'influx_date',
-                    label = "Date of Influx",
-                    min = input$curr_date,
-                    value = input$curr_date
-                ),
-                numericInput('num.influx',
-                             label =  "Number of Infected Entering Region",
-                             value = 0)
-                
-            )
-        }
-
+    observeEvent(input$curr_date, {
+        updateDateInput(session,
+                        inputId = 'influx_date',
+                        min = input$curr_date)
     })
-
     ##  ............................................................................
     ##  Projection
     ##  ............................................................................
