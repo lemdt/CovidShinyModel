@@ -1,12 +1,10 @@
-# Covid-19 Epidemic Modeling with R Shiny
+# LEMMA (Local Epidemic Modeling for Management & Action) 
 
 <!-- badges: start -->
 [![R build status](https://github.com/lemdt/CovidShinyModel/workflows/R-CMD-check/badge.svg)](https://github.com/lemdt/CovidShinyModel/actions)
 <!-- badges: end -->
 
-This is a shiny app that models the COVID-19 epidemic. This is based on the <a href="http://penn-chime.phl.io/">Penn Chime app</a> - all credit goes to the Penn Medicine and Code for Philly team for their idea. 
-
-A beta version of the app is live <a href="https://jpspeng.shinyapps.io/COVIDModel/">here</a>.
+LEMMA (Local Epidemic Modeling for Management & Action) is a tool designed to accept local and regional information about the SARS-CoV-2 (COVID-19) epidemic and provide relevant projections about epidemic trajectory to inform strategic planning and resource management. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized using local epidemic data on the number of hospitalizations. Outputs include daily number  hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and resolved cases. 
 
 ## Development Environment Setup (R)
 
@@ -16,15 +14,6 @@ To run the app locally, load up R or Rstudio and run:
 remotes::install_github('lemdt/CovidShinyModel')
 covidshiny::start_app()
 ```
-
-## Repo Organization
-
-(James: the text for this section needs to be revised)
-
-The live "production" version of the app is on <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel/</a>. The code for the production version is in the [master branch](https://github.com/jpspeng/CovidShinyModel)
-
-Pre-release versions of the app are on <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel1Prerelease/</a> and <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel2Prerelease/</a>. (Model 1 currently uses a deterministic model while Model 2 uses a Markov model.) The code for these versions are in the <b>prerelease</b> branch.
-
 
 ## Issues and bugs
 
