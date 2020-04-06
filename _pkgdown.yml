@@ -1,1 +1,5 @@
-destination: docs
+title: COVID Shiny model
+url: http://lemdt.github.io/CovidShinyModel
+template:
+  params:
+    bootswatch: cosmo
