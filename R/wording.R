@@ -86,7 +86,7 @@ LEMMA is a collaborative effort between experts in Medicine, Public Health, and 
   <li>Laura B. Balzer, PhD, Assistant Professor of Biostatistics, UMass Amherst</li>
   <li>Ben Olding, XX, YY, ZZZ</li>
   <li>Randy True, XX, YY, ZZZ</li>
-  <li>Karthik Ram, XX, YY, ZZZ</li>
+  <li>Karthik Ram, PhD, Senior Research Data Scientist, Berkeley Institute for Data Science, University of California, Berkeley</li>
   <li>Vivek Jain, MD, Associate Professor of Medicine, UC San Francisco & San Francisco General Hospital</li>
   <li>Elvin Geng, MD, Professor of Medicine, Washington University in St. Louis</li>
   <li>Diane V. Havlir, MD, Professor of Medicine, UC San Francisco & San Francisco General Hospital</li>
