@@ -25,7 +25,7 @@ Note that as of April 6, 2020, the app is only available in a pre-release form. 
 |:--|:--|:--|
 | Stable release of shiny app | not released  | master | 
 | Pre release of next Shiny app | http://64.225.45.108:3838/lemma/ | prerelease-changes |
-| Package documentation | https://lemdt.github.io/CovidShinyModel/ | N/A |
+| Package documentation | https://lemdt.github.io/CovidShinyModel/ | master |
 
 
 ## Issues and bugs
