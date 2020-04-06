@@ -20,7 +20,11 @@ server <- function(input, output, session) {
     model <- reactiveVal(M0)
 
     # initializing a set of parameters
-    params <- M0$default.params
+    params <- reactiveValues()
+    
+    for (model_param in names(M0$default.params)){
+        params[[model_param]] = M0$default.params[[model_param]]
+    }
 
     frozen_lines <- reactiveVal(NULL)
 

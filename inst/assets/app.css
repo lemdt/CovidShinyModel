@@ -1,5 +1,5 @@
 body {
-  max-width: 1300px;
+  max-width: 1350px;
   margin: 0 auto;
 }
 
@@ -18,4 +18,8 @@ hr {
 
 #freeze-section .form-group {
   display: inline-block;
+}
+
+.nav a{
+    font-size: 1.4em !important;
 }
