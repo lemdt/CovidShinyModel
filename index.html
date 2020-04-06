@@ -67,26 +67,18 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="covid-19-epidemic-modeling-with-r-shiny" class="section level1">
+<div id="lemma-local-epidemic-modeling-for-management--action" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
-<a href="#covid-19-epidemic-modeling-with-r-shiny" class="anchor"></a>Covid-19 Epidemic Modeling with R Shiny</h1></div>
+<a href="#lemma-local-epidemic-modeling-for-management--action" class="anchor"></a>LEMMA (Local Epidemic Modeling for Management &amp; Action)</h1></div>
 <!-- badges: start -->
 
-<p>This is a shiny app that models the COVID-19 epidemic. This is based on the <a href="http://penn-chime.phl.io/">Penn Chime app</a> - all credit goes to the Penn Medicine and Code for Philly team for their idea.</p>
-<p>A beta version of the app is live <a href="https://jpspeng.shinyapps.io/COVIDModel/">here</a>.</p>
+<p>LEMMA (Local Epidemic Modeling for Management &amp; Action) is a tool designed to accept local and regional information about the SARS-CoV-2 (COVID-19) epidemic and provide relevant projections about epidemic trajectory to inform strategic planning and resource management. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized using local epidemic data on the number of hospitalizations. Outputs include daily number hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and resolved cases.</p>
 <div id="development-environment-setup-r" class="section level2">
 <h2 class="hasAnchor">
 <a href="#development-environment-setup-r" class="anchor"></a>Development Environment Setup (R)</h2>
 <p>To run the app locally, load up R or Rstudio and run:</p>
 <pre><code><a href="https://remotes.r-lib.org/reference/install_github.html">remotes::install_github('lemdt/CovidShinyModel')
 covidshiny::start_app()</a></code></pre>
-</div>
-<div id="repo-organization" class="section level2">
-<h2 class="hasAnchor">
-<a href="#repo-organization" class="anchor"></a>Repo Organization</h2>
-<p>(James: the text for this section needs to be revised)</p>
-<p>The live âproductionâ version of the app is on <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel/</a>. The code for the production version is in the <a href="https://github.com/jpspeng/CovidShinyModel">master branch</a></p>
-<p>Pre-release versions of the app are on <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel1Prerelease/</a> and <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel2Prerelease/</a>. (Model 1 currently uses a deterministic model while Model 2 uses a Markov model.) The code for these versions are in the <b>prerelease</b> branch.</p>
 </div>
 <div id="issues-and-bugs" class="section level2">
 <h2 class="hasAnchor">
