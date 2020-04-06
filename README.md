@@ -15,6 +15,19 @@ remotes::install_github('lemdt/CovidShinyModel')
 covidshiny::start_app()
 ```
 
+## Resources and Documentation
+
+Links to live versions of the app and documentation are shown below. 
+
+Note that as of April 6, 2020, the app is only available in a pre-release form. The stable version of the app will be available within the next few days. 
+
+| Resource | Description | Branch |
+|:--|:--|:--|
+| Stable release of shiny app | not released  | master | 
+| Pre release of next Shiny app | http://64.225.45.108:3838/lemma/ | prerelease-changes |
+| Package documentation | https://lemdt.github.io/CovidShinyModel/ | N/A |
+
+
 ## Issues and bugs
 
 If you find any issues or problems, please post an [issue](https://github.com/lemdt/CovidShinyModel/issues)
