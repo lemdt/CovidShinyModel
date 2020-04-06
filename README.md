@@ -12,7 +12,7 @@ Development of the app is ongoing, and a live, stable version is currently unava
 
 To run the app locally, load up R or Rstudio and run:
 
-```
+```coffee
 remotes::install_github('lemdt/CovidShinyModel')
 covidshiny::start_app()
 ```
