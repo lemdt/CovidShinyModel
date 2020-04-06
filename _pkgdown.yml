@@ -3,3 +3,13 @@ url: http://lemdt.github.io/CovidShinyModel
 template:
   params:
     bootswatch: cosmo
+navbar:
+  left:
+    - icon: fa-home
+      href: index.html
+  right:
+      text: "Functions"
+      href: reference/index.html
+    - icon: fa-github fa-lg
+      text: "GitHub"
+      href: https://github.com/lemdt/CovidShinyModel/    
