@@ -4,7 +4,9 @@
 [![R build status](https://github.com/lemdt/CovidShinyModel/workflows/R-CMD-check/badge.svg)](https://github.com/lemdt/CovidShinyModel/actions)
 <!-- badges: end -->
 
-LEMMA (Local Epidemic Modeling for Management & Action) is a tool designed to accept local and regional information about the SARS-CoV-2 (COVID-19) epidemic and provide relevant projections about epidemic trajectory to inform strategic planning and resource management. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized using local epidemic data on the number of hospitalizations. Outputs include daily number  hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and resolved cases. 
+LEMMA (Local Epidemic Modeling for Management & Action) is a tool designed to accept local and regional information about the SARS-CoV-2 (COVID-19) epidemic and provide relevant projections about epidemic trajectory to inform strategic planning and resource management. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized using local epidemic data on the number of hospitalizations. Outputs include daily number hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and resolved cases. 
+
+Development of the app is ongoing, and a live, stable version is currently unavailable (as of April 6, 2020). To use the app, you can run locally or use the pre-release development version in the "Resources and Documentation" section below. 
 
 ## Development Environment Setup (R)
 
