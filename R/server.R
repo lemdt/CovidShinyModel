@@ -153,12 +153,10 @@ server <- function(input, output, session) {
         }
         else if (as.character(input$date.hist) %in% as.character(hist.data()$Date))
             (
-                showNotification(re.warning.date.repeat,
-                                 type = "error")
+                shinyalert::shinyalert(re.warning.date.repeat, type = "error")
             )
         else{
-            showNotification(re.warning.blank.num,
-                             type = "error")
+            shinyalert::shinyalert(re.warning.blank.num, type = "error")
         }
     })
 
@@ -241,8 +239,7 @@ server <- function(input, output, session) {
 
         }
         else{
-            showNotification(re.warning.more.data,
-                             type = "error")
+            shinyalert::shinyalert(re.warning.more.data, type = "error")
         }
 
     })
@@ -474,7 +471,7 @@ server <- function(input, output, session) {
         }
 
         else{
-            showNotification(double.int.warning, type = 'error')
+            shinyalert::shinyalert(double.int.warning, type = "error")
         }
     })
 
@@ -899,11 +896,11 @@ server <- function(input, output, session) {
         name <- trimws(input$freeze_name)
         selected <- input$selected_lines
         if (name == selected) {
-            shinyalert::shinyalert("Can't use the same name as the selected variable.", type = "error")
+            shinyalert::shinyalert("You cannot use the same name as the selected variable.", type = "error")
             return()
         }
         if (name %in% unique(frozen_lines()$variable)) {
-            shinyalert::shinyalert("Can't use the same name twice.", type = "error")
+            shinyalert::shinyalert("You cannot use the same name twice.", type = "error")
             return()
         }
         cols <- c("date", selected)
