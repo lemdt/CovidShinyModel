@@ -21,5 +21,9 @@ hr {
 }
 
 .nav a{
-    font-size: 1.4em !important;
+  font-size: 1.4em !important;
+}
+
+.btn {
+  font-size: 13px !important;
 }
