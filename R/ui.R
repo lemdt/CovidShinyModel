@@ -28,7 +28,7 @@ ui <- function(req) {
                                 
                                 numericInput(
                                   inputId = 'num_hospitalized',
-                                  label = "Estimate of current inpatients with COVID-19:",
+                                  label = "Estimated number of hospitalized patients with COVID-19:",
                                   value = 50
                                 ),
                                 
