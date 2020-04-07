@@ -102,7 +102,7 @@ ui <- function(req) {
                                   ),
                                   sliderInput(
                                     'smooth.int',
-                                    label = "Smoothed over how many days?",
+                                    label = "Days to Reach New Re",
                                     value = 0,
                                     min = 0,
                                     max = 30

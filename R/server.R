@@ -397,13 +397,13 @@ server <- function(input, output, session) {
     int.df.with.re <- data.frame(
         'Day' = numeric(0),
         'New Re' = numeric(0),
-        'Days of Smoothing' =  numeric(0)
+        'Days to Reach New Re' =  numeric(0)
     )
 
     int.df.with.double <- data.frame(
         'Day' = numeric(0),
         'New Double Time' = numeric(0),
-        'Days of Smoothing' =  numeric(0)
+        'Days to Reach New Re' =  numeric(0)
     )
 
     intervention.table <- reactiveVal(int.df.with.re)
@@ -484,15 +484,15 @@ server <- function(input, output, session) {
             int.df <-
                 int.df[, c('Date',
                            'New.Double.Time',
-                           'Days.of.Smoothing',
+                           'Days.to.Reach.New.Re',
                            'Day')]
             colnames(int.df) <-
-                c('Date', 'New Double Time', 'Days of Smoothing', 'Day')
+                c('Date', 'New Double Time', 'Days to Reach New Re', 'Day')
         }
         else{
-            int.df <- int.df[, c('Date', 'New.Re', 'Days.of.Smoothing', 'Day')]
+            int.df <- int.df[, c('Date', 'New.Re', 'Days.to.Reach.New.Re', 'Day')]
             colnames(int.df) <-
-                c('Date', 'New Re', 'Days of Smoothing', 'Day')
+                c('Date', 'New Re', 'Days to Reach New Re', 'Day')
         }
 
         if (nrow(int.df) > 0) {
@@ -568,7 +568,7 @@ server <- function(input, output, session) {
                                                 input$proj_num_days
                                             ),
                                             New.Re = c(params$int.new.r0, input$r0_prior, NA),
-                                            Days.of.Smoothing = c(params$int.smooth.days, 0, 0)
+                                            Days.to.Reach.New.Re = c(params$int.smooth.days, 0, 0)
                                         ),
                                         int.table.temp)
             }
@@ -576,7 +576,7 @@ server <- function(input, output, session) {
                 int.table.temp <- rbind(list(
                                             Day = c(-curr.day, input$proj_num_days),
                                             New.Re = c(r0.default, NA),
-                                            Days.of.Smoothing = c(0, 0)
+                                            Days.to.Reach.New.Re = c(0, 0)
                                         ),
                                         int.table.temp)
             }
@@ -591,7 +591,7 @@ server <- function(input, output, session) {
                         input$proj_num_days
                     ),
                     New.Double.Time = c(params$int.new.double, input$doubling_time, NA),
-                    Days.of.Smoothing = c(params$int.smooth.days, 0, 0)
+                    Days.to.Reach.New.Re = c(params$int.smooth.days, 0, 0)
                 ),
                 int.table.temp
             )
