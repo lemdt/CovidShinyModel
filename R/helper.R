@@ -12,6 +12,12 @@ utils::globalVariables(c("Day", "value", "variable", "Date"))
 #' @param doubling.time Numeric.
 #' @param gamma Numeric.
 getBetaFromDoubling <- function(doubling.time, gamma) {
+  if (any(!is.na(doubling.time) & !is.numeric(doubling.time))) {
+    stop("Doubling time must be numeric", call. = FALSE)
+  }
+  if (any(!is.na(doubling.time) & doubling.time <= 0)) {
+    stop("Doubling time must be greater than zero", call. = FALSE)
+  }
   g <- 2 ^ (1 / doubling.time) - 1
   beta <- g + gamma
   return(beta)

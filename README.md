@@ -1,29 +1,33 @@
-# Covid-19 Epidemic Modeling with R Shiny
+# LEMMA (Local Epidemic Modeling for Management & Action) 
 
 <!-- badges: start -->
 [![R build status](https://github.com/lemdt/CovidShinyModel/workflows/R-CMD-check/badge.svg)](https://github.com/lemdt/CovidShinyModel/actions)
 <!-- badges: end -->
 
-This is a shiny app that models the COVID-19 epidemic. This is based on the <a href="http://penn-chime.phl.io/">Penn Chime app</a> - all credit goes to the Penn Medicine and Code for Philly team for their idea. 
+LEMMA (Local Epidemic Modeling for Management & Action) is a tool designed to accept local and regional information about the SARS-CoV-2 (COVID-19) epidemic and provide relevant projections about epidemic trajectory to inform strategic planning and resource management. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized using local epidemic data on the number of hospitalizations. Outputs include daily number hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and resolved cases. 
 
-A beta version of the app is live <a href="https://jpspeng.shinyapps.io/COVIDModel/">here</a>.
+Development of the app is ongoing, and a live, stable version is currently unavailable (as of April 6, 2020). To use the app, you can run locally or use the pre-release development version in the "Resources and Documentation" section below. 
 
 ## Development Environment Setup (R)
 
 To run the app locally, load up R or Rstudio and run:
 
-```
+```coffee
 remotes::install_github('lemdt/CovidShinyModel')
 covidshiny::start_app()
 ```
 
-## Repo Organization
+## Resources and Documentation
 
-(James: the text for this section needs to be revised)
+Links to live versions of the app and documentation are shown below. 
 
-The live "production" version of the app is on <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel/</a>. The code for the production version is in the [master branch](https://github.com/jpspeng/CovidShinyModel)
+Note that as of April 6, 2020, the app is only available in a pre-release form. The stable version of the app will be available within the next few days. 
 
-Pre-release versions of the app are on <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel1Prerelease/</a> and <a href="https://jpspeng.shinyapps.io/COVIDModel/">https://jpspeng.shinyapps.io/COVIDModel2Prerelease/</a>. (Model 1 currently uses a deterministic model while Model 2 uses a Markov model.) The code for these versions are in the <b>prerelease</b> branch.
+| Resource | Description | Branch |
+|:--|:--|:--|
+| Stable release of shiny app | not released  | master | 
+| Pre release of next Shiny app | http://64.225.45.108:3838/lemma/ | prerelease-changes |
+| Package documentation | https://lemdt.github.io/CovidShinyModel/ | master |
 
 
 ## Issues and bugs
