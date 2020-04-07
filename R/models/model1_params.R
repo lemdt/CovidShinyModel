@@ -3,7 +3,7 @@
 ##  ............................................................................
 
 # default parameters for Model 1
-default.params <- reactiveValues(
+default.params <- list(
   illness.length = 7,
   gamma = 1 / 7,
   incubation.period = 5,

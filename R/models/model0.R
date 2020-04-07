@@ -84,9 +84,9 @@ SEIR <- function(S0,
     HP[tt + 1] <- HP[tt] + dHP
     DC[tt + 1] <- DC[tt] + dDC
 
-    if (influx[['day']] == tt - 1) {
-      S[tt] <- S[tt] - influx[['num.influx']]
-      E[tt] <- E[tt] + influx[['num.influx']]
+    if (influx[['day']] == tt) {
+      S[tt + 1] <- S[tt + 1] - influx[['num.influx']]
+      E[tt + 1] <- E[tt + 1] + influx[['num.influx']]
     }
   }
 

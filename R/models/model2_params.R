@@ -3,7 +3,7 @@
 ##  ............................................................................
 
 # default parameters for Model 2
-default.params <- shiny::reactiveValues(
+default.params <- list(
   incubation.period = 5,
   sigma = 1 / 5,
   illness.length = 7,
