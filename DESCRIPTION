@@ -23,7 +23,6 @@ Imports:
     shinyalert,
     shinyjs,
     urlshorteneR,
-    magrittr,
     shinythemes,
     tidyr
 Suggests:
