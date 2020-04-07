@@ -27,19 +27,18 @@ default.params <- list(
 
 
 # modal to enter parameters that pops up after clicking on "Customize Other Parameters"
-parameters.page <- function(params) {
-  params.page <- fluidPage(
-      incubation.period.input(params$incubation.period),
-      illness.length.input(params$illness.length),
-      hosp.after.inf.input(params$inf.to.hosp),
-      hosp.rate.input(params$hosp.rate),
-      hosp.los.input.model0(params$hosp.los),
-      icu.rate.input(params$icu.rate),
-      vent.rate.input(params$vent.rate)
-    )
-
-  params.page
+parameters.page <- function(){
+  fluidPage(
+    incubation.period.input(default.params$incubation.period),
+    illness.length.input(default.params$illness.length),
+    hosp.after.inf.input(default.params$inf.to.hosp),
+    hosp.rate.input(default.params$hosp.rate),
+    hosp.los.input.model0(default.params$hosp.los),
+    icu.rate.input(default.params$icu.rate),
+    vent.rate.input(default.params$vent.rate)
+  )
 }
+
 
 
 #' Process parameters for export

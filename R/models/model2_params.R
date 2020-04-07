@@ -31,54 +31,52 @@ default.params <- list(
 )
 
 # modal to enter parameters that pops up after clicking on "Customize Other Parameters"
-parameters.page <- function(params) {
-  params.page <- fluidPage(
-      incubation.period.input(params$incubation.period),
-      hosp.rate.input(params$hosp.rate),
-      illness.length.input(params$illness.length),
-      hosp.after.inf.input(params$inf.to.hosp),
+parameters.page <- function(){
+  fluidPage(
+      incubation.period.input(default.params$incubation.period),
+      hosp.rate.input(default.params$hosp.rate),
+      illness.length.input(default.params$illness.length),
+      hosp.after.inf.input(default.params$inf.to.hosp),
 
       HTML(g.trans.prob.head),
       trans.prob.slider(
         inputId = 'p.g_icu',
         label = g.to.icu.wording,
-        value = params$p.g_icu
+        value = default.params$p.g_icu
       ),
       trans.prob.slider(
         inputId = 'p.g_d',
         label = g.to.disc.wording,
-        value = params$p.g_d
+        value = default.params$p.g_d
       ),
 
       HTML(icu.trans.prob.head),
       trans.prob.slider(
         inputId = 'p.icu_g',
         label = icu.to.g.wording,
-        value = params$p.icu_g
+        value = default.params$p.icu_g
       ),
       trans.prob.slider(
         inputId = 'p.icu_v',
         label = icu.to.vent.wording,
-        value = params$p.icu_v
+        value = default.params$p.icu_v
       ),
 
       HTML(vent.trans.prob.head),
       trans.prob.slider(
         inputId = 'p.v_icu',
         label = vent.to.icu.wording,
-        value = params$p.v_icu
+        value = default.params$p.v_icu
       ),
       trans.prob.slider(
         inputId = 'p.v_m',
         label = vent.to.m.wording,
-        value = params$p.v_m,
+        value = default.params$p.v_m,
         min = 0,
         max = 0.2,
         step = 0.001
       )
     )
-
-  params.page
 }
 
 

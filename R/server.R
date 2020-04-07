@@ -284,7 +284,7 @@ server <- function(input, output, session) {
 
         div(
             HTML("<br><h4><b>Parameters</b></h4><br>"),
-            isolate(model())$parameters.page(params)
+            isolate(model())$parameters.page()
         )
     })
 
