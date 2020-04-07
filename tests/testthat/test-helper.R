@@ -28,9 +28,13 @@ test_that("getBetaFromDoubling returns NA if either input is NA", {
   expect_true(is.na(b3))
 })
 
-test_that("getBetaFromDoubling gives meaningful result if doubling.time <= 0", {
-  b1 <- getBetaFromDoubling(0, 1)
-  b2 <- getBetaFromDoubling(-1, 1)
-  expect_equal(b1, Inf)
-  expect_equal(b2, 0.5)
+test_that("getBetaFromDoubling errors if doubling.time <= 0", {
+  expect_error(getBetaFromDoubling(0, 1))
+  expect_error(getBetaFromDoubling(-1, 1))
+  expect_error(getBetaFromDoubling(c(NA, -1), 1))
+})
+
+test_that("getBetaFromDoubling errors if doubling.time isn't numeric", {
+  expect_error(getBetaFromDoubling("foo", 1))
+  expect_error(getBetaFromDoubling(c(NA, "foo"), 1))
 })
