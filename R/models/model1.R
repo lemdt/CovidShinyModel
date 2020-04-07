@@ -71,9 +71,9 @@ SEIR <- function(S0,
     I[tt + 1] <-  sigma * E[tt] - gamma * I[tt]              + I[tt]
     R[tt + 1] <-  gamma * I[tt]                              + R[tt]
 
-    if (influx[['day']] == tt - 1) {
-      S[tt] <- S[tt] - influx[['num.influx']]
-      E[tt] <- E[tt] + influx[['num.influx']]
+    if (influx[['day']] == tt) {
+      S[tt + 1] <- S[tt + 1] - influx[['num.influx']]
+      E[tt + 1] <- E[tt + 1] + influx[['num.influx']]
     }
   }
 

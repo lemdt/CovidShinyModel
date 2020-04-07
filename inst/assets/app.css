@@ -1,5 +1,5 @@
 body {
-  max-width: 1300px;
+  max-width: 1330px;
   margin: 0 auto;
 }
 
@@ -8,10 +8,22 @@ hr {
   border-top: 1px solid #000000;
 }
 
-#rendered\.table {
+.navbar-brand {
+  font-size: 22px; 
+}
+
+#rendered.table {
   font-size: 1.1em;
 }
 
 #freeze-section .form-group {
   display: inline-block;
+}
+
+.nav a{
+  font-size: 1.4em !important;
+}
+
+.btn {
+  font-size: 13px !important;
 }

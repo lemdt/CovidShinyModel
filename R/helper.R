@@ -12,6 +12,12 @@ utils::globalVariables(c("Day", "value", "variable", "Date"))
 #' @param doubling.time Numeric.
 #' @param gamma Numeric.
 getBetaFromDoubling <- function(doubling.time, gamma) {
+  if (any(!is.na(doubling.time) & !is.numeric(doubling.time))) {
+    stop("Doubling time must be numeric", call. = FALSE)
+  }
+  if (any(!is.na(doubling.time) & doubling.time <= 0)) {
+    stop("Doubling time must be greater than zero", call. = FALSE)
+  }
   g <- 2 ^ (1 / doubling.time) - 1
   beta <- g + gamma
   return(beta)
@@ -432,10 +438,12 @@ create.cases.df <- function(df) {
 
   df_temp <-
     df_temp[, c('date', 'days.shift', 'Cases', 'Active', 'Resolved')]
-  colnames(df_temp) <-
-    c('date', 'day', 'Cases', 'Active', 'Resolved')
+  
   df_temp <- roundNonDateCols(df_temp)
 
+  colnames(df_temp) <-
+    c('date', 'day', 'Total Cases', 'Active Cases', 'Resolved Cases')
+  
   return(df_temp)
 }
 
@@ -504,23 +512,27 @@ create.res.df <- function(df, hosp_cap, icu_cap, vent_cap) {
 #' @import ggplot2
 create.graph <- function(df.to.plot, selected, plot.day, curr.date, frozen_data = NULL) {
   if (length(selected) > 0) {
-    cols <- c('date', selected)
-
-    df.to.plot <- df.to.plot[, cols]
-
-    df_melt <- tidyr::pivot_longer(df.to.plot, -date, names_to = "variable")
-    
-    if (!is.null(frozen_data)) {
-      df_melt <- rbind(df_melt, frozen_data)
+    if (selected[1] %in% colnames(df.to.plot)){
+      cols <- c('date', selected)
+      
+      df.to.plot <- df.to.plot[, cols]
+      
+      df_melt <- tidyr::pivot_longer(df.to.plot, -date, names_to = "variable")
+      
+      if (!is.null(frozen_data)) {
+        df_melt$variable <- ''
+        df_melt <- rbind(frozen_data, df_melt)
+        df_melt <- df_melt[!duplicated(df_melt[,c('date', 'value')]),]
+      }
+      
+      graph <-
+        ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +
+        geom_line() +  geom_vline(xintercept = curr.date) + theme(text = element_text(size =
+                                                                                        20)) +
+        geom_vline(xintercept = plot.day, color = 'red') + ylab('') + geom_hline(yintercept = 0)
+      
+      return(graph)
     }
-
-    graph <-
-      ggplot(df_melt, aes(x = date, y = value, col = variable)) + geom_point() +
-      geom_line() +  geom_vline(xintercept = curr.date) + theme(text = element_text(size =
-                                                                                      20)) +
-      geom_vline(xintercept = plot.day, color = 'red') + ylab('') + geom_hline(yintercept = 0)
-
-    return(graph)
   }
 }
 

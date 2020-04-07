@@ -193,9 +193,9 @@ SEIR <- function(S0,
     R[tt + 1] <- R[tt] + dR
     newG[tt + 1] <- gamma.h * IH[tt]
 
-    if (influx[['day']] == tt - 1) {
-      S[tt] <- S[tt] - influx[['num.influx']]
-      E[tt] <- E[tt] + influx[['num.influx']]
+    if (influx[['day']] == tt) {
+      S[tt + 1] <- S[tt + 1] - influx[['num.influx']]
+      E[tt + 1] <- E[tt + 1] + influx[['num.influx']]
     }
   }
 
