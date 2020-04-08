@@ -584,39 +584,42 @@ process_df_download <- function(model = 'M0', ...){
 #'
 #' @return Dataframe.
 process_df_download_M0 <- function(df) {
-  df$R <- df$R.orig
-  df$HOSP.report <- df$hosp
-  df$ICU.report <- df$icu
-  df$VENT.report <- df$vent
-  df$DISCHARGE.report <- df$DCH.state
-  df$MORTALITY.report <- df$M.state
-
-  df <-
-    dplyr::select(
-      df,
-      day,
-      days.shift,
-      date,
-      S,
-      E,
-      I,
-      IR,
-      IH,
-      R,
-      G_new = newG,
-      G_only = G.state,
-      ICU_only = ICU.state,
-      V_only = V.state,
-      DCH = DCH.state,
-      M = M.state,
-      M5_hosp  = HOSP.report,
-      M5_icut = ICU.report,
-      M5_vent = VENT.report,
-      M5_dch =  DISCHARGE.report,
-      M5_M = MORTALITY.report
+  df.return <- df
+  df.return$R <- df.return$R.orig
+  
+  df.return <-
+    df.return[, c('day',
+                  'days.shift',
+                  'date',
+                  'S',
+                  'E',
+                  'I',
+                  'IR',
+                  'IH',
+                  'R',
+                  'HP',
+                  'icu',
+                  'vent',
+                  'DC')]
+  
+  colnames(df.return) <-
+    c(
+      'day',
+      'days.shift',
+      'date',
+      'S',
+      'E',
+      'I',
+      'IR',
+      'IH',
+      'R',
+      'CP_hosp',
+      'CP_icut',
+      'CP_vent',
+      'C_dch'
     )
   
-  df
+  return(df.return)
 }
 
 
@@ -637,6 +640,8 @@ process_df_download_M1 <- function(df) {
 #'
 #' Processes download dataframe with columns with specified names in a
 #' specified order.
+#' 
+#' @importFrom rlang .data
 #'
 #' @param df Dataframe.
 #'
@@ -652,26 +657,26 @@ process_df_download_M2 <- function(df) {
   df <-
     dplyr::select(
       df,
-      day,
-      days.shift,
-      date,
-      S,
-      E,
-      I,
-      IR,
-      IH,
-      R,
-      G_new = newG,
-      G_only = G.state,
-      ICU_only = ICU.state,
-      V_only = V.state,
-      DCH = DCH.state,
-      M = M.state,
-      M5_hosp  = HOSP.report,
-      M5_icut = ICU.report,
-      M5_vent = VENT.report,
-      M5_dch =  DISCHARGE.report,
-      M5_M = MORTALITY.report
+      .data$day,
+      .data$days.shift,
+      .data$date,
+      .data$S,
+      .data$E,
+      .data$I,
+      .data$IR,
+      .data$IH,
+      .data$R,
+      G_new = .data$newG,
+      G_only = .data$G.state,
+      ICU_only = .data$ICU.state,
+      V_only = .data$V.state,
+      DCH = .data$DCH.state,
+      M = .data$M.state,
+      M5_hosp  = .data$HOSP.report,
+      M5_icut = .data$ICU.report,
+      M5_vent = .data$VENT.report,
+      M5_dch =  .data$DISCHARGE.report,
+      M5_M = .data$MORTALITY.report
     )
 
   df

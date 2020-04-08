@@ -8,12 +8,13 @@ est.days <- 365
 
 server <- function(input, output, session) {
     
-    model <- reactiveVal("M0")
+    # setting model 
+    model <- "M0"
 
     # initializing a set of parameters
     params <- reactiveValues()
     
-    model_defaults <- default_params(model = model())
+    model_defaults <- default_params(model = model)
     
     for (model_param in names(model_defaults)){
         params[[model_param]] = model_defaults[[model_param]]
@@ -200,7 +201,7 @@ server <- function(input, output, session) {
 
         if (nrow(hist.temp) >= 2) {
             best.fit <- findBestRe(
-                model = model(),
+                model = model,
                 N = input$num_people,
                 start.exp = start.exp.default,
                 num.days = est.days,
@@ -256,7 +257,7 @@ server <- function(input, output, session) {
 
         div(
             HTML("<br><h4><b>Parameters</b></h4><br>"),
-            parameters_page(model = model())
+            parameters_page(model = model)
         )
     })
 
@@ -349,7 +350,7 @@ server <- function(input, output, session) {
 
     curr.day.list <- reactive({
         find.curr.estimates(
-            model = model(),
+            model = model,
             N = input$num_people,
             beta.vector = initial_beta_vector(),
             num.days = est.days,
@@ -603,7 +604,7 @@ server <- function(input, output, session) {
         start.res <- 0
         
         seir.df = SEIR(
-            model = model(),
+            model = model,
             S0 = start.susc,
             E0 = start.exp.default,
             I0 = start.inf,
@@ -1001,7 +1002,7 @@ server <- function(input, output, session) {
 
         # model specific dataframe downloads
         # process.df.for.download function is in model1.R or model2.R
-        df.output <- process_df_download(model = model(),
+        df.output <- process_df_download(model = model,
                                          df = df.output)
 
         # TODO: this is dirty. Should perhaps be parsed out into a function.
@@ -1033,7 +1034,7 @@ server <- function(input, output, session) {
                   input$num_influx)
         }
 
-        params.list <- process_params_download(model = model(), 
+        params.list <- process_params_download(model = model, 
                                                params = params)
 
         params.df <-
