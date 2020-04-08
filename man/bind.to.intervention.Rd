@@ -7,7 +7,7 @@
 bind.to.intervention(int.table, params, usedouble)
 }
 \arguments{
-\item{int.table}{Dataframe with Day, New.Re (or New.Double.Time), and Days.of.Smoothing
+\item{int.table}{Dataframe with Day, New.Re (or New.Double.Time), and Days.to.Reach.New.Re
 columns.}
 
 \item{params}{List of parameters.}

@@ -4,10 +4,10 @@
 \alias{findBestRe}
 \title{Find Best Fit for Re}
 \usage{
-findBestRe(seir_func, N, start.exp, num.days, day.vec, num_actual.vec, params)
+findBestRe(model, N, start.exp, num.days, day.vec, num_actual.vec, params)
 }
 \arguments{
-\item{seir_func}{The SEIR function to use}
+\item{model}{String, model to use (either M0, M1, M2)}
 
 \item{N}{Numeric. Number of people in the area.}
 

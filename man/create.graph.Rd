@@ -4,7 +4,8 @@
 \alias{create.graph}
 \title{Graphing Helper}
 \usage{
-create.graph(df.to.plot, selected, plot.day, curr.date, frozen_data = NULL)
+create.graph(df.to.plot, selected, plot.day, curr.date,
+  frozen_data = NULL)
 }
 \arguments{
 \item{df.to.plot}{Dataframe with data to plot.}

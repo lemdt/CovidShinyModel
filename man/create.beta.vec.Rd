@@ -8,7 +8,7 @@ create.beta.vec(int.table, gamma, usedouble)
 }
 \arguments{
 \item{int.table}{Dataframe with columns: Day, New.Re (or New.Double.Time), and
-Days.of.Smoothing}
+Days.to.Reach.New.Re}
 
 \item{gamma}{Numeric.}
 
@@ -20,7 +20,7 @@ Vector of beta values to use in the SEIR simulation.
 \description{
 This takes as input an intervention dataframe (int.table). The dataframe should have as
 columns 'Day' number, new intervention metric (either New.Re or New.Double.Time)
-and the number of days that the intervention is smoothed over (Days.of.Smoothing).
+and the number of days that the intervention is smoothed over (Days.to.Reach.New.Re).
 }
 \details{
 The function also takes as input a gamma value a flag for whether doubling time or is
