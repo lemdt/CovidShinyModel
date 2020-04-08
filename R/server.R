@@ -201,7 +201,7 @@ server <- function(input, output, session) {
 
         if (nrow(hist.temp) >= 2) {
             best.fit <- findBestRe(
-                seir_func = SEIR,
+                model = model,
                 N = input$num_people,
                 start.exp = start.exp.default,
                 num.days = est.days,
