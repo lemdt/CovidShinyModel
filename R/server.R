@@ -1,15 +1,8 @@
-utils::globalVariables("SEIR")
-
-
 #' Server part
 #' @import shiny
-M0 <- new.env()
-source('R/models/model0.R', local = M0)
-source('R/models/model0_params.R', local = M0)
 
-M2 <- new.env()
-source('R/models/model2.R', local = M2)
-source('R/models/model2_params.R', local = M2)
+# Set model number 
+model = "M0"
 
 # start simulation from this number of exposures
 start.exp.default <- 1
@@ -17,13 +10,14 @@ r0.default <- 2.8
 est.days <- 365
 
 server <- function(input, output, session) {
-    model <- reactiveVal(M0)
 
     # initializing a set of parameters
     params <- reactiveValues()
     
-    for (model_param in names(M0$default.params)){
-        params[[model_param]] = M0$default.params[[model_param]]
+    model_defaults <- default_params(model = model)
+    
+    for (model_param in names(model_defaults)){
+        params[[model_param]] = model_defaults[[model_param]]
     }
 
     frozen_lines <- reactiveVal(NULL)
@@ -207,7 +201,7 @@ server <- function(input, output, session) {
 
         if (nrow(hist.temp) >= 2) {
             best.fit <- findBestRe(
-                seir_func = model()$SEIR,
+                seir_func = SEIR,
                 N = input$num_people,
                 start.exp = start.exp.default,
                 num.days = est.days,
@@ -259,32 +253,11 @@ server <- function(input, output, session) {
     ##  Parameter selection
     ##  ............................................................................
 
-    # For the release, we are removing the Markov Model switch for now. 
-    # This is currently a beta feature only for internal use. 
-    # Markov Model selection
-    # observeEvent(input$model_select, ignoreInit = TRUE, {
-    #     if (input$model_select == TRUE) {
-    #         model(M2)
-    #     } else {
-    #         model(M0)
-    #     }
-    # 
-    #     default.params.list <- reactiveValuesToList(model()$default.params)
-    #     for (param in names(default.params.list)) {
-    #         params[[param]] = as.numeric(default.params.list[param])
-    #     }
-    # 
-    #     # incredibly hacky way to deal with forcing the reactive graphs/tables to update
-    #     num_people <- input$num_people
-    #     updateNumericInput(session, "num_people", value = num_people + 1)
-    #     updateNumericInput(session, "num_people", value = num_people)
-    # })
-
     output$params_ui <- renderUI({
 
         div(
             HTML("<br><h4><b>Parameters</b></h4><br>"),
-            isolate(model())$parameters.page()
+            parameters_page(model = model)
         )
     })
 
@@ -377,7 +350,7 @@ server <- function(input, output, session) {
 
     curr.day.list <- reactive({
         find.curr.estimates(
-            seir_func = isolate(model())$SEIR,
+            model = model,
             N = input$num_people,
             beta.vector = initial_beta_vector(),
             num.days = est.days,
@@ -630,7 +603,8 @@ server <- function(input, output, session) {
         start.inf <- 0
         start.res <- 0
         
-        seir.df = isolate(model())$SEIR(
+        seir.df = SEIR(
+            model = model,
             S0 = start.susc,
             E0 = start.exp.default,
             I0 = start.inf,
@@ -1021,13 +995,15 @@ server <- function(input, output, session) {
         data <- selected_graph_data()
 
         # TODO: this is for testing only, uncomment and
-        # remove bottom lines after testing is done
+        # remove bottom lines after testing is done, and instead 
+        # write the data df above to CSV.
         # utils::write.csv(data.frame(data), file, row.names = FALSE)
         df.output <- seir.output.df()
 
         # model specific dataframe downloads
         # process.df.for.download function is in model1.R or model2.R
-        df.output <- model()$process.df.for.download(df.output)
+        df.output <- process_df_download(model = model,
+                                         df = df.output)
 
         # TODO: this is dirty. Should perhaps be parsed out into a function.
         # process parameters
@@ -1058,7 +1034,8 @@ server <- function(input, output, session) {
                   input$num_influx)
         }
 
-        params.list <- model()$process.params.for.download(params)
+        params.list <- process_params_download(model = model, 
+                                               params = params)
 
         params.df <-
             data.frame(
