@@ -4,19 +4,11 @@
 \alias{find.curr.estimates}
 \title{Find 'Current' Information}
 \usage{
-find.curr.estimates(
-  seir_func,
-  N,
-  beta.vector,
-  num.days,
-  num.actual,
-  metric,
-  start.exp,
-  params
-)
+find.curr.estimates(model, N, beta.vector, num.days, num.actual, metric,
+  start.exp, params)
 }
 \arguments{
-\item{seir_func}{The SEIR function to use}
+\item{model}{String, model to use (either M0, M1, M2)}
 
 \item{N}{Numeric, number of people in the area.}
 

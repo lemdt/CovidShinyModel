@@ -3,3 +3,4 @@
 export(start_app)
 import(ggplot2)
 import(shiny)
+importFrom(rlang,.data)

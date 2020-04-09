@@ -102,7 +102,7 @@ ui <- function(req) {
                                   ),
                                   sliderInput(
                                     'smooth.int',
-                                    label = "Smoothed over how many days?",
+                                    label = "Days to Reach New Re",
                                     value = 0,
                                     min = 0,
                                     max = 30
@@ -119,7 +119,21 @@ ui <- function(req) {
                                 
                                 checkboxInput(inputId = 'showinflux', label = 'Add Influx of Infected Individuals'),
                                 
-                                uiOutput(outputId = 'influx_ui'),
+                                conditionalPanel(
+                                  "input$showinflux == true",
+                                  div(
+                                    dateInput(
+                                      inputId = 'influx_date',
+                                      label = "Date of Influx",
+                                      min = Sys.Date(),
+                                      value =  Sys.Date()
+                                    ),
+                                    numericInput('num.influx',
+                                                 label =  "Number of Infected Entering Region",
+                                                 value = 0)
+                                    
+                                  )
+                                ),
                                 
                                 tags$hr(),
                                 

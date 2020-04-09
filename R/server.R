@@ -1,15 +1,5 @@
-utils::globalVariables("SEIR")
-
-
 #' Server part
 #' @import shiny
-M0 <- new.env()
-source('R/models/model0.R', local = M0)
-source('R/models/model0_params.R', local = M0)
-
-M2 <- new.env()
-source('R/models/model2.R', local = M2)
-source('R/models/model2_params.R', local = M2)
 
 # start simulation from this number of exposures
 start.exp.default <- 1
@@ -17,13 +7,17 @@ r0.default <- 2.8
 est.days <- 365
 
 server <- function(input, output, session) {
-    model <- reactiveVal(M0)
+    
+    # setting model 
+    model <- "M0"
 
     # initializing a set of parameters
     params <- reactiveValues()
     
-    for (model_param in names(M0$default.params)){
-        params[[model_param]] = M0$default.params[[model_param]]
+    model_defaults <- default_params(model = model)
+    
+    for (model_param in names(model_defaults)){
+        params[[model_param]] = model_defaults[[model_param]]
     }
 
     frozen_lines <- reactiveVal(NULL)
@@ -153,12 +147,10 @@ server <- function(input, output, session) {
         }
         else if (as.character(input$date.hist) %in% as.character(hist.data()$Date))
             (
-                showNotification(re.warning.date.repeat,
-                                 type = "error")
+                shinyalert::shinyalert(re.warning.date.repeat, type = "error")
             )
         else{
-            showNotification(re.warning.blank.num,
-                             type = "error")
+            shinyalert::shinyalert(re.warning.blank.num, type = "error")
         }
     })
 
@@ -209,7 +201,7 @@ server <- function(input, output, session) {
 
         if (nrow(hist.temp) >= 2) {
             best.fit <- findBestRe(
-                seir_func = model()$SEIR,
+                model = model,
                 N = input$num_people,
                 start.exp = start.exp.default,
                 num.days = est.days,
@@ -241,8 +233,7 @@ server <- function(input, output, session) {
 
         }
         else{
-            showNotification(re.warning.more.data,
-                             type = "error")
+            shinyalert::shinyalert(re.warning.more.data, type = "error")
         }
 
     })
@@ -262,32 +253,11 @@ server <- function(input, output, session) {
     ##  Parameter selection
     ##  ............................................................................
 
-    # For the release, we are removing the Markov Model switch for now. 
-    # This is currently a beta feature only for internal use. 
-    # Markov Model selection
-    # observeEvent(input$model_select, ignoreInit = TRUE, {
-    #     if (input$model_select == TRUE) {
-    #         model(M2)
-    #     } else {
-    #         model(M0)
-    #     }
-    # 
-    #     default.params.list <- reactiveValuesToList(model()$default.params)
-    #     for (param in names(default.params.list)) {
-    #         params[[param]] = as.numeric(default.params.list[param])
-    #     }
-    # 
-    #     # incredibly hacky way to deal with forcing the reactive graphs/tables to update
-    #     num_people <- input$num_people
-    #     updateNumericInput(session, "num_people", value = num_people + 1)
-    #     updateNumericInput(session, "num_people", value = num_people)
-    # })
-
     output$params_ui <- renderUI({
 
         div(
             HTML("<br><h4><b>Parameters</b></h4><br>"),
-            isolate(model())$parameters.page(params)
+            parameters_page(model = model)
         )
     })
 
@@ -380,7 +350,7 @@ server <- function(input, output, session) {
 
     curr.day.list <- reactive({
         find.curr.estimates(
-            seir_func = isolate(model())$SEIR,
+            model = model,
             N = input$num_people,
             beta.vector = initial_beta_vector(),
             num.days = est.days,
@@ -400,13 +370,13 @@ server <- function(input, output, session) {
     int.df.with.re <- data.frame(
         'Day' = numeric(0),
         'New Re' = numeric(0),
-        'Days of Smoothing' =  numeric(0)
+        'Days to Reach New Re' =  numeric(0)
     )
 
     int.df.with.double <- data.frame(
         'Day' = numeric(0),
         'New Double Time' = numeric(0),
-        'Days of Smoothing' =  numeric(0)
+        'Days to Reach New Re' =  numeric(0)
     )
 
     intervention.table <- reactiveVal(int.df.with.re)
@@ -474,7 +444,7 @@ server <- function(input, output, session) {
         }
 
         else{
-            showNotification(double.int.warning, type = 'error')
+            shinyalert::shinyalert(double.int.warning, type = "error")
         }
     })
 
@@ -487,15 +457,15 @@ server <- function(input, output, session) {
             int.df <-
                 int.df[, c('Date',
                            'New.Double.Time',
-                           'Days.of.Smoothing',
+                           'Days.to.Reach.New.Re',
                            'Day')]
             colnames(int.df) <-
-                c('Date', 'New Double Time', 'Days of Smoothing', 'Day')
+                c('Date', 'New Double Time', 'Days to Reach New Re', 'Day')
         }
         else{
-            int.df <- int.df[, c('Date', 'New.Re', 'Days.of.Smoothing', 'Day')]
+            int.df <- int.df[, c('Date', 'New.Re', 'Days.to.Reach.New.Re', 'Day')]
             colnames(int.df) <-
-                c('Date', 'New Re', 'Days of Smoothing', 'Day')
+                c('Date', 'New Re', 'Days to Reach New Re', 'Day')
         }
 
         if (nrow(int.df) > 0) {
@@ -540,24 +510,11 @@ server <- function(input, output, session) {
     ##  Influx of Infections
     ##  ............................................................................
 
-    output$influx_ui <- renderUI({
-        if (input$showinflux) {
-            div(
-                dateInput(
-                    inputId = 'influx_date',
-                    label = "Date of Influx",
-                    min = input$curr_date,
-                    value = input$curr_date
-                ),
-                numericInput('num.influx',
-                             label =  "Number of Infected Entering Region",
-                             value = 0)
-                
-            )
-        }
-
+    observeEvent(input$curr_date, {
+        updateDateInput(session,
+                        inputId = 'influx_date',
+                        min = input$curr_date)
     })
-
     ##  ............................................................................
     ##  Projection
     ##  ............................................................................
@@ -584,7 +541,7 @@ server <- function(input, output, session) {
                                                 input$proj_num_days
                                             ),
                                             New.Re = c(params$int.new.r0, input$r0_prior, NA),
-                                            Days.of.Smoothing = c(params$int.smooth.days, 0, 0)
+                                            Days.to.Reach.New.Re = c(params$int.smooth.days, 0, 0)
                                         ),
                                         int.table.temp)
             }
@@ -592,7 +549,7 @@ server <- function(input, output, session) {
                 int.table.temp <- rbind(list(
                                             Day = c(-curr.day, input$proj_num_days),
                                             New.Re = c(r0.default, NA),
-                                            Days.of.Smoothing = c(0, 0)
+                                            Days.to.Reach.New.Re = c(0, 0)
                                         ),
                                         int.table.temp)
             }
@@ -607,7 +564,7 @@ server <- function(input, output, session) {
                         input$proj_num_days
                     ),
                     New.Double.Time = c(params$int.new.double, input$doubling_time, NA),
-                    Days.of.Smoothing = c(params$int.smooth.days, 0, 0)
+                    Days.to.Reach.New.Re = c(params$int.smooth.days, 0, 0)
                 ),
                 int.table.temp
             )
@@ -646,7 +603,8 @@ server <- function(input, output, session) {
         start.inf <- 0
         start.res <- 0
         
-        seir.df = isolate(model())$SEIR(
+        seir.df = SEIR(
+            model = model,
             S0 = start.susc,
             E0 = start.exp.default,
             I0 = start.inf,
@@ -912,11 +870,11 @@ server <- function(input, output, session) {
         name <- trimws(input$freeze_name)
         selected <- input$selected_lines
         if (name == selected) {
-            shinyalert::shinyalert("Can't use the same name as the selected variable.", type = "error")
+            shinyalert::shinyalert("You cannot use the same name as the selected variable.", type = "error")
             return()
         }
         if (name %in% unique(frozen_lines()$variable)) {
-            shinyalert::shinyalert("Can't use the same name twice.", type = "error")
+            shinyalert::shinyalert("You cannot use the same name twice.", type = "error")
             return()
         }
         cols <- c("date", selected)
@@ -1037,13 +995,15 @@ server <- function(input, output, session) {
         data <- selected_graph_data()
 
         # TODO: this is for testing only, uncomment and
-        # remove bottom lines after testing is done
+        # remove bottom lines after testing is done, and instead 
+        # write the data df above to CSV.
         # utils::write.csv(data.frame(data), file, row.names = FALSE)
         df.output <- seir.output.df()
 
         # model specific dataframe downloads
         # process.df.for.download function is in model1.R or model2.R
-        df.output <- model()$process.df.for.download(df.output)
+        df.output <- process_df_download(model = model,
+                                         df = df.output)
 
         # TODO: this is dirty. Should perhaps be parsed out into a function.
         # process parameters
@@ -1074,7 +1034,8 @@ server <- function(input, output, session) {
                   input$num_influx)
         }
 
-        params.list <- model()$process.params.for.download(params)
+        params.list <- process_params_download(model = model, 
+                                               params = params)
 
         params.df <-
             data.frame(

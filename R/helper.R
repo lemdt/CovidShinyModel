@@ -93,7 +93,7 @@ cbind.fill <- function(...) {
 #' It then returns a list with that day as well as the number susceptible, exposed,
 #' infected, and recovered on that day.
 #'
-#' @param seir_func The SEIR function to use
+#' @param model String, model to use (either M0, M1, M2)
 #' @param N Numeric, number of people in the area.
 #' @param beta.vector Vector of numerics, should be the same length as num.days.
 #' @param num.days Numeric. Number of days to simulate.
@@ -105,7 +105,7 @@ cbind.fill <- function(...) {
 #'
 #' @return List with the day number match as well as counts for susceptible, exposed,
 #' infected and recovered.
-find.curr.estimates = function(seir_func,
+find.curr.estimates = function(model,
                                N,
                                beta.vector,
                                num.days,
@@ -118,7 +118,8 @@ find.curr.estimates = function(seir_func,
   start.res <- 0
   start.inf <- 0
 
-  SEIR.df = seir_func(
+  SEIR.df = SEIR(
+    model = model,
     S0 = start.susc,
     E0 = start.exp,
     I0 = start.inf,
@@ -192,7 +193,7 @@ find.curr.estimates = function(seir_func,
 #' (a vector of numerics with projected values of hospitalizations on the historical dates
 #' for which data was provided).
 #'
-#' @param seir_func The SEIR function to use
+#' @param model String, model to use (either M0, M1, M2)
 #' @param N Numeric. Number of people in the area.
 #' @param start.exp Numeric. Starting number of exposures.
 #' @param num.days Numeric. Number of days to simulate.
@@ -203,7 +204,7 @@ find.curr.estimates = function(seir_func,
 #' @return List with best Re and the projected number of hospitalizations on the historical
 #' dates for which data was provided.
 findBestRe <-
-  function(seir_func,
+  function(model,
            N,
            start.exp,
            num.days,
@@ -223,7 +224,8 @@ findBestRe <-
     for (re in c(seq(1, 7, 0.1))) {
       beta <- getBetaFromRe(re, params$gamma)
 
-      SIR.df = seir_func(
+      SIR.df = SEIR(
+        model = model,
         S0 = start.susc,
         E0 = start.exp,
         I0 = start.inf,
@@ -270,7 +272,7 @@ findBestRe <-
 #'
 #' This takes as input an intervention dataframe (int.table). The dataframe should have as
 #' columns 'Day' number, new intervention metric (either New.Re or New.Double.Time)
-#' and the number of days that the intervention is smoothed over (Days.of.Smoothing).
+#' and the number of days that the intervention is smoothed over (Days.to.Reach.New.Re).
 #'
 #' The function also takes as input a gamma value a flag for whether doubling time or is
 #' used as the metric (usedouble).
@@ -278,7 +280,7 @@ findBestRe <-
 #' It returns a vector of beta values that correspond with the intervention dataframe.
 #'
 #' @param int.table Dataframe with columns: Day, New.Re (or New.Double.Time), and
-#' Days.of.Smoothing
+#' Days.to.Reach.New.Re
 #' @param gamma Numeric.
 #' @param usedouble Boolean. TRUE if doubling time is used as the metric.
 #'
@@ -305,7 +307,7 @@ create.beta.vec <- function(int.table, gamma, usedouble) {
   rep.vec <-
     day.vec[2:length(day.vec)] - day.vec[1:length(day.vec) - 1]
   betas <- int.table.temp$beta[1:length(day.vec) - 1]
-  smooth.vec <- int.table.temp$Days.of.Smoothing
+  smooth.vec <- int.table.temp$Days.to.Reach.New.Re
 
   beta.vec <- c()
 
@@ -387,7 +389,7 @@ add.to.hist.table <-
 #'
 #' Bind rows to the intervention table.
 #'
-#' @param int.table Dataframe with Day, New.Re (or New.Double.Time), and Days.of.Smoothing
+#' @param int.table Dataframe with Day, New.Re (or New.Double.Time), and Days.to.Reach.New.Re
 #' columns.
 #' @param params List of parameters.
 #' @param usedouble Boolean. TRUE if doubling time is used in the app.
@@ -400,7 +402,7 @@ bind.to.intervention <- function(int.table, params, usedouble) {
       list(
         'Day' = params$int.new.num.days ,
         'New.Double.Time' = params$int.new.double,
-        'Days.of.Smoothing' = params$int.smooth.days
+        'Days.to.Reach.New.Re' = params$int.smooth.days
       )
     )
   }
@@ -410,7 +412,7 @@ bind.to.intervention <- function(int.table, params, usedouble) {
       list(
         'Day' = params$int.new.num.days,
         'New.Re' = params$int.new.r0,
-        'Days.of.Smoothing' = params$int.smooth.days
+        'Days.to.Reach.New.Re' = params$int.smooth.days
       )
     )
   }
@@ -550,3 +552,212 @@ re_estimate_plot <- function(data) {
     theme(text = element_text(size = 20)) +
     theme(legend.title = element_blank())
 }
+
+##  ............................................................................
+##  Formatting Helpers
+##  ............................................................................
+
+#' General process dataframe to download  
+#'
+#' @param model String, either M0, M1, or M2, depending on the model chosen 
+#' @param ... arguments to the specific model chosen 
+#'
+#' @return Processed dataframe
+process_df_download <- function(model = 'M0', ...){
+  if (model == 'M0'){
+    process_df_download_M0(...)
+  }
+  else if (model == 'M1'){
+    process_df_download_M1(...)
+  }
+  else{
+    process_df_download_M2(...)
+  }
+}
+
+#' Process dataframe to download for Model 0 
+#'
+#' Processes download dataframe with columns with specified names in a
+#' specified order.
+#'
+#' @param df Dataframe.
+#'
+#' @return Dataframe.
+process_df_download_M0 <- function(df) {
+  df.return <- df
+  df.return$R <- df.return$R.orig
+  
+  df.return <-
+    df.return[, c('day',
+                  'days.shift',
+                  'date',
+                  'S',
+                  'E',
+                  'I',
+                  'IR',
+                  'IH',
+                  'R',
+                  'HP',
+                  'icu',
+                  'vent',
+                  'DC')]
+  
+  colnames(df.return) <-
+    c(
+      'day',
+      'days.shift',
+      'date',
+      'S',
+      'E',
+      'I',
+      'IR',
+      'IH',
+      'R',
+      'CP_hosp',
+      'CP_icut',
+      'CP_vent',
+      'C_dch'
+    )
+  
+  return(df.return)
+}
+
+
+#' Process dataframe to download for Model 1
+#'
+#' Processes download dataframe with columns with specified names in a
+#' specified order. For model 1, no processing is currently done.
+#'
+#' @param df Dataframe.
+#'
+#' @return Dataframe which has been processed.
+process_df_download_M1 <- function(df) {
+  return(df)
+}
+
+
+#' Process dataframe to download for Model 2
+#'
+#' Processes download dataframe with columns with specified names in a
+#' specified order.
+#' 
+#' @importFrom rlang .data
+#'
+#' @param df Dataframe.
+#'
+#' @return Dataframe.
+process_df_download_M2 <- function(df) {
+  df$R <- df$R.orig
+  df$HOSP.report <- df$hosp
+  df$ICU.report <- df$icu
+  df$VENT.report <- df$vent
+  df$DISCHARGE.report <- df$DCH.state
+  df$MORTALITY.report <- df$M.state
+
+  df <-
+    dplyr::select(
+      df,
+      .data$day,
+      .data$days.shift,
+      .data$date,
+      .data$S,
+      .data$E,
+      .data$I,
+      .data$IR,
+      .data$IH,
+      .data$R,
+      G_new = .data$newG,
+      G_only = .data$G.state,
+      ICU_only = .data$ICU.state,
+      V_only = .data$V.state,
+      DCH = .data$DCH.state,
+      M = .data$M.state,
+      M5_hosp  = .data$HOSP.report,
+      M5_icut = .data$ICU.report,
+      M5_vent = .data$VENT.report,
+      M5_dch =  .data$DISCHARGE.report,
+      M5_M = .data$MORTALITY.report
+    )
+
+  df
+}
+
+
+#' General process parameters for download  
+#'
+#' @param model String, either M0, M1, or M2, depending on the model chosen 
+#' @param ... arguments to the specific model chosen 
+#'
+#' @return Parameters List
+process_params_download <- function(model = 'M0', ...){
+  if (model == 'M0'){
+    process_params_download_M0(...)
+  }
+  else if (model == 'M1'){
+    process_params_download_M1(...)
+  }
+  else{
+    process_params_download_M2(...)
+  }
+}
+
+
+#' Process parameters for export for Model 0
+#'
+#' @param params ReactiveValues list.
+#'
+#' @return List of processed parameters.
+process_params_download_M0 <- function(params) {
+  param.list <- list(
+    'Incubation Period' = params$incubation.period,
+    'Length of Infectiousness (days)' = params$illness.length,
+    'Symptomatic to Hospitalization (days)' = params$inf.to.hosp,
+    'Percent Hospitalized of all Infections' = params$hosp.rate,
+    'Percent ICU Admitted of Those Hospitalized' = params$icu.rate,
+    'Average Percent Ventilated of Those ICU Admitted' = params$vent.rate,
+    'Hospital Length of Stay (days)' = params$hosp.los
+  )
+  
+  return(param.list)
+}
+
+
+#' Process parameters for export for Model 0
+#' TODO: If we end up keeping model 1... 
+#'
+#' @param params ReactiveValues list.
+#'
+#' @return List of processed parameters.
+process_params_download_M1 <- function(params) {
+  param.list <- list()
+  
+  return(param.list)
+}
+
+
+
+#' Process parameters for export for Model 2
+#'
+#' @param params ReactiveValues list.
+#'
+#' @return List of processed parameters.
+process_params_download_M2 <- function(params) {
+  param.list <- list(
+    'Incubation Period' = params$incubation.period,
+    'Length of Infectiousness (days)' = params$illness.length,
+    'Symptomatic to Hospitalization (days)' = params$inf.to.hosp,
+    'percent hospitalized of all infections' = params$hosp.rate,
+    'Transition Probability from G->G' = params$p.g_g,
+    'Transition Probability from G->icu' = params$p.g_icu,
+    'Transition Probability from G->discharge' = params$p.g_d,
+    'Transition Probability from icu->G' = params$p.icu_g,
+    'Transition Probabiltiy from icu->icu' = params$p.icu_icu,
+    'Transition Probability from icu->vent' = params$p.icu_v,
+    'Transition Probability from vent->icu' = params$p.v_icu,
+    'Transition Probability from vent->vent' = params$p.v_v,
+    'Transition Proabbility from vent->death' = params$p.v_m
+  )
+  
+  return(param.list)
+}
+
