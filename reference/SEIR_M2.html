@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Creates Vector of Beta Values — create.beta.vec • COVID Shiny model</title>
+<title>Run SEIR model for Model 2 — SEIR_M2 • COVID Shiny model</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,11 @@
 
 
 
-<meta property="og:title" content="Creates Vector of Beta Values — create.beta.vec" />
-<meta property="og:description" content="This takes as input an intervention dataframe (int.table). The dataframe should have as
-columns 'Day' number, new intervention metric (either New.Re or New.Double.Time)
-and the number of days that the intervention is smoothed over (Days.to.Reach.New.Re)." />
+<meta property="og:title" content="Run SEIR model for Model 2 — SEIR_M2" />
+<meta property="og:description" content="Runs the SEIR model, incorporating the separate hospitalization Markov component.
+More about the technique is here:
+https://drive.google.com/file/d/157yB7O62xyJps2_HUtAelqsQ8e9feTj_/view?usp=sharing
+https://sites.me.ucsb.edu/~moehlis/APC514/tutorials/tutorial_seasonal/node4.html" />
 
 
 
@@ -110,45 +111,68 @@ and the number of days that the intervention is smoothed over (Days.to.Reach.New
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Creates Vector of Beta Values</h1>
-    <small class="dont-index">Source: <a href='https://github.com/lemdt/CovidShinyModel/blob/master/R/helper.R'><code>R/helper.R</code></a></small>
-    <div class="hidden name"><code>create.beta.vec.Rd</code></div>
+    <h1>Run SEIR model for Model 2</h1>
+    <small class="dont-index">Source: <a href='https://github.com/lemdt/CovidShinyModel/blob/master/R/models.R'><code>R/models.R</code></a></small>
+    <div class="hidden name"><code>SEIR_M2.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This takes as input an intervention dataframe (int.table). The dataframe should have as
-columns 'Day' number, new intervention metric (either New.Re or New.Double.Time)
-and the number of days that the intervention is smoothed over (Days.to.Reach.New.Re).</p>
+    <p>Runs the SEIR model, incorporating the separate hospitalization Markov component.
+More about the technique is here:
+https://drive.google.com/file/d/157yB7O62xyJps2_HUtAelqsQ8e9feTj_/view?usp=sharing
+https://sites.me.ucsb.edu/~moehlis/APC514/tutorials/tutorial_seasonal/node4.html</p>
     </div>
 
-    <pre class="usage"><span class='fu'>create.beta.vec</span>(<span class='no'>int.table</span>, <span class='no'>gamma</span>, <span class='no'>usedouble</span>)</pre>
+    <pre class="usage"><span class='fu'>SEIR_M2</span>(<span class='no'>S0</span>, <span class='no'>E0</span>, <span class='no'>I0</span>, <span class='no'>R0</span>, <span class='no'>beta.vector</span>, <span class='no'>num.days</span>, <span class='no'>influx</span>, <span class='no'>params</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>int.table</th>
-      <td><p>Dataframe with columns: Day, New.Re (or New.Double.Time), and
-Days.to.Reach.New.Re</p></td>
+      <th>S0</th>
+      <td><p>Numeric. Initial number of susceptible individuals.</p></td>
     </tr>
     <tr>
-      <th>gamma</th>
-      <td><p>Numeric.</p></td>
+      <th>E0</th>
+      <td><p>Numeric. Initial number of exposed individuals.</p></td>
     </tr>
     <tr>
-      <th>usedouble</th>
-      <td><p>Boolean. TRUE if doubling time is used as the metric.</p></td>
+      <th>I0</th>
+      <td><p>Numeric. Initial number of infected individuals.</p></td>
+    </tr>
+    <tr>
+      <th>R0</th>
+      <td><p>Numeric. Initial number of recovered individuals.</p></td>
+    </tr>
+    <tr>
+      <th>beta.vector</th>
+      <td><p>Vector, of beta values to use in the simulation on each day.
+Should have the same length as num.days.</p></td>
+    </tr>
+    <tr>
+      <th>num.days</th>
+      <td><p>Numeric. Number of days to run the simulation.</p></td>
+    </tr>
+    <tr>
+      <th>influx</th>
+      <td><p>List. This is hash consisting of a 'day' and an 'influx' number,
+meant to represent an influx of infections into the region</p></td>
+    </tr>
+    <tr>
+      <th>params</th>
+      <td><p>List. This should contain the parameters for running the SEIR,
+including sigma, gamma.r, gamma.h, hosp.rate, and the transition probabilities
+(p.g_g, p.g_icu, p.g_d)</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Vector of beta values to use in the SEIR simulation.</p>
+    <p>Dataframe, with susceptible counts, exposed counts, infected counts,
+hospitalization numbers, recovery numbers, and death numbers.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The function also takes as input a gamma value a flag for whether doubling time or is
-used as the metric (usedouble).</p>
-<p>It returns a vector of beta values that correspond with the intervention dataframe.</p>
+    <p>The simulation ignores births and deaths.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

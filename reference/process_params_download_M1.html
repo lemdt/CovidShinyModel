@@ -6,7 +6,8 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Creates Vector of Beta Values — create.beta.vec • COVID Shiny model</title>
+<title>Process parameters for export for Model 0
+TODO: If we end up keeping model 1... — process_params_download_M1 • COVID Shiny model</title>
 
 
 <!-- jquery -->
@@ -39,10 +40,10 @@
 
 
 
-<meta property="og:title" content="Creates Vector of Beta Values — create.beta.vec" />
-<meta property="og:description" content="This takes as input an intervention dataframe (int.table). The dataframe should have as
-columns 'Day' number, new intervention metric (either New.Re or New.Double.Time)
-and the number of days that the intervention is smoothed over (Days.to.Reach.New.Re)." />
+<meta property="og:title" content="Process parameters for export for Model 0
+TODO: If we end up keeping model 1... — process_params_download_M1" />
+<meta property="og:description" content="Process parameters for export for Model 0
+TODO: If we end up keeping model 1..." />
 
 
 
@@ -110,45 +111,31 @@ and the number of days that the intervention is smoothed over (Days.to.Reach.New
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Creates Vector of Beta Values</h1>
+    <h1>Process parameters for export for Model 0
+TODO: If we end up keeping model 1...</h1>
     <small class="dont-index">Source: <a href='https://github.com/lemdt/CovidShinyModel/blob/master/R/helper.R'><code>R/helper.R</code></a></small>
-    <div class="hidden name"><code>create.beta.vec.Rd</code></div>
+    <div class="hidden name"><code>process_params_download_M1.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This takes as input an intervention dataframe (int.table). The dataframe should have as
-columns 'Day' number, new intervention metric (either New.Re or New.Double.Time)
-and the number of days that the intervention is smoothed over (Days.to.Reach.New.Re).</p>
+    <p>Process parameters for export for Model 0
+TODO: If we end up keeping model 1...</p>
     </div>
 
-    <pre class="usage"><span class='fu'>create.beta.vec</span>(<span class='no'>int.table</span>, <span class='no'>gamma</span>, <span class='no'>usedouble</span>)</pre>
+    <pre class="usage"><span class='fu'>process_params_download_M1</span>(<span class='no'>params</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>int.table</th>
-      <td><p>Dataframe with columns: Day, New.Re (or New.Double.Time), and
-Days.to.Reach.New.Re</p></td>
-    </tr>
-    <tr>
-      <th>gamma</th>
-      <td><p>Numeric.</p></td>
-    </tr>
-    <tr>
-      <th>usedouble</th>
-      <td><p>Boolean. TRUE if doubling time is used as the metric.</p></td>
+      <th>params</th>
+      <td><p>ReactiveValues list.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Vector of beta values to use in the SEIR simulation.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>The function also takes as input a gamma value a flag for whether doubling time or is
-used as the metric (usedouble).</p>
-<p>It returns a vector of beta values that correspond with the intervention dataframe.</p>
+    <p>List of processed parameters.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

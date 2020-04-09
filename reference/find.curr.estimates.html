@@ -117,23 +117,15 @@
     <p>This function first runs the simulation on Day 1, with one person exposed.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>find.curr.estimates</span>(
-  <span class='no'>seir_func</span>,
-  <span class='no'>N</span>,
-  <span class='no'>beta.vector</span>,
-  <span class='no'>num.days</span>,
-  <span class='no'>num.actual</span>,
-  <span class='no'>metric</span>,
-  <span class='no'>start.exp</span>,
-  <span class='no'>params</span>
-)</pre>
+    <pre class="usage"><span class='fu'>find.curr.estimates</span>(<span class='no'>model</span>, <span class='no'>N</span>, <span class='no'>beta.vector</span>, <span class='no'>num.days</span>, <span class='no'>num.actual</span>, <span class='no'>metric</span>,
+  <span class='no'>start.exp</span>, <span class='no'>params</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>seir_func</th>
-      <td><p>The SEIR function to use</p></td>
+      <th>model</th>
+      <td><p>String, model to use (either M0, M1, M2)</p></td>
     </tr>
     <tr>
       <th>N</th>

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Creates Vector of Beta Values — create.beta.vec • COVID Shiny model</title>
+<title>Generate transition matrix — createTransition • COVID Shiny model</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,10 @@
 
 
 
-<meta property="og:title" content="Creates Vector of Beta Values — create.beta.vec" />
-<meta property="og:description" content="This takes as input an intervention dataframe (int.table). The dataframe should have as
-columns 'Day' number, new intervention metric (either New.Re or New.Double.Time)
-and the number of days that the intervention is smoothed over (Days.to.Reach.New.Re)." />
+<meta property="og:title" content="Generate transition matrix — createTransition" />
+<meta property="og:description" content="This function creates the Markov transition matrix using the transition probabilties.
+This transition matrix will be used in the Markov model, as diagramed here:
+https://drive.google.com/file/d/1_A3Q6C46z4hx02ayqVPhbWuIWFy6Y8ln/view?usp=sharing" />
 
 
 
@@ -110,45 +110,72 @@ and the number of days that the intervention is smoothed over (Days.to.Reach.New
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Creates Vector of Beta Values</h1>
-    <small class="dont-index">Source: <a href='https://github.com/lemdt/CovidShinyModel/blob/master/R/helper.R'><code>R/helper.R</code></a></small>
-    <div class="hidden name"><code>create.beta.vec.Rd</code></div>
+    <h1>Generate transition matrix</h1>
+    <small class="dont-index">Source: <a href='https://github.com/lemdt/CovidShinyModel/blob/master/R/models.R'><code>R/models.R</code></a></small>
+    <div class="hidden name"><code>createTransition.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>This takes as input an intervention dataframe (int.table). The dataframe should have as
-columns 'Day' number, new intervention metric (either New.Re or New.Double.Time)
-and the number of days that the intervention is smoothed over (Days.to.Reach.New.Re).</p>
+    <p>This function creates the Markov transition matrix using the transition probabilties.
+This transition matrix will be used in the Markov model, as diagramed here:
+https://drive.google.com/file/d/1_A3Q6C46z4hx02ayqVPhbWuIWFy6Y8ln/view?usp=sharing</p>
     </div>
 
-    <pre class="usage"><span class='fu'>create.beta.vec</span>(<span class='no'>int.table</span>, <span class='no'>gamma</span>, <span class='no'>usedouble</span>)</pre>
+    <pre class="usage"><span class='fu'>createTransition</span>(<span class='no'>p.g_g</span>, <span class='no'>p.g_icu</span>, <span class='no'>p.g_d</span>, <span class='no'>p.icu_g</span>, <span class='no'>p.icu_icu</span>, <span class='no'>p.icu_v</span>,
+  <span class='no'>p.v_icu</span>, <span class='no'>p.v_v</span>, <span class='no'>p.v_m</span>, <span class='kw'>p.g_m</span> <span class='kw'>=</span> <span class='fl'>0</span>, <span class='kw'>p.icu_m</span> <span class='kw'>=</span> <span class='fl'>0</span>)</pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>int.table</th>
-      <td><p>Dataframe with columns: Day, New.Re (or New.Double.Time), and
-Days.to.Reach.New.Re</p></td>
+      <th>p.g_g</th>
+      <td><p>Numeric. Transition probability from G -&gt; G state.</p></td>
     </tr>
     <tr>
-      <th>gamma</th>
-      <td><p>Numeric.</p></td>
+      <th>p.g_icu</th>
+      <td><p>Numeric. Transition probability from G -&gt; ICU state.</p></td>
     </tr>
     <tr>
-      <th>usedouble</th>
-      <td><p>Boolean. TRUE if doubling time is used as the metric.</p></td>
+      <th>p.g_d</th>
+      <td><p>Numeric. Transition probability from G -&gt; D state.</p></td>
+    </tr>
+    <tr>
+      <th>p.icu_g</th>
+      <td><p>Numeric. Transition probability from ICU -&gt; G state.</p></td>
+    </tr>
+    <tr>
+      <th>p.icu_icu</th>
+      <td><p>Numeric. Transition probability from ICU -&gt; ICU state.</p></td>
+    </tr>
+    <tr>
+      <th>p.icu_v</th>
+      <td><p>Numeric. Transition probability from ICU -&gt; V state</p></td>
+    </tr>
+    <tr>
+      <th>p.v_icu</th>
+      <td><p>Numeric. Transition probability from V -&gt; ICU state.</p></td>
+    </tr>
+    <tr>
+      <th>p.v_v</th>
+      <td><p>Numeric. Transition probability from V -&gt; V state.</p></td>
+    </tr>
+    <tr>
+      <th>p.v_m</th>
+      <td><p>Numeric. Transition probability from V -&gt; M state.</p></td>
+    </tr>
+    <tr>
+      <th>p.g_m</th>
+      <td><p>Numeric. Transition probability from G -&gt; M state.</p></td>
+    </tr>
+    <tr>
+      <th>p.icu_m</th>
+      <td><p>Numeric. Transition probability from ICU -&gt; M state.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Vector of beta values to use in the SEIR simulation.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>The function also takes as input a gamma value a flag for whether doubling time or is
-used as the metric (usedouble).</p>
-<p>It returns a vector of beta values that correspond with the intervention dataframe.</p>
+    <p>Transition matrix, to be used in the update step of the Markov model.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

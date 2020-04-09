@@ -4,7 +4,16 @@
     <loc>http://lemdt.github.io/CovidShinyModel/index.html</loc>
   </url>
   <url>
-    <loc>http://lemdt.github.io/CovidShinyModel/reference/M0.html</loc>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/SEIR.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/SEIR_M0.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/SEIR_M1.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/SEIR_M2.html</loc>
   </url>
   <url>
     <loc>http://lemdt.github.io/CovidShinyModel/reference/add.to.hist.table.html</loc>
@@ -28,6 +37,12 @@
     <loc>http://lemdt.github.io/CovidShinyModel/reference/create.res.df.html</loc>
   </url>
   <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/createTransition.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/default_params.html</loc>
+  </url>
+  <url>
     <loc>http://lemdt.github.io/CovidShinyModel/reference/find.curr.estimates.html</loc>
   </url>
   <url>
@@ -40,10 +55,43 @@
     <loc>http://lemdt.github.io/CovidShinyModel/reference/getBetaFromRe.html</loc>
   </url>
   <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/parameters_page.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/process_df_download.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/process_df_download_M0.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/process_df_download_M1.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/process_df_download_M2.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/process_params_download.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/process_params_download_M0.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/process_params_download_M1.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/process_params_download_M2.html</loc>
+  </url>
+  <url>
     <loc>http://lemdt.github.io/CovidShinyModel/reference/re_estimate_plot.html</loc>
   </url>
   <url>
     <loc>http://lemdt.github.io/CovidShinyModel/reference/roundNonDateCols.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/runMarkov.html</loc>
+  </url>
+  <url>
+    <loc>http://lemdt.github.io/CovidShinyModel/reference/start.exp.default.html</loc>
   </url>
   <url>
     <loc>http://lemdt.github.io/CovidShinyModel/reference/start_app.html</loc>
