@@ -120,7 +120,7 @@ ui <- function(req) {
                                 checkboxInput(inputId = 'showinflux', label = 'Add Influx of Infected Individuals'),
                                 
                                 conditionalPanel(
-                                  "input$showinflux == true",
+                                  "input.showinflux == true",
                                   div(
                                     dateInput(
                                       inputId = 'influx_date',
