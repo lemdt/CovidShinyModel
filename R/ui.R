@@ -277,7 +277,6 @@ ui <- function(req) {
              tabPanel("About", 
                       wellPanel(h3(strong("About LEMMA")),
                                 HTML(what.is.lemma))
-             ),
-             tags$br(), tags$br()
-  )
+             )
+             )
 }
