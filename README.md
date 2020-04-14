@@ -6,7 +6,7 @@
 
 LEMMA (Local Epidemic Modeling for Management & Action) is a tool designed to accept local and regional information about the SARS-CoV-2 (COVID-19) epidemic and provide relevant projections about epidemic trajectory to inform strategic planning and resource management. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized using local epidemic data on the number of hospitalizations. Outputs include daily number hospitalizations, ICU use, ventilator use, as well as total cases, active cases, and resolved cases. 
 
-Development of the app is ongoing, and a live, stable version is currently unavailable (as of April 6, 2020). To use the app, you can run locally or use the pre-release development version in the "Resources and Documentation" section below. 
+Development of the app is ongoing, and a live version of the app is on http://localepi.org/. 
 
 ## Development Environment Setup (R)
 
@@ -25,8 +25,8 @@ Note that as of April 6, 2020, the app is only available in a pre-release form. 
 
 | Resource | Description | Branch |
 |:--|:--|:--|
-| Stable release of shiny app | not released  | master | 
-| Pre release of next Shiny app | http://64.225.45.108:3838/lemma/ | prerelease-changes |
+| Stable release of shiny app | http://localepi.org/  | master | 
+| Pre release of development Shiny app | http://prerelease.localepi.org/ | prerelease |
 | Package documentation | https://lemdt.github.io/CovidShinyModel/ | master |
 
 
