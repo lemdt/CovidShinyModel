@@ -19,9 +19,7 @@ covidshiny::start_app()
 
 ## Resources and Documentation
 
-Links to live versions of the app and documentation are shown below. 
-
-Note that as of April 6, 2020, the app is only available in a pre-release form. The stable version of the app will be available within the next few days. 
+Links to live and prerelease versions of the app and documentation are shown below. 
 
 | Resource | Description | Branch |
 |:--|:--|:--|
