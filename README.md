@@ -8,6 +8,10 @@ LEMMA (Local Epidemic Modeling for Management & Action) is a tool designed to ac
 
 Development of the app is ongoing, and a live version of the app is on http://localepi.org/. 
 
+The Shiny app is LEMMA v0.2. Our development version, LEMMA v0.3, is https://github.com/LocalEpi/LEMMA.
+LEMMA v0.3 provides projections with uncertainty bounds and considers a wider set of model structures. 
+LEMMA v0.3 is currently available as an R package but not as a Shiny app.
+
 ## Development Environment Setup (R)
 
 To run the app locally, load up R or Rstudio and run:
