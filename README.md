@@ -30,7 +30,7 @@ Links to live and prerelease versions of the app and documentation are shown bel
 | Stable release of shiny app | http://localepi.org/  | master | 
 | Pre release of development Shiny app | http://prerelease.localepi.org/ | prerelease |
 | Package documentation | https://lemdt.github.io/CovidShinyModel/ | master |
-
+| Next verion | https://github.com/LocalEpi/LEMMA | |
 
 ## Issues and bugs
 
