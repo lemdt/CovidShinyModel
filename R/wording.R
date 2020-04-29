@@ -75,7 +75,9 @@ Daily projections are made for hospitalizations, ICU use, ventilator use, as wel
 resolved cases. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized 
 using local epidemic data on the number of hospitalizations. <b><a href="https://lemma.gitbook.io/lemma/-M48KVCMAiSk20b1_LWH/">View the documentation here.</a></b>
 <br><br>
-The code for this tool is on <a href="https://github.com/lemdt/CovidShinyModel">Github</a>.
+The code for this tool (LEMMA v0.2) is on <a href="https://github.com/lemdt/CovidShinyModel">Github</a>.
+<br><br>
+The code for LEMMA v0.3 is also on <a href="https://github.com/LocalEpi/LEMMA">Github</a>.
 <br><br>
 LEMMA is a collaborative effort between experts in Medicine, Public Health, and Data Science.<br><br>
 <b>Key contributors include:</b>
@@ -98,8 +100,16 @@ LEMMA is a collaborative effort between experts in Medicine, Public Health, and 
 <li>Bin Fu </li>
 <li>Jeroen Ooms </li>
 <li>Kara Woo</li>
+<li>Dean Attali</li>
 </ul></font>'
 
+new.model <- '<font size="4"> LEMMA v0.3 
+<br><br>
+This Shiny app is LEMMA v0.2. Our development version, LEMMA v0.3, is on <a href="https://github.com/LocalEpi/LEMMA">Github</a>. 
+<br><br>
+LEMMA v0.3 provides projections with uncertainty bounds and considers a wider set of model structures. 
+<br><br>
+LEMMA v0.3 is currently available as an R package but not as a Shiny app.'
 
 
 ##  ............................................................................

@@ -1,6 +1,6 @@
 #' @import shiny
 ui <- function(req) {
-  navbarPage(title = "LEMMA - Local Epidemic Modeling for Management & Action",
+  navbarPage(title = "LEMMA - Local Epidemic Modeling for Management & Action v0.2",
              tabPanel("Projections", 
                       fluidPage(theme = shinythemes::shinytheme("sandstone"),
                         tags$head(tags$link(href = "covidshiny/app.css", rel="stylesheet", type="text/css")),
@@ -277,6 +277,10 @@ ui <- function(req) {
              tabPanel("About", 
                       wellPanel(h3(strong("About LEMMA")),
                                 HTML(what.is.lemma))
+             ),
+             tabPanel("LEMMA v0.3", 
+                      wellPanel(h3(strong("Latest Model")),
+                                HTML(new.model))
              )
              )
 }
