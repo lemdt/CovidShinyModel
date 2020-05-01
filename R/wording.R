@@ -6,7 +6,7 @@
 ##  General
 ##  ............................................................................
 
-app.title <- "LEMMA - Local Epidemic Modeling for Management & Action"
+app.title <- "LEMMA - Local Epidemic Modeling for Management & Action (BETA)"
 
 about.wording <- "<h4><b>What does this tool do?</b></h4>
 The app projects numbers of <i> active cases, hospitalizations, ICU-use and
@@ -75,23 +75,41 @@ Daily projections are made for hospitalizations, ICU use, ventilator use, as wel
 resolved cases. These projections are based on a modified Susceptible-Exposed-Infectious-Recovered (SEIR) model and are parameterized 
 using local epidemic data on the number of hospitalizations. <b><a href="https://lemma.gitbook.io/lemma/-M48KVCMAiSk20b1_LWH/">View the documentation here.</a></b>
 <br><br>
-The code for this tool is on <a href="https://github.com/lemdt/CovidShinyModel">Github</a>.
+The code for this tool (LEMMA v0.2) is on <a href="https://github.com/lemdt/CovidShinyModel">Github</a>.
+<br><br>
+The code for LEMMA v0.3 is also on <a href="https://github.com/LocalEpi/LEMMA">Github</a>.
 <br><br>
 LEMMA is a collaborative effort between experts in Medicine, Public Health, and Data Science.<br><br>
 <b>Key contributors include:</b>
 <ul>
-  <li>Maya L. Petersen, MD PhD, Associate Professor of Epidemiology & Biostatistics, UC Berkeley</li>
-  <li>Joshua Schwab, MS, Research Programmer, UC Berkeley</li>
-  <li>James Peng, MS, Data Scientist, UC San Francisco</li>
-  <li>Laura B. Balzer, PhD, Assistant Professor of Biostatistics, UMass Amherst</li>
-  <li>Ben Olding, XX, YY, ZZZ</li>
-  <li>Randy True, XX, YY, ZZZ</li>
-  <li>Karthik Ram, PhD, Senior Research Data Scientist, Berkeley Institute for Data Science, University of California, Berkeley</li>
-  <li>Vivek Jain, MD, Associate Professor of Medicine, UC San Francisco & San Francisco General Hospital</li>
-  <li>Elvin Geng, MD, Professor of Medicine, Washington University in St. Louis</li>
-  <li>Diane V. Havlir, MD, Professor of Medicine, UC San Francisco & San Francisco General Hospital</li>
+<li>Maya Petersen </li>
+<li>Elvin Geng </li>
+<li>Laura Balzer</li>
+<li>Diane Havlir</li>
+<li>James Peng</li>
+<li>Joshua Schwab </li>
+<li>Karthik Ram</li>
+<li>Ben Olding </li>
+<li>Vivek Jain </li>
+<li>Randy True </li>
+<li>Vincent La </li>
+<li>Zach Owen </li>
+<li>Denis Nash </li>
+<li>Max Burq </li>
+<li>Ingrid Eshun-Wilsonova</li>
+<li>Bin Fu </li>
+<li>Jeroen Ooms </li>
+<li>Kara Woo</li>
+<li>Dean Attali</li>
 </ul></font>'
 
+new.model <- '<font size="4"> LEMMA v0.3 
+<br><br>
+This Shiny app is LEMMA v0.2. Our development version, LEMMA v0.3, is on <a href="https://github.com/LocalEpi/LEMMA">Github</a>. 
+<br><br>
+LEMMA v0.3 provides projections with uncertainty bounds and considers a wider set of model structures. 
+<br><br>
+LEMMA v0.3 is currently available as an R package but not as a Shiny app.'
 
 
 ##  ............................................................................

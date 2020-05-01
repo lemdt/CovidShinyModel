@@ -1,6 +1,6 @@
 #' @import shiny
 ui <- function(req) {
-  navbarPage(title = "LEMMA - Local Epidemic Modeling for Management & Action",
+  navbarPage(title = "LEMMA - Local Epidemic Modeling for Management & Action v0.2",
              tabPanel("Projections", 
                       fluidPage(theme = shinythemes::shinytheme("sandstone"),
                         tags$head(tags$link(href = "covidshiny/app.css", rel="stylesheet", type="text/css")),
@@ -120,7 +120,7 @@ ui <- function(req) {
                                 checkboxInput(inputId = 'showinflux', label = 'Add Influx of Infected Individuals'),
                                 
                                 conditionalPanel(
-                                  "input$showinflux == true",
+                                  "input.showinflux == true",
                                   div(
                                     dateInput(
                                       inputId = 'influx_date',
@@ -278,6 +278,9 @@ ui <- function(req) {
                       wellPanel(h3(strong("About LEMMA")),
                                 HTML(what.is.lemma))
              ),
-             tags$br(), tags$br()
-  )
+             tabPanel("LEMMA v0.3", 
+                      wellPanel(h3(strong("Latest Model")),
+                                HTML(new.model))
+             )
+             )
 }
